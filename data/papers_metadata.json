@@ -1,0 +1,505 @@
+[
+    {
+        "arxiv_id": "2209.07399",
+        "title": "A Light Recipe to Train Robust Vision Transformers",
+        "authors": [
+            "Edoardo Debenedetti",
+            "Vikash Sehwag",
+            "Prateek Mittal"
+        ],
+        "year": 2022,
+        "abstract": "In this paper, we ask whether Vision Transformers (ViTs) can serve as an underlying architecture for improving the adversarial robustness of machine learning models against evasion attacks. While earlier works have focused on improving Convolutional Neural Networks, we show that also ViTs are highly suitable for adversarial training to achieve competitive performance. We achieve this objective using a custom adversarial training recipe, discovered using rigorous ablation studies on a subset of the ImageNet dataset. The canonical training recipe for ViTs recommends strong data augmentation, in part to compensate for the lack of vision inductive bias of attention modules, when compared to convolutions. We show that this recipe achieves suboptimal performance when used for adversarial training. In contrast, we find that omitting all heavy data augmentation, and adding some additional bag-of-tricks ($\\varepsilon$-warmup and larger weight decay), significantly boosts the performance of robust ViTs. We show that our recipe generalizes to different classes of ViT architectures and large-scale models on full ImageNet-1k. Additionally, investigating the reasons for the robustness of our models, we show that it is easier to generate strong attacks during training when using our recipe and that this leads to better robustness at test time. Finally, we further study one consequence of adversarial training by proposing a way to quantify the semantic nature of adversarial perturbations and highlight its correlation with the robustness of the model. Overall, we recommend that the community should avoid translating the canonical training recipes in ViTs to robust training and rethink common training choices in the context of adversarial training.",
+        "categories": [
+            "cs.CV",
+            "cs.LG"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2209.07399v2",
+        "pdf_path": "data\\raw\\2209.07399.pdf"
+    },
+    {
+        "arxiv_id": "2204.07118",
+        "title": "DeiT III: Revenge of the ViT",
+        "authors": [
+            "Hugo Touvron",
+            "Matthieu Cord",
+            "Herv\u00e9 J\u00e9gou"
+        ],
+        "year": 2022,
+        "abstract": "A Vision Transformer (ViT) is a simple neural architecture amenable to serve several computer vision tasks. It has limited built-in architectural priors, in contrast to more recent architectures that incorporate priors either about the input data or of specific tasks. Recent works show that ViTs benefit from self-supervised pre-training, in particular BerT-like pre-training like BeiT. In this paper, we revisit the supervised training of ViTs. Our procedure builds upon and simplifies a recipe introduced for training ResNet-50. It includes a new simple data-augmentation procedure with only 3 augmentations, closer to the practice in self-supervised learning. Our evaluations on Image classification (ImageNet-1k with and without pre-training on ImageNet-21k), transfer learning and semantic segmentation show that our procedure outperforms by a large margin previous fully supervised training recipes for ViT. It also reveals that the performance of our ViT trained with supervision is comparable to that of more recent architectures. Our results could serve as better baselines for recent self-supervised approaches demonstrated on ViT.",
+        "categories": [
+            "cs.CV"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2204.07118v1",
+        "pdf_path": "data\\raw\\2204.07118.pdf"
+    },
+    {
+        "arxiv_id": "2103.15808",
+        "title": "CvT: Introducing Convolutions to Vision Transformers",
+        "authors": [
+            "Haiping Wu",
+            "Bin Xiao",
+            "Noel Codella",
+            "Mengchen Liu",
+            "Xiyang Dai",
+            "Lu Yuan",
+            "Lei Zhang"
+        ],
+        "year": 2021,
+        "abstract": "We present in this paper a new architecture, named Convolutional vision Transformer (CvT), that improves Vision Transformer (ViT) in performance and efficiency by introducing convolutions into ViT to yield the best of both designs. This is accomplished through two primary modifications: a hierarchy of Transformers containing a new convolutional token embedding, and a convolutional Transformer block leveraging a convolutional projection. These changes introduce desirable properties of convolutional neural networks (CNNs) to the ViT architecture (\\ie shift, scale, and distortion invariance) while maintaining the merits of Transformers (\\ie dynamic attention, global context, and better generalization). We validate CvT by conducting extensive experiments, showing that this approach achieves state-of-the-art performance over other Vision Transformers and ResNets on ImageNet-1k, with fewer parameters and lower FLOPs. In addition, performance gains are maintained when pretrained on larger datasets (\\eg ImageNet-22k) and fine-tuned to downstream tasks. Pre-trained on ImageNet-22k, our CvT-W24 obtains a top-1 accuracy of 87.7\\% on the ImageNet-1k val set. Finally, our results show that the positional encoding, a crucial component in existing Vision Transformers, can be safely removed in our model, simplifying the design for higher resolution vision tasks. Code will be released at \\url{https://github.com/leoxiaobin/CvT}.",
+        "categories": [
+            "cs.CV"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2103.15808v1",
+        "pdf_path": "data\\raw\\2103.15808.pdf"
+    },
+    {
+        "arxiv_id": "2101.11605",
+        "title": "Bottleneck Transformers for Visual Recognition",
+        "authors": [
+            "Aravind Srinivas",
+            "Tsung-Yi Lin",
+            "Niki Parmar",
+            "Jonathon Shlens",
+            "Pieter Abbeel",
+            "Ashish Vaswani"
+        ],
+        "year": 2021,
+        "abstract": "We present BoTNet, a conceptually simple yet powerful backbone architecture that incorporates self-attention for multiple computer vision tasks including image classification, object detection and instance segmentation. By just replacing the spatial convolutions with global self-attention in the final three bottleneck blocks of a ResNet and no other changes, our approach improves upon the baselines significantly on instance segmentation and object detection while also reducing the parameters, with minimal overhead in latency. Through the design of BoTNet, we also point out how ResNet bottleneck blocks with self-attention can be viewed as Transformer blocks. Without any bells and whistles, BoTNet achieves 44.4% Mask AP and 49.7% Box AP on the COCO Instance Segmentation benchmark using the Mask R-CNN framework; surpassing the previous best published single model and single scale results of ResNeSt evaluated on the COCO validation set. Finally, we present a simple adaptation of the BoTNet design for image classification, resulting in models that achieve a strong performance of 84.7% top-1 accuracy on the ImageNet benchmark while being up to 1.64x faster in compute time than the popular EfficientNet models on TPU-v3 hardware. We hope our simple and effective approach will serve as a strong baseline for future research in self-attention models for vision",
+        "categories": [
+            "cs.CV",
+            "cs.AI",
+            "cs.LG"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2101.11605v2",
+        "pdf_path": "data\\raw\\2101.11605.pdf"
+    },
+    {
+        "arxiv_id": "2106.10270",
+        "title": "How to train your ViT? Data, Augmentation, and Regularization in Vision Transformers",
+        "authors": [
+            "Andreas Steiner",
+            "Alexander Kolesnikov",
+            "Xiaohua Zhai",
+            "Ross Wightman",
+            "Jakob Uszkoreit",
+            "Lucas Beyer"
+        ],
+        "year": 2021,
+        "abstract": "Vision Transformers (ViT) have been shown to attain highly competitive performance for a wide range of vision applications, such as image classification, object detection and semantic image segmentation. In comparison to convolutional neural networks, the Vision Transformer's weaker inductive bias is generally found to cause an increased reliance on model regularization or data augmentation (\"AugReg\" for short) when training on smaller training datasets. We conduct a systematic empirical study in order to better understand the interplay between the amount of training data, AugReg, model size and compute budget. As one result of this study we find that the combination of increased compute and AugReg can yield models with the same performance as models trained on an order of magnitude more training data: we train ViT models of various sizes on the public ImageNet-21k dataset which either match or outperform their counterparts trained on the larger, but not publicly available JFT-300M dataset.",
+        "categories": [
+            "cs.CV",
+            "cs.AI",
+            "cs.LG"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2106.10270v2",
+        "pdf_path": "data\\raw\\2106.10270.pdf"
+    },
+    {
+        "arxiv_id": "1706.03762",
+        "title": "Attention Is All You Need",
+        "authors": [
+            "Ashish Vaswani",
+            "Noam Shazeer",
+            "Niki Parmar",
+            "Jakob Uszkoreit",
+            "Llion Jones",
+            "Aidan N. Gomez",
+            "Lukasz Kaiser",
+            "Illia Polosukhin"
+        ],
+        "year": 2017,
+        "abstract": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English-to-German translation task, improving over the existing best results, including ensembles by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.8 after training for 3.5 days on eight GPUs, a small fraction of the training costs of the best models from the literature. We show that the Transformer generalizes well to other tasks by applying it successfully to English constituency parsing both with large and limited training data.",
+        "categories": [
+            "cs.CL",
+            "cs.LG"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/1706.03762v7",
+        "pdf_path": "data\\raw\\1706.03762.pdf"
+    },
+    {
+        "arxiv_id": "2110.02178",
+        "title": "MobileViT: Light-weight, General-purpose, and Mobile-friendly Vision Transformer",
+        "authors": [
+            "Sachin Mehta",
+            "Mohammad Rastegari"
+        ],
+        "year": 2021,
+        "abstract": "Light-weight convolutional neural networks (CNNs) are the de-facto for mobile vision tasks. Their spatial inductive biases allow them to learn representations with fewer parameters across different vision tasks. However, these networks are spatially local. To learn global representations, self-attention-based vision trans-formers (ViTs) have been adopted. Unlike CNNs, ViTs are heavy-weight. In this paper, we ask the following question: is it possible to combine the strengths of CNNs and ViTs to build a light-weight and low latency network for mobile vision tasks? Towards this end, we introduce MobileViT, a light-weight and general-purpose vision transformer for mobile devices. MobileViT presents a different perspective for the global processing of information with transformers, i.e., transformers as convolutions. Our results show that MobileViT significantly outperforms CNN- and ViT-based networks across different tasks and datasets. On the ImageNet-1k dataset, MobileViT achieves top-1 accuracy of 78.4% with about 6 million parameters, which is 3.2% and 6.2% more accurate than MobileNetv3 (CNN-based) and DeIT (ViT-based) for a similar number of parameters. On the MS-COCO object detection task, MobileViT is 5.7% more accurate than MobileNetv3 for a similar number of parameters.   Our source code is open-source and available at: https://github.com/apple/ml-cvnets",
+        "categories": [
+            "cs.CV",
+            "cs.AI",
+            "cs.LG"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2110.02178v2",
+        "pdf_path": "data\\raw\\2110.02178.pdf"
+    },
+    {
+        "arxiv_id": "2104.11227",
+        "title": "Multiscale Vision Transformers",
+        "authors": [
+            "Haoqi Fan",
+            "Bo Xiong",
+            "Karttikeya Mangalam",
+            "Yanghao Li",
+            "Zhicheng Yan",
+            "Jitendra Malik",
+            "Christoph Feichtenhofer"
+        ],
+        "year": 2021,
+        "abstract": "We present Multiscale Vision Transformers (MViT) for video and image recognition, by connecting the seminal idea of multiscale feature hierarchies with transformer models. Multiscale Transformers have several channel-resolution scale stages. Starting from the input resolution and a small channel dimension, the stages hierarchically expand the channel capacity while reducing the spatial resolution. This creates a multiscale pyramid of features with early layers operating at high spatial resolution to model simple low-level visual information, and deeper layers at spatially coarse, but complex, high-dimensional features. We evaluate this fundamental architectural prior for modeling the dense nature of visual signals for a variety of video recognition tasks where it outperforms concurrent vision transformers that rely on large scale external pre-training and are 5-10x more costly in computation and parameters. We further remove the temporal dimension and apply our model for image classification where it outperforms prior work on vision transformers. Code is available at: https://github.com/facebookresearch/SlowFast",
+        "categories": [
+            "cs.CV",
+            "cs.AI",
+            "cs.LG"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2104.11227v1",
+        "pdf_path": "data\\raw\\2104.11227.pdf"
+    },
+    {
+        "arxiv_id": "2005.12872",
+        "title": "End-to-End Object Detection with Transformers",
+        "authors": [
+            "Nicolas Carion",
+            "Francisco Massa",
+            "Gabriel Synnaeve",
+            "Nicolas Usunier",
+            "Alexander Kirillov",
+            "Sergey Zagoruyko"
+        ],
+        "year": 2020,
+        "abstract": "We present a new method that views object detection as a direct set prediction problem. Our approach streamlines the detection pipeline, effectively removing the need for many hand-designed components like a non-maximum suppression procedure or anchor generation that explicitly encode our prior knowledge about the task. The main ingredients of the new framework, called DEtection TRansformer or DETR, are a set-based global loss that forces unique predictions via bipartite matching, and a transformer encoder-decoder architecture. Given a fixed small set of learned object queries, DETR reasons about the relations of the objects and the global image context to directly output the final set of predictions in parallel. The new model is conceptually simple and does not require a specialized library, unlike many other modern detectors. DETR demonstrates accuracy and run-time performance on par with the well-established and highly-optimized Faster RCNN baseline on the challenging COCO object detection dataset. Moreover, DETR can be easily generalized to produce panoptic segmentation in a unified manner. We show that it significantly outperforms competitive baselines. Training code and pretrained models are available at https://github.com/facebookresearch/detr.",
+        "categories": [
+            "cs.CV"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2005.12872v3",
+        "pdf_path": "data\\raw\\2005.12872.pdf"
+    },
+    {
+        "arxiv_id": "2107.14795",
+        "title": "Perceiver IO: A General Architecture for Structured Inputs & Outputs",
+        "authors": [
+            "Andrew Jaegle",
+            "Sebastian Borgeaud",
+            "Jean-Baptiste Alayrac",
+            "Carl Doersch",
+            "Catalin Ionescu",
+            "David Ding",
+            "Skanda Koppula",
+            "Daniel Zoran",
+            "Andrew Brock",
+            "Evan Shelhamer",
+            "Olivier H\u00e9naff",
+            "Matthew M. Botvinick",
+            "Andrew Zisserman",
+            "Oriol Vinyals",
+            "Jo\u0101o Carreira"
+        ],
+        "year": 2021,
+        "abstract": "A central goal of machine learning is the development of systems that can solve many problems in as many data domains as possible. Current architectures, however, cannot be applied beyond a small set of stereotyped settings, as they bake in domain & task assumptions or scale poorly to large inputs or outputs. In this work, we propose Perceiver IO, a general-purpose architecture that handles data from arbitrary settings while scaling linearly with the size of inputs and outputs. Our model augments the Perceiver with a flexible querying mechanism that enables outputs of various sizes and semantics, doing away with the need for task-specific architecture engineering. The same architecture achieves strong results on tasks spanning natural language and visual understanding, multi-task and multi-modal reasoning, and StarCraft II. As highlights, Perceiver IO outperforms a Transformer-based BERT baseline on the GLUE language benchmark despite removing input tokenization and achieves state-of-the-art performance on Sintel optical flow estimation with no explicit mechanisms for multiscale correspondence.",
+        "categories": [
+            "cs.LG",
+            "cs.CL",
+            "cs.CV",
+            "cs.SD",
+            "eess.AS"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2107.14795v3",
+        "pdf_path": "data\\raw\\2107.14795.pdf"
+    },
+    {
+        "arxiv_id": "2108.01072",
+        "title": "S$^2$-MLPv2: Improved Spatial-Shift MLP Architecture for Vision",
+        "authors": [
+            "Tan Yu",
+            "Xu Li",
+            "Yunfeng Cai",
+            "Mingming Sun",
+            "Ping Li"
+        ],
+        "year": 2021,
+        "abstract": "Recently, MLP-based vision backbones emerge. MLP-based vision architectures with less inductive bias achieve competitive performance in image recognition compared with CNNs and vision Transformers. Among them, spatial-shift MLP (S$^2$-MLP), adopting the straightforward spatial-shift operation, achieves better performance than the pioneering works including MLP-mixer and ResMLP. More recently, using smaller patches with a pyramid structure, Vision Permutator (ViP) and Global Filter Network (GFNet) achieve better performance than S$^2$-MLP.   In this paper, we improve the S$^2$-MLP vision backbone. We expand the feature map along the channel dimension and split the expanded feature map into several parts. We conduct different spatial-shift operations on split parts.   Meanwhile, we exploit the split-attention operation to fuse these split parts. Moreover, like the counterparts, we adopt smaller-scale patches and use a pyramid structure for boosting the image recognition accuracy. We term the improved spatial-shift MLP vision backbone as S$^2$-MLPv2. Using 55M parameters, our medium-scale model, S$^2$-MLPv2-Medium achieves an $83.6\\%$ top-1 accuracy on the ImageNet-1K benchmark using $224\\times 224$ images without self-attention and external training data.",
+        "categories": [
+            "cs.CV"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2108.01072v1",
+        "pdf_path": "data\\raw\\2108.01072.pdf"
+    },
+    {
+        "arxiv_id": "2106.08254",
+        "title": "BEiT: BERT Pre-Training of Image Transformers",
+        "authors": [
+            "Hangbo Bao",
+            "Li Dong",
+            "Songhao Piao",
+            "Furu Wei"
+        ],
+        "year": 2021,
+        "abstract": "We introduce a self-supervised vision representation model BEiT, which stands for Bidirectional Encoder representation from Image Transformers. Following BERT developed in the natural language processing area, we propose a masked image modeling task to pretrain vision Transformers. Specifically, each image has two views in our pre-training, i.e, image patches (such as 16x16 pixels), and visual tokens (i.e., discrete tokens). We first \"tokenize\" the original image into visual tokens. Then we randomly mask some image patches and fed them into the backbone Transformer. The pre-training objective is to recover the original visual tokens based on the corrupted image patches. After pre-training BEiT, we directly fine-tune the model parameters on downstream tasks by appending task layers upon the pretrained encoder. Experimental results on image classification and semantic segmentation show that our model achieves competitive results with previous pre-training methods. For example, base-size BEiT achieves 83.2% top-1 accuracy on ImageNet-1K, significantly outperforming from-scratch DeiT training (81.8%) with the same setup. Moreover, large-size BEiT obtains 86.3% only using ImageNet-1K, even outperforming ViT-L with supervised pre-training on ImageNet-22K (85.2%). The code and pretrained models are available at https://aka.ms/beit.",
+        "categories": [
+            "cs.CV",
+            "cs.LG"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2106.08254v2",
+        "pdf_path": "data\\raw\\2106.08254.pdf"
+    },
+    {
+        "arxiv_id": "2106.04560",
+        "title": "Scaling Vision Transformers",
+        "authors": [
+            "Xiaohua Zhai",
+            "Alexander Kolesnikov",
+            "Neil Houlsby",
+            "Lucas Beyer"
+        ],
+        "year": 2021,
+        "abstract": "Attention-based neural networks such as the Vision Transformer (ViT) have recently attained state-of-the-art results on many computer vision benchmarks. Scale is a primary ingredient in attaining excellent results, therefore, understanding a model's scaling properties is a key to designing future generations effectively. While the laws for scaling Transformer language models have been studied, it is unknown how Vision Transformers scale. To address this, we scale ViT models and data, both up and down, and characterize the relationships between error rate, data, and compute. Along the way, we refine the architecture and training of ViT, reducing memory consumption and increasing accuracy of the resulting models. As a result, we successfully train a ViT model with two billion parameters, which attains a new state-of-the-art on ImageNet of 90.45% top-1 accuracy. The model also performs well for few-shot transfer, for example, reaching 84.86% top-1 accuracy on ImageNet with only 10 examples per class.",
+        "categories": [
+            "cs.CV",
+            "cs.AI",
+            "cs.LG"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2106.04560v2",
+        "pdf_path": "data\\raw\\2106.04560.pdf"
+    },
+    {
+        "arxiv_id": "2111.06377",
+        "title": "Masked Autoencoders Are Scalable Vision Learners",
+        "authors": [
+            "Kaiming He",
+            "Xinlei Chen",
+            "Saining Xie",
+            "Yanghao Li",
+            "Piotr Doll\u00e1r",
+            "Ross Girshick"
+        ],
+        "year": 2021,
+        "abstract": "This paper shows that masked autoencoders (MAE) are scalable self-supervised learners for computer vision. Our MAE approach is simple: we mask random patches of the input image and reconstruct the missing pixels. It is based on two core designs. First, we develop an asymmetric encoder-decoder architecture, with an encoder that operates only on the visible subset of patches (without mask tokens), along with a lightweight decoder that reconstructs the original image from the latent representation and mask tokens. Second, we find that masking a high proportion of the input image, e.g., 75%, yields a nontrivial and meaningful self-supervisory task. Coupling these two designs enables us to train large models efficiently and effectively: we accelerate training (by 3x or more) and improve accuracy. Our scalable approach allows for learning high-capacity models that generalize well: e.g., a vanilla ViT-Huge model achieves the best accuracy (87.8%) among methods that use only ImageNet-1K data. Transfer performance in downstream tasks outperforms supervised pre-training and shows promising scaling behavior.",
+        "categories": [
+            "cs.CV"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2111.06377v3",
+        "pdf_path": "data\\raw\\2111.06377.pdf"
+    },
+    {
+        "arxiv_id": "2102.12122",
+        "title": "Pyramid Vision Transformer: A Versatile Backbone for Dense Prediction without Convolutions",
+        "authors": [
+            "Wenhai Wang",
+            "Enze Xie",
+            "Xiang Li",
+            "Deng-Ping Fan",
+            "Kaitao Song",
+            "Ding Liang",
+            "Tong Lu",
+            "Ping Luo",
+            "Ling Shao"
+        ],
+        "year": 2021,
+        "abstract": "Although using convolutional neural networks (CNNs) as backbones achieves great successes in computer vision, this work investigates a simple backbone network useful for many dense prediction tasks without convolutions. Unlike the recently-proposed Transformer model (e.g., ViT) that is specially designed for image classification, we propose Pyramid Vision Transformer~(PVT), which overcomes the difficulties of porting Transformer to various dense prediction tasks. PVT has several merits compared to prior arts. (1) Different from ViT that typically has low-resolution outputs and high computational and memory cost, PVT can be not only trained on dense partitions of the image to achieve high output resolution, which is important for dense predictions but also using a progressive shrinking pyramid to reduce computations of large feature maps. (2) PVT inherits the advantages from both CNN and Transformer, making it a unified backbone in various vision tasks without convolutions by simply replacing CNN backbones. (3) We validate PVT by conducting extensive experiments, showing that it boosts the performance of many downstream tasks, e.g., object detection, semantic, and instance segmentation. For example, with a comparable number of parameters, RetinaNet+PVT achieves 40.4 AP on the COCO dataset, surpassing RetinNet+ResNet50 (36.3 AP) by 4.1 absolute AP. We hope PVT could serve as an alternative and useful backbone for pixel-level predictions and facilitate future researches. Code is available at https://github.com/whai362/PVT.",
+        "categories": [
+            "cs.CV"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2102.12122v2",
+        "pdf_path": "data\\raw\\2102.12122.pdf"
+    },
+    {
+        "arxiv_id": "2111.09883",
+        "title": "Swin Transformer V2: Scaling Up Capacity and Resolution",
+        "authors": [
+            "Ze Liu",
+            "Han Hu",
+            "Yutong Lin",
+            "Zhuliang Yao",
+            "Zhenda Xie",
+            "Yixuan Wei",
+            "Jia Ning",
+            "Yue Cao",
+            "Zheng Zhang",
+            "Li Dong",
+            "Furu Wei",
+            "Baining Guo"
+        ],
+        "year": 2021,
+        "abstract": "Large-scale NLP models have been shown to significantly improve the performance on language tasks with no signs of saturation. They also demonstrate amazing few-shot capabilities like that of human beings. This paper aims to explore large-scale models in computer vision. We tackle three major issues in training and application of large vision models, including training instability, resolution gaps between pre-training and fine-tuning, and hunger on labelled data. Three main techniques are proposed: 1) a residual-post-norm method combined with cosine attention to improve training stability; 2) A log-spaced continuous position bias method to effectively transfer models pre-trained using low-resolution images to downstream tasks with high-resolution inputs; 3) A self-supervised pre-training method, SimMIM, to reduce the needs of vast labeled images. Through these techniques, this paper successfully trained a 3 billion-parameter Swin Transformer V2 model, which is the largest dense vision model to date, and makes it capable of training with images of up to 1,536$\\times$1,536 resolution. It set new performance records on 4 representative vision tasks, including ImageNet-V2 image classification, COCO object detection, ADE20K semantic segmentation, and Kinetics-400 video action classification. Also note our training is much more efficient than that in Google's billion-level visual models, which consumes 40 times less labelled data and 40 times less training time. Code is available at \\url{https://github.com/microsoft/Swin-Transformer}.",
+        "categories": [
+            "cs.CV"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2111.09883v2",
+        "pdf_path": "data\\raw\\2111.09883.pdf"
+    },
+    {
+        "arxiv_id": "2104.01136",
+        "title": "LeViT: a Vision Transformer in ConvNet's Clothing for Faster Inference",
+        "authors": [
+            "Ben Graham",
+            "Alaaeldin El-Nouby",
+            "Hugo Touvron",
+            "Pierre Stock",
+            "Armand Joulin",
+            "Herv\u00e9 J\u00e9gou",
+            "Matthijs Douze"
+        ],
+        "year": 2021,
+        "abstract": "We design a family of image classification architectures that optimize the trade-off between accuracy and efficiency in a high-speed regime. Our work exploits recent findings in attention-based architectures, which are competitive on highly parallel processing hardware. We revisit principles from the extensive literature on convolutional neural networks to apply them to transformers, in particular activation maps with decreasing resolutions. We also introduce the attention bias, a new way to integrate positional information in vision transformers. As a result, we propose LeVIT: a hybrid neural network for fast inference image classification. We consider different measures of efficiency on different hardware platforms, so as to best reflect a wide range of application scenarios. Our extensive experiments empirically validate our technical choices and show they are suitable to most architectures. Overall, LeViT significantly outperforms existing convnets and vision transformers with respect to the speed/accuracy tradeoff. For example, at 80% ImageNet top-1 accuracy, LeViT is 5 times faster than EfficientNet on CPU. We release the code at https://github.com/facebookresearch/LeViT",
+        "categories": [
+            "cs.CV"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2104.01136v2",
+        "pdf_path": "data\\raw\\2104.01136.pdf"
+    },
+    {
+        "arxiv_id": "2112.13492",
+        "title": "Vision Transformer for Small-Size Datasets",
+        "authors": [
+            "Seung Hoon Lee",
+            "Seunghyun Lee",
+            "Byung Cheol Song"
+        ],
+        "year": 2021,
+        "abstract": "Recently, the Vision Transformer (ViT), which applied the transformer structure to the image classification task, has outperformed convolutional neural networks. However, the high performance of the ViT results from pre-training using a large-size dataset such as JFT-300M, and its dependence on a large dataset is interpreted as due to low locality inductive bias. This paper proposes Shifted Patch Tokenization (SPT) and Locality Self-Attention (LSA), which effectively solve the lack of locality inductive bias and enable it to learn from scratch even on small-size datasets. Moreover, SPT and LSA are generic and effective add-on modules that are easily applicable to various ViTs. Experimental results show that when both SPT and LSA were applied to the ViTs, the performance improved by an average of 2.96% in Tiny-ImageNet, which is a representative small-size dataset. Especially, Swin Transformer achieved an overwhelming performance improvement of 4.08% thanks to the proposed SPT and LSA.",
+        "categories": [
+            "cs.CV"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2112.13492v1",
+        "pdf_path": "data\\raw\\2112.13492.pdf"
+    },
+    {
+        "arxiv_id": "2208.00173",
+        "title": "A Survey on Masked Autoencoder for Self-supervised Learning in Vision and Beyond",
+        "authors": [
+            "Chaoning Zhang",
+            "Chenshuang Zhang",
+            "Junha Song",
+            "John Seon Keun Yi",
+            "Kang Zhang",
+            "In So Kweon"
+        ],
+        "year": 2022,
+        "abstract": "Masked autoencoders are scalable vision learners, as the title of MAE \\cite{he2022masked}, which suggests that self-supervised learning (SSL) in vision might undertake a similar trajectory as in NLP. Specifically, generative pretext tasks with the masked prediction (e.g., BERT) have become a de facto standard SSL practice in NLP. By contrast, early attempts at generative methods in vision have been buried by their discriminative counterparts (like contrastive learning); however, the success of mask image modeling has revived the masking autoencoder (often termed denoising autoencoder in the past). As a milestone to bridge the gap with BERT in NLP, masked autoencoder has attracted unprecedented attention for SSL in vision and beyond. This work conducts a comprehensive survey of masked autoencoders to shed insight on a promising direction of SSL. As the first to review SSL with masked autoencoders, this work focuses on its application in vision by discussing its historical developments, recent progress, and implications for diverse applications.",
+        "categories": [
+            "cs.CV",
+            "cs.AI",
+            "cs.LG"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2208.00173v1",
+        "pdf_path": "data\\raw\\2208.00173.pdf"
+    },
+    {
+        "arxiv_id": "2012.12877",
+        "title": "Training data-efficient image transformers & distillation through attention",
+        "authors": [
+            "Hugo Touvron",
+            "Matthieu Cord",
+            "Matthijs Douze",
+            "Francisco Massa",
+            "Alexandre Sablayrolles",
+            "Herv\u00e9 J\u00e9gou"
+        ],
+        "year": 2020,
+        "abstract": "Recently, neural networks purely based on attention were shown to address image understanding tasks such as image classification. However, these visual transformers are pre-trained with hundreds of millions of images using an expensive infrastructure, thereby limiting their adoption.   In this work, we produce a competitive convolution-free transformer by training on Imagenet only. We train them on a single computer in less than 3 days. Our reference vision transformer (86M parameters) achieves top-1 accuracy of 83.1% (single-crop evaluation) on ImageNet with no external data.   More importantly, we introduce a teacher-student strategy specific to transformers. It relies on a distillation token ensuring that the student learns from the teacher through attention. We show the interest of this token-based distillation, especially when using a convnet as a teacher. This leads us to report results competitive with convnets for both Imagenet (where we obtain up to 85.2% accuracy) and when transferring to other tasks. We share our code and models.",
+        "categories": [
+            "cs.CV"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2012.12877v2",
+        "pdf_path": "data\\raw\\2012.12877.pdf"
+    },
+    {
+        "arxiv_id": "2105.15082",
+        "title": "M6-T: Exploring Sparse Expert Models and Beyond",
+        "authors": [
+            "An Yang",
+            "Junyang Lin",
+            "Rui Men",
+            "Chang Zhou",
+            "Le Jiang",
+            "Xianyan Jia",
+            "Ang Wang",
+            "Jie Zhang",
+            "Jiamang Wang",
+            "Yong Li",
+            "Di Zhang",
+            "Wei Lin",
+            "Lin Qu",
+            "Jingren Zhou",
+            "Hongxia Yang"
+        ],
+        "year": 2021,
+        "abstract": "Mixture-of-Experts (MoE) models can achieve promising results with outrageous large amount of parameters but constant computation cost, and thus it has become a trend in model scaling. Still it is a mystery how MoE layers bring quality gains by leveraging the parameters with sparse activation. In this work, we investigate several key factors in sparse expert models. We observe that load imbalance may not be a significant problem affecting model quality, contrary to the perspectives of recent studies, while the number of sparsely activated experts $k$ and expert capacity $C$ in top-$k$ routing can significantly make a difference in this context. Furthermore, we take a step forward to propose a simple method called expert prototyping that splits experts into different prototypes and applies $k$ top-$1$ routing. This strategy improves the model quality but maintains constant computational costs, and our further exploration on extremely large-scale models reflects that it is more effective in training larger models. We push the model scale to over $1$ trillion parameters and implement it on solely $480$ NVIDIA V100-32GB GPUs, in comparison with the recent SOTAs on $2048$ TPU cores. The proposed giant model achieves substantial speedup in convergence over the same-size baseline.",
+        "categories": [
+            "cs.LG",
+            "cs.CL"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2105.15082v5",
+        "pdf_path": "data\\raw\\2105.15082.pdf"
+    },
+    {
+        "arxiv_id": "2010.11929",
+        "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+        "authors": [
+            "Alexey Dosovitskiy",
+            "Lucas Beyer",
+            "Alexander Kolesnikov",
+            "Dirk Weissenborn",
+            "Xiaohua Zhai",
+            "Thomas Unterthiner",
+            "Mostafa Dehghani",
+            "Matthias Minderer",
+            "Georg Heigold",
+            "Sylvain Gelly",
+            "Jakob Uszkoreit",
+            "Neil Houlsby"
+        ],
+        "year": 2020,
+        "abstract": "While the Transformer architecture has become the de-facto standard for natural language processing tasks, its applications to computer vision remain limited. In vision, attention is either applied in conjunction with convolutional networks, or used to replace certain components of convolutional networks while keeping their overall structure in place. We show that this reliance on CNNs is not necessary and a pure transformer applied directly to sequences of image patches can perform very well on image classification tasks. When pre-trained on large amounts of data and transferred to multiple mid-sized or small image recognition benchmarks (ImageNet, CIFAR-100, VTAB, etc.), Vision Transformer (ViT) attains excellent results compared to state-of-the-art convolutional networks while requiring substantially fewer computational resources to train.",
+        "categories": [
+            "cs.CV",
+            "cs.AI",
+            "cs.LG"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2010.11929v2",
+        "pdf_path": "data\\raw\\2010.11929.pdf"
+    },
+    {
+        "arxiv_id": "2103.14030",
+        "title": "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
+        "authors": [
+            "Ze Liu",
+            "Yutong Lin",
+            "Yue Cao",
+            "Han Hu",
+            "Yixuan Wei",
+            "Zheng Zhang",
+            "Stephen Lin",
+            "Baining Guo"
+        ],
+        "year": 2021,
+        "abstract": "This paper presents a new vision Transformer, called Swin Transformer, that capably serves as a general-purpose backbone for computer vision. Challenges in adapting Transformer from language to vision arise from differences between the two domains, such as large variations in the scale of visual entities and the high resolution of pixels in images compared to words in text. To address these differences, we propose a hierarchical Transformer whose representation is computed with \\textbf{S}hifted \\textbf{win}dows. The shifted windowing scheme brings greater efficiency by limiting self-attention computation to non-overlapping local windows while also allowing for cross-window connection. This hierarchical architecture has the flexibility to model at various scales and has linear computational complexity with respect to image size. These qualities of Swin Transformer make it compatible with a broad range of vision tasks, including image classification (87.3 top-1 accuracy on ImageNet-1K) and dense prediction tasks such as object detection (58.7 box AP and 51.1 mask AP on COCO test-dev) and semantic segmentation (53.5 mIoU on ADE20K val). Its performance surpasses the previous state-of-the-art by a large margin of +2.7 box AP and +2.6 mask AP on COCO, and +3.2 mIoU on ADE20K, demonstrating the potential of Transformer-based models as vision backbones. The hierarchical design and the shifted window approach also prove beneficial for all-MLP architectures. The code and models are publicly available at~\\url{https://github.com/microsoft/Swin-Transformer}.",
+        "categories": [
+            "cs.CV",
+            "cs.LG"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2103.14030v2",
+        "pdf_path": "data\\raw\\2103.14030.pdf"
+    },
+    {
+        "arxiv_id": "2103.10697",
+        "title": "ConViT: Improving Vision Transformers with Soft Convolutional Inductive Biases",
+        "authors": [
+            "St\u00e9phane d'Ascoli",
+            "Hugo Touvron",
+            "Matthew Leavitt",
+            "Ari Morcos",
+            "Giulio Biroli",
+            "Levent Sagun"
+        ],
+        "year": 2021,
+        "abstract": "Convolutional architectures have proven extremely successful for vision tasks. Their hard inductive biases enable sample-efficient learning, but come at the cost of a potentially lower performance ceiling. Vision Transformers (ViTs) rely on more flexible self-attention layers, and have recently outperformed CNNs for image classification. However, they require costly pre-training on large external datasets or distillation from pre-trained convolutional networks. In this paper, we ask the following question: is it possible to combine the strengths of these two architectures while avoiding their respective limitations? To this end, we introduce gated positional self-attention (GPSA), a form of positional self-attention which can be equipped with a ``soft\" convolutional inductive bias. We initialise the GPSA layers to mimic the locality of convolutional layers, then give each attention head the freedom to escape locality by adjusting a gating parameter regulating the attention paid to position versus content information. The resulting convolutional-like ViT architecture, ConViT, outperforms the DeiT on ImageNet, while offering a much improved sample efficiency. We further investigate the role of locality in learning by first quantifying how it is encouraged in vanilla self-attention layers, then analysing how it is escaped in GPSA layers. We conclude by presenting various ablations to better understand the success of the ConViT. Our code and models are released publicly at https://github.com/facebookresearch/convit.",
+        "categories": [
+            "cs.CV",
+            "cs.LG",
+            "stat.ML"
+        ],
+        "pdf_url": "https://arxiv.org/pdf/2103.10697v2",
+        "pdf_path": "data\\raw\\2103.10697.pdf"
+    }
+]

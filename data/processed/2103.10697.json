@@ -1,0 +1,499 @@
+{
+  "arxiv_id": "2103.10697",
+  "title": "ConViT: Improving Vision Transformers with Soft Convolutional Inductive Biases",
+  "authors": [
+    "St\u00e9phane d'Ascoli",
+    "Hugo Touvron",
+    "Matthew Leavitt",
+    "Ari Morcos",
+    "Giulio Biroli",
+    "Levent Sagun"
+  ],
+  "year": 2021,
+  "abstract": "Convolutional architectures have proven extremely successful for vision tasks. Their hard inductive biases enable sample-efficient learning, but come at the cost of a potentially lower performance ceiling. Vision Transformers (ViTs) rely on more flexible self-attention layers, and have recently outperformed CNNs for image classification. However, they require costly pre-training on large external datasets or distillation from pre-trained convolutional networks. In this paper, we ask the following question: is it possible to combine the strengths of these two architectures while avoiding their respective limitations? To this end, we introduce gated positional self-attention (GPSA), a form of positional self-attention which can be equipped with a ``soft\" convolutional inductive bias. We initialise the GPSA layers to mimic the locality of convolutional layers, then give each attention head the freedom to escape locality by adjusting a gating parameter regulating the attention paid to position versus content information. The resulting convolutional-like ViT architecture, ConViT, outperforms the DeiT on ImageNet, while offering a much improved sample efficiency. We further investigate the role of locality in learning by first quantifying how it is encouraged in vanilla self-attention layers, then analysing how it is escaped in GPSA layers. We conclude by presenting various ablations to better understand the success of the ConViT. Our code and models are released publicly at https://github.com/facebookresearch/convit.",
+  "categories": [
+    "cs.CV",
+    "cs.LG",
+    "stat.ML"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2103.10697v2",
+  "page_count": 20,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 59,
+  "chunks": [
+    {
+      "chunk_id": "2103.10697_chunk_0000",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "ConViT: Improving Vision Transformerswith Soft Convolutional Inductive BiasesSt\u00b4ephane d\u2019Ascoli 1 2 Hugo Touvron 2 Matthew L. Leavitt 2 Ari S. Morcos 2 Giulio Biroli 1 2 Levent Sagun 2Abstract1. IntroductionThe success of deep learning over the last decade has largelybeen fueled by models with strong inductive biases, al-lowing ef\ufb01cient training across domains (Mitchell, 1980;Goodfellow et al., 2016). The use of Convolutional NeuralNetworks (CNNs) (LeCun et al., 1998; 1989), which havebecome ubiquitous in computer vision since the success ofAlexNet in 2012 (Krizhevsky et al., 2017), epitomizes thistrend. Inductive biases are hard-coded into the architecturalstructure of CNNs in the form of two strong constraintson the weights: locality and weight sharing.",
+      "token_count": 211
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0001",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "Inductive biases are hard-coded into the architecturalstructure of CNNs in the form of two strong constraintson the weights: locality and weight sharing. By encourag-ing translation equivariance (without pooling layers) andtranslation invariance (with pooling layers) (Scherer et al.,2010; Schmidhuber, 2015; Goodfellow et al., 2016), theconvolutional inductive bias makes models more sample-ef\ufb01cient and parameter-ef\ufb01cient (Simoncelli & Olshausen,2001; Ruderman & Bialek, 1994). Similarly, for sequence-based tasks, recurrent networks with hard-coded memorycells have been shown to simplify the learning of long-rangedependencies (LSTMs) and outperform vanilla recurrentneural networks in a variety of settings (Gers et al., 1999;Sundermeyer et al., 2012; Greff et al., 2017).Convolutional architectures have proven ex-tremely successful for vision tasks. Their hardinductive biases enable sample-ef\ufb01cient learning,but come at the cost of a potentially lower perfor-mance ceiling. Vision Transformers (ViTs) relyon more \ufb02exible self-attention layers, and haverecently outperformed CNNs for image classi\ufb01-cation.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0002",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "Vision Transformers (ViTs) relyon more \ufb02exible self-attention layers, and haverecently outperformed CNNs for image classi\ufb01-cation. However, they require costly pre-trainingon large external datasets or distillation from pre-trained convolutional networks. In this paper, weask the following question: is it possible to com-bine the strengths of these two architectures whileavoiding their respective limitations?To thisend, we introduce gated positional self-attention(GPSA), a form of positional self-attention whichcan be equipped with a \u201csoft\u201d convolutional in-ductive bias. We initialize the GPSA layers tomimic the locality of convolutional layers, thengive each attention head the freedom to escapelocality by adjusting a gating parameter regu-lating the attention paid to position versus con-tent information. The resulting convolutional-like ViT architecture, ConViT, outperforms theDeiT (Touvron et al., 2020) on ImageNet, whileoffering a much improved sample ef\ufb01ciency. Wefurther investigate the role of locality in learn-ing by \ufb01rst quantifying how it is encouraged invanilla self-attention layers, then analyzing how itis escaped in GPSA layers. We conclude by pre-senting various ablations to better understand thesuccess of the ConViT.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0003",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "We conclude by pre-senting various ablations to better understand thesuccess of the ConViT. Our code and models arereleased publicly at https://github.com/facebookresearch/convit.However, the rise of models based purely on attention inrecent years calls into question the necessity of hard-codedinductive biases. First introduced as an add-on to recurrentneural networks for Sequence-to-Sequence models (Bah-danau et al., 2014), attention has led to a breakthrough inNatural Language Processing through the emergence ofTransformer models, which rely solely on a particular kindof attention: Self-Attention (SA) (Vaswani et al., 2017).The strong performance of these models when pre-trainedon large datasets has quickly led to Transformer-based ap-proaches becoming the default choice over recurrent modelslike LSTMs (Devlin et al., 2018).In vision tasks, the locality of CNNs impairs the ability tocapture long-range dependencies, whereas attention doesnot suffer from this limitation. Chen et al. (2018) and Belloet al. (2019) leveraged this complementarity by augmentingconvolutional layers with attention.",
+      "token_count": 241
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0004",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "Chen et al. (2018) and Belloet al. (2019) leveraged this complementarity by augmentingconvolutional layers with attention. More recently, Ra-machandran et al. (2019) ran a series of experiments replac-ing some or all convolutional layers in ResNets with atten-tion, and found the best performing models used convolu-1Department of Physics, Ecole Normale Sup\u00b4erieure, Paris,France 2Facebook AI Research, Paris, France. Correspondence to:St\u00b4ephane d\u2019Ascoli <stephane.dascoli@ens.fr>.Proceedings of the 38 th International Conference on MachineLearning, PMLR 139, 2021. Copyright 2021 by the author(s).ConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesHard inductive biasSoft inductive biaset al., 2015), which has recently been applied to transferthe inductive bias of a convolutional teacher to a studenttransformer (Touvron et al., 2020).",
+      "token_count": 229
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0005",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "While these two meth-ods offer an interesting compromise, they forcefully induceconvolutional inductive biases into the Transformers, poten-tially affecting the Transformer with their limitations.(CNN)(ConViT)# parameters# parametersHelpfulNeutralHarmful# samples# samplesContributionIn this paper, we take a new step towardsbridging the gap between CNNs and Transformers, by pre-senting a new method to \u201csoftly\u201d introduce a convolutionalinductive bias into the ViT. The idea is to let each SA layerdecide whether to behave as a convolutional layer or not,depending on the context. We make the following contribu-tions:1. We present a new form of SA layer, named gated posi-tional self-attention (GPSA), which one can initializeas a convolutional layer. Each attention head then hasthe freedom to recover expressivity by adjusting a gat-ing parameter.2. We then perform experiments based on the DeiT (Tou-vron et al., 2020), with a certain number of SA layersreplaced by GPSA layers. The resulting ConvolutionalVision Transformer (ConViT) outperforms the DeiTwhile boasting a much improved sample-ef\ufb01ciency(Fig. 2).3.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0006",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "The resulting ConvolutionalVision Transformer (ConViT) outperforms the DeiTwhile boasting a much improved sample-ef\ufb01ciency(Fig. 2).3. We analyze quantitatively how local attention is natu-rally encouraged in vanilla ViTs, then investigate theinner workings of the ConViT and perform ablationsto investigate how it bene\ufb01ts from the convolution ini-tialization.tions in early layers and attention in later layers. The VisionTransformer (ViT), introduced by Dosovitskiy et al. (2020),entirely dispenses with the convolutional inductive bias byperforming SA across embeddings of patches of pixels. TheViT is able to match or exceed the performance of CNNsbut requires pre-training on vast amounts of data. Morerecently, the Data-ef\ufb01cient Vision Transformer (DeiT) (Tou-vron et al., 2020) was able to reach similar performanceswithout any pre-training on supplementary data, instead re-lying on Knowledge Distillation (Hinton et al., 2015) froma convolutional teacher.Soft inductive biasesThe recent success of the ViTdemonstrates that while convolutional constraints can enablestrongly sample-ef\ufb01cient training in the small-data regime,they can also become limiting as the dataset size is notan issue.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0007",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "In data-plentiful regimes, hard inductive biasescan be overly restrictive and learning the most appropriateinductive bias can prove more effective. The practitioneris therefore confronted with a dilemma between using aconvolutional model, which has a high performance \ufb02oorbut a potentially lower performance ceiling due to the hardinductive biases, or a self-attention based model, which hasa lower \ufb02oor but a higher ceiling. This dilemma leads tothe following question: can one get the best of both worlds,and obtain the bene\ufb01ts of the convolutional inductive biaseswithout suffering from its limitations (see Fig. 1)?Overall, our work demonstrates the effectiveness of \u201dsoft\u201dinductive biases, especially in the low-data regime wherethe learning model is highly underspeci\ufb01ed (see Fig. 1), andmotivates the exploration of further methods to induce them.Related workOur work is motivated by combining therecent success of pure Transformer models (Dosovitskiyet al., 2020) with the formalized relationship between SAand convolution. Indeed, Cordonnier et al. (2019) showedthat a SA layer with Nh heads can express a convolution ofkernel size\u221aN h, if each head focuses on one of the pixelsin the kernel patch.",
+      "token_count": 266
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0008",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "Indeed, Cordonnier et al. (2019) showedthat a SA layer with Nh heads can express a convolution ofkernel size\u221aN h, if each head focuses on one of the pixelsin the kernel patch. By investigating the qualitative aspect ofattention maps of models trained on CIFAR-10, it is shownthat SA layers with relative positional encodings naturallyconverge towards convolutional-like con\ufb01gurations, sug-gesting that some degree of convolutional inductive bias isdesirable.In this direction, one successful approach is the combina-tion of the two architectures in \u201chybrid\u201d models. Thesemodels, which interleave or combine convolutional and self-attention layers, have fueled successful results in a varietyof tasks (Carion et al., 2020; Hu et al., 2018a; Ramachan-dran et al., 2019; Chen et al., 2020; Locatello et al., 2020;Sun et al., 2019; Srinivas et al., 2021; Wu et al., 2020). An-other approach is that of Knowledge Distillation (HintonConversely, the restrictiveness of hard locality constraintshas been proven by Elsayed et al. (2020).",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0009",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "An-other approach is that of Knowledge Distillation (HintonConversely, the restrictiveness of hard locality constraintshas been proven by Elsayed et al. (2020). A breadth ofapproaches have been taken to imbue CNN architectureswith nonlocality (Hu et al., 2018b;c; Wang et al., 2018; WuConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesMulti-head self-attentionThe attention mechanism isbased on a trainable associative memory with (key, query)vector pairs. A sequence of L1 \u201cquery\u201d embeddings Q \u2208RL1\u00d7Dh is matched against another sequence of L2 \u201ckey\u201dembeddings K \u2208RL2\u00d7Dh using inner products.",
+      "token_count": 156
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0010",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "A sequence of L1 \u201cquery\u201d embeddings Q \u2208RL1\u00d7Dh is matched against another sequence of L2 \u201ckey\u201dembeddings K \u2208RL2\u00d7Dh using inner products. The re-sult is an attention matrix whose entry (ij) quanti\ufb01es howsemantically \u201crelevant\u201d Qi is to Kj:Top-1 accuracyRelative gain (%)Top-1 accuracyConViT-SDeiT-SConViTDeiTEffNetResNetViTT2T-ViTVT10100Images in training set (%)101102A = softmaxQK\u22a4\u2208RL1\u00d7L2,(1)Number of params [M]\u221aDh(a) Sample ef\ufb01ciency(b) Parameter ef\ufb01ciencywhere (softmax [X])ij = eXij/ Pk eXik.Self-attention is a special case of attention where a sequenceis matched to itself, to extract the semantic dependenciesbetween its parts. In the ViT, the queries and keys are linearprojections of the embeddings of 16 \u00d7 16 pixel patchesX \u2208RL\u00d7Demb. Hence, we have Q = WqryX and K =WkeyX, where Wkey, Wqry \u2208RDemb\u00d7Dh.Multi-head SA layers use several self-attention heads inparallel to allow the learning of different kinds of interde-pendencies.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0011",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "They take as input a sequence of L embeddingsof dimension Demb = NhDh, and output a sequence of Lembeddings of the same dimension through the followingmechanism:et al., 2020). Another line of research is to induce a convolu-tional inductive bias is different architectures. For example,Neyshabur (2020) uses a regularization method to encour-age fully-connected networks (FCNs) to learn convolutionsfrom scratch throughout training.MSA(X) := concath\u2208[Nh] [SAh(X)] Wout + bout,(2)where Wout \u2208RDemb\u00d7Demb, bout \u2208RDemb. Each self-attention head h performs the following operation:Most related to our approach, d\u2019Ascoli et al. (2019) exploreda method to initialize FCNs networks as CNNs. This en-ables the resulting FCN to reach much higher performancethan achievable with standard initialization. Moreover, ifthe FCN is initialized from a partially trained CNN, therecovered degrees of freedom allow the FCN to outperformthe CNN it stems from.",
+      "token_count": 229
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0012",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "Moreover, ifthe FCN is initialized from a partially trained CNN, therecovered degrees of freedom allow the FCN to outperformthe CNN it stems from. This method relates more generallyto \u201cwarm start\u201d approaches such as those used in spikedtensor models (Anandkumar et al., 2016), where a smartinitialization, containing prior information on the problem,is used to ease the learning task.SAh(X) := AhXW hval,(3)where W hval \u2208RDemb\u00d7Dh is the value matrix.However, in the vanilla form of Eq. 1, SA layers are position-agnostic: they do not know how the patches are located ac-cording to each other. To incorporate positional information,there are several options. One is to add some positionalinformation to the input at embedding time, before propa-gating it through the SA layers: (Dosovitskiy et al., 2020)use this approach in their ViT.",
+      "token_count": 201
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0013",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "One is to add some positionalinformation to the input at embedding time, before propa-gating it through the SA layers: (Dosovitskiy et al., 2020)use this approach in their ViT. Another possibility is to re-place the vanilla SA with positional self-attention (PSA),using encodings rij of the relative position of patches i andj (Ramachandran et al., 2019):ReproducibilityWe provide an open-source implemen-tation of our method as well as pretrained modelsat the following address:https://github.com/facebookresearch/convit.Ahij := softmaxQhi Kh\u22a4j+ vh\u22a4posrij(4)Each attention head uses a trainable embedding vhpos \u2208RDpos, and the relative positional encodings rij \u2208RDposonly depend on the distance between pixels i and j, denoteddenoted by a two-dimensional vector \u03b4ij.2.",
+      "token_count": 195
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0014",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "BackgroundWe begin by introducing the basics of SA layers, and showhow positional attention can allow SA layers to expressconvolutional layers.Self-attention as a generalized convolutionCordonnieret al. (2019) show that a multi-head PSA layer with NhConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesHead 1Head 2Head 3Image embeddingnormalize\ud835\udc34\ud835\udc56\ud835\udc57SAFFN+1 \u2212\ud835\udf0e(\ud835\udf06)\ud835\udf0e(\ud835\udf06)Nonlocal(a) Input(b) Standard initializationSAFFNHead 1Head 2Head 3Head 4softmaxsoftmaxFFNLocalGPSA\u2217\u2217FFNGPSA\ud835\udc4a\ud835\udc5e\ud835\udc5f\ud835\udc66\ud835\udc4a\ud835\udc58\ud835\udc52\ud835\udc66\ud835\udc63\ud835\udc5d\ud835\udc5c\ud835\udc60\ud835\udc5f\ud835\udc56\ud835\udc57(c) Convolutional initialization, strength \u03b1 = 0.5Head 1Head 2Head 3Head 4ClasstokenPatches\ud835\udc4b\ud835\udc56\ud835\udc4b\ud835\udc57Self-AttentionConViTGated Positional(d) Convolutional initialization, strength \u03b1 = 2heads and learnable relative positional encodings (Eq. 4) ofdimension Dpos \u22653 can express any convolutional layer of\ufb01lter size\u221aeach of the possible positional offsets of a \u221aNh \u00d7 \u221aNhconvolutional kernel, and sending the locality strengths \u03b1hN h \u00d7\u221aN h, by setting the following:\uf8f1\uf8f4\uf8f2vhpos := \u2212\u03b1h 1, \u22122\u2206h1, \u22122\u2206h2, 0, . . . 0to some large value.Wqry = Wkey := 0,Wval := I(5)r\u03b4 :=\u2225\u03b4\u22252, \u03b41, \u03b42, 0, . . . 0\uf8f4\uf8f33.",
+      "token_count": 425
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0015",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "ApproachBuilding on the insight of (Cordonnier et al., 2019), we in-troduce the ConVit, a variant of the ViT (Dosovitskiy et al.,2020) obtained by replacing some of the SA layers by a newtype of layer which we call gated positional self-attention(GPSA) layers. The core idea is to enforce the \u201cinformed\u201dconvolutional con\ufb01guration of Eqs. 5 in the GPSA layers atinitialization, then let them decide whether to stay convo-lutional or not. However, the standard parameterization ofPSA layers (Eq. 4) suffers from two limitations, which leadus two introduce two modi\ufb01cations.In the above,\u2022 The center of attention \u2206h \u2208R2 is the position towhich head h pays most attention to, relative to thequery patch.",
+      "token_count": 187
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0016",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "For example, in Fig. 3(c), the four headscorrespond, from left to right, to \u22061 = (\u22121, 1), \u22062 =(\u22121, \u22121), \u22063 = (1, 1), \u22064 = (1, \u22121).\u2022 The locality strength \u03b1h > 0 determines how focusedthe attention is around its center \u2206h (it can also by un-derstood as the \u201ctemperature\u201d of the softmax in Eq. 1).When \u03b1h is large, the attention is focused only on thepatch(es) located at \u2206h, as in Fig. 3(d); when \u03b1h issmall, the attention is spread out into a larger area, asin Fig. 3(c).Adaptive attention spanThe \ufb01rst caveat in PSA is thevast number of trainable parameters involved, since the num-ber of relative positional encodings r\u03b4 is quadratic in thenumber of patches.",
+      "token_count": 203
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0017",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "This led some authors to restrict theattention to a subset of patches around the query patch (Ra-machandran et al., 2019), at the cost of losing long-rangeinformation.Thus, the PSA layer can achieve a strictly convolutionalattention map by setting the centers of attention \u2206h toConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesTo avoid this, we leave the relative positional encodingsr\u03b4 \ufb01xed, and train only the embeddings vhpos which de-termine the center and span of the attention heads; thisapproach relates to the adaptive attention span introducedin Sukhbaatar et al. (2019) for Language Transformers. Theinitial values of r\u03b4 and vhpos are given by Eq. 5, where wetake Dpos = 3 to get rid of the useless zero components.Thanks to Dpos \u226aDh, the number of parameters involvedin the positional attention is negligible compared to the num-ber of parameters involved in the content attention. Thismakes sense, as content interactions are inherently muchsimpler to model than positional interactions.equipped with residual connections.",
+      "token_count": 234
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0018",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "Thismakes sense, as content interactions are inherently muchsimpler to model than positional interactions.equipped with residual connections. The ConViT is simplya ViT where the \ufb01rst 10 blocks replace the SA layers byGPSA layers with a convolutional initialization.Similar to language Transformers like BERT (Devlin et al.,2018), the ViT uses an extra \u201cclass token\u201d, appended to thesequence of patches to predict the class of the input. Sincethis class token does not carry any positional information,the SA layers of the ViT do not use positional attention:the positional information is instead injected to each patchbefore the \ufb01rst layer, by adding a learnable positional em-bedding of dimension Demb. As GPSA layers involve posi-tional attention, they are not well suited for the class tokenapproach. We solve this problem by appending the classtoken to the patches after the last GPSA layer, similarly towhat is done in (Touvron et al., 2021b) (see Fig. 4)1.Positional gatingThe second issue with standard PSA isthe fact that the content and positional terms in Eq. 4 are po-tentially of different magnitudes, in which case the softmaxwill ignore the smallest of the two. In particular, the con-volutional initialization scheme discussed above involveshighly concentrated attention scores, i.e. high-magnitudevalues in the softmax.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0019",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "In particular, the con-volutional initialization scheme discussed above involveshighly concentrated attention scores, i.e. high-magnitudevalues in the softmax. In practice, we observed that using aconvolutional initialization scheme on vanilla PSA layersgives a boost in early epochs, but degrades late-time perfor-mance as the attention mechanism lazily ignores the contentinformation (see SM. A).For fairness, and since they are computationally cheap, wekeep the absolute positional embeddings of the ViT activein the ConViT. However, as shown in SM. F, the ConViTrelies much less on them, since the GPSA layers already userelative positional encodings. Hence, the absolute positionalembeddings could easily be removed, dispensing with theneed to interpolate the embeddings when changing the inputresolution (the relative positional encodings simply need tobe resampled according to Eq. 5, as performed automaticallyin our open-source implementation).To avoid this, GPSA layers sum the content and positionalterms after the softmax, with their relative importances gov-erned by a learnable gating parameter \u03bbh (one for eachattention head). Finally, we normalize the resulting sum ofmatrices (whose terms are positive) to ensure that the result-ing attention scores de\ufb01ne a probability distribution.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0020",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "Finally, we normalize the resulting sum ofmatrices (whose terms are positive) to ensure that the result-ing attention scores de\ufb01ne a probability distribution. Theresulting GPSA layer is therefore parametrized as follows(see also Fig. 4):Training detailsWe based our ConVit on the DeiT (Tou-vron et al., 2020), a hyperparameter-optimized version ofthe ViT which has been open-sourced2. Thanks to its abilityto achieve competitive results without using any externaldata, the DeiT both an excellent baseline and relatively easyto train: the largest model (DeiT-B) only requires a few daysof training on 8 GPUs.GPSAh(X) := normalizeAhXW hval(6)Ahij := (1 \u2212\u03c3(\u03bbh)) softmaxQhi Kh\u22a4jTo mimic 2 \u00d7 2, 3 \u00d7 3 and 4 \u00d7 4 convolutional \ufb01lters, weconsider three different ConViT models with 4, 9 and 16attention heads (see Tab. 1). Their number of heads areslightly larger than the DeiT-Ti, ConViT-S and ConViT-Bof Touvron et al. (2020), which respectively use 3, 6 and 12attention heads.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0021",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "Their number of heads areslightly larger than the DeiT-Ti, ConViT-S and ConViT-Bof Touvron et al. (2020), which respectively use 3, 6 and 12attention heads. To obtain models of similar sizes, we usetwo methods of comparison.+ \u03c3(\u03bbh) softmaxvh\u22a4posrij,(7)where (normalize [A])ij = Aij/ Pk Aik and \u03c3 : x 7\u21921/(1+e\u2212x) is the sigmoid function. By setting the gatingparameter \u03bbh to a large positive value at initialization, onehas \u03c3(\u03bbh) \u22431 : the GPSA bases its attention purely onposition, dispensing with the need of setting Wqry andWkey to zero as in Eq. 5. However, to avoid the ConViTstaying stuck at \u03bbh \u226b1, we initialize \u03bbh = 1 for all layersand all heads.\u2022 To establish a direct comparison with Touvron et al.(2020), we lower the embedding dimension of the Con-ViTs to Demb/Nh = 48 instead of 64 used for theDeiTs.",
+      "token_count": 246
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0022",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "Importantly, we leave all hyperparameters(scheduling, data-augmentation, regularization) pre-sented in (Touvron et al., 2020) unchanged in order toArchitectural detailsThe ViT slices input images of size224 into 16 \u00d7 16 non-overlapping patches of 14 \u00d7 14 pixelsand embeds them into vectors of dimension Demb = 64Nhusing a convolutional stem.",
+      "token_count": 87
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0023",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "It then propagates the patchesthrough 12 blocks which keep their dimensionality constant.Each block consists in a SA layer followed by a 2-layerFeed-Forward Network (FFN) with GeLU activation, both1We also experimented incorporating the class token as anextra patch of the image to which all heads pay attention to atinitialization, but results were worse than concatenating the classtoken after the GPSA layers (not shown).2https://github.com/facebookresearch/deitConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesNameModelNhDembSizeFlopsSpeedTop-1Top-5TiDeiT31926M1G144272.2-ConViT41926M1G73473.191.7Ti+DeiT425610M2G103675.993.2ConViT425610M2G62576.793.6SDeiT638422M4.3G58779.8-ConViT943227M5.4G30581.395.7S+DeiT957648M10G48079.094.4ConViT957648M10G38282.295.9BDeiT1276886M17G18781.8-ConViT1676886M17G14182.495.9B+DeiT161024152M30G11477.593.5ConViT161024152M30G9682.595.9TrainTop-1Top-5sizeDeiTConViTGapDeiTConViTGaptheir number of parameters, number of \ufb02ops and throughput.Each ConViT outperforms its DeiT of same size and samenumber of \ufb02ops by a margin.",
+      "token_count": 365
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0024",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "Importantly, although thepositional self-attention does slow down the throughputof the ConViTs, they also outperform the DeiTs at equalthroughput. For example, The ConViT-S+ reaches a top-1 of 82.2%, outperforming the original DeiT-B with lessparameters and higher throughput. Without any tuning, theConViT also reaches high performance on CIFAR100, seeSM. C where we also report learning curves.5%34.847.837%57.870.722%10%48.059.624%71.580.312%30%66.173.712%86.090.75%50%74.678.25%91.893.82%100%79.981.42%95.095.81%Note that our ConViT is compatible with the distillationmethods introduced in Touvron et al. (2020) at no extra cost.As shown in SM. B, hard distillation improves performance,enabling the hard-distilled ConViT-S+ to reach 82.9% top-1accuracy, on the same footing as the hard-distilled DeiT-B with half the number of parameters. However, whiledistillation requires an additional forward pass through apre-trained CNN at each step of training, ConViT has nosuch requirement, providing similar bene\ufb01ts to distillationwithout additonal computational requirements.achieve a fair comparison.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0025",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "The resulting models arenamed ConViT-Ti, ConViT-S and ConViT-B.\u2022 We also trained DeiTs and ConViTs using the samenumber of heads and Demb/Nh = 64, to ensure thatthe improvement due to ConViT is not simply due tothe larger number of heads (Touvron et al., 2021b).This leads to slightly larger models denoted with a \u201c+\u201din Tab. 1. To maintain stable training while \ufb01tting thesemodels on 8 GPUs, we lowered the learning rate from0.0005 to 0.0004 and the batch size from 1024 to 512.These minimal hyperparameter changes lead the DeiT-B+ to perform less well than the DeiT-S+, which is notthe case for the ConViT, suggesting a higher stabilityto hyperparameter changes.Sample ef\ufb01ciency of the ConViTIn Tab. 2, we investi-gate the sample-ef\ufb01ciency of the ConViT in a systematicway, by subsampling each class of the ImageNet-1k datasetby a fraction f = {0.05, 0.1, 0.3, 0.5, 1} while multiply-ing the number of epochs by 1/f so that the total numberimages presented to the model remains constant.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0026",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "As onemight expect, the top-1 accuracy of both the DeiT-S and itsConViT-S counterpart drops as f decreases. However, theConViT suffers much less: while training on only 10% ofthe data, the ConVit reaches 59.5% top-1 accuracy, com-pared to 46.5% for its DeiT counterpart.Performance of the ConViTIn Tab. 1, we display thetop-1 accuracy achieved by these models evaluated on theImageNet test set after 300 epochs of training, alongsideThis result can be directly compared to (Zhai et al., 2019),which after testing several thousand convolutional modelsConViT: Improving Vision Transformers with Soft Convolutional Inductive Biasesreaches a top-1 accuracy of 56.4%; the ConViT is thereforehighly competitive in terms of sample ef\ufb01ciency. These \ufb01nd-ings con\ufb01rm our hypothesis that the convolutional inductivebias is most helpful on small datasets, as depicted in Fig. 1.DeiTConViTLayer 1Layer 2Layer 3Layer 4Layer 5Layer 6Layer 7Layer 8Layer 9Layer 10Layer 11Layer 12Non-locality4.",
+      "token_count": 271
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0027",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "Investigating the role of localityIn this section, we demonstrate that locality is naturallyencouraged in standard SA layers, and examine how theConViT bene\ufb01ts from locality being imposed at initializa-tion.0100200300Epochs0100200300EpochsSA layers are pulled towards localityWe begin by in-vestigating whether the hypothesis that PSA layers are nat-urally encouraged to become \u201clocal\u201d over the course oftraining (Cordonnier et al., 2019) holds for the vanilla SAlayers used in ViTs, which do not bene\ufb01t from positionalattention. To quantify this, we de\ufb01ne a measure of \u201cnonlo-cality\u201d by summing, for each query patch i, the distances\u2225\u03b4ij\u2225to all the key patches j weighted by their attentionscore Aij.",
+      "token_count": 178
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0028",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "We average the number obtained over the querypatch to obtain the nonlocality metric of head h, whichcan then be averaged over the attention heads to obtain thenonlocality of the whole layer \u2113:Layer 1Layer 2Layer 3Layer 4Layer 5Positional attn1.01.01.00.50.50.50.50.502500.002500.002500.002500.002500.0Layer 6Layer 7Layer 8Layer 9Layer 10Positional attn1.00.50.50.50.50.50.00.00.00.00.00250Epochs0250Epochs0250Epochs0250Epochs0250EpochsD\u2113,hloc := 1ijAh,\u2113ij \u2225\u03b4ij\u2225,D\u2113loc :=1NhhD\u2113,hloc(8)Intuitively, Dloc is the number of patches between the centerof attention and the query patch: the further the attentionheads look from the query patch, the higher the nonlocality.In Fig. 5 (left panel), we show how the nonlocality metricevolves during training across the 12 layers of a DeiT-Strained for 300 epochs on ImageNet.",
+      "token_count": 269
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0029",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "During the \ufb01rst fewepochs, the nonlocality falls from its initial value in alllayers, con\ufb01rming that the DeiT becomes more \u201cconvolu-tional\u201d. During the later stages of training, the nonlocalitymetric stays low for lower layers, and gradually climbs backup for upper layers, revealing that the latter capture longrange dependencies, as observed for language Transform-ers (Sukhbaatar et al., 2019).GPSA layers escape localityIn the ConViT, strong lo-cality is imposed at the beginning of training in the GPSAlayers thanks to the convolutional initialization. In Fig. 5(right panel), we see that this local con\ufb01guration is escapedthroughout training, as the nonlocality metric grows in allthe GPSA layers. However, the nonlocality at the end oftraining is lower than that reached by the DeiT, showingthat some information about the initialization is preservedthroughout training. Interestingly, the \ufb01nal nonlocality doesnot increase monotonically throughout the layers as for theDeiT. The \ufb01rst layer and the \ufb01nal layers strongly escapelocality, whereas the intermediate layers (particularly thesecond layer) stay more local.These observations are particularly clear when examiningthe attention maps (Fig. 15 of the SM), and point to thebene\ufb01cial effect of locality in lower layers.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0030",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "In Fig. 10 ofthe SM., we also show that the nonlocality metric is lowerwhen training with distillation from a convolutional networkas in Touvron et al. (2020), suggesting that the locality ofthe teacher is partly transferred to the student (Abnar et al.,2020).To gain more understanding, we examine the dynamics ofthe gating parameters in Fig. 6. We see that in all layers,the average gating parameter Eh\u03c3(\u03bbh) (in black), whichre\ufb02ects the average amount of attention paid to positionalinformation versus content, decreases throughout training.ConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesThis quantity reaches 0 in layers 6-10, meaning that posi-tional information is practically ignored. However, in layers1-5, some of the attention heads keep a high value of \u03c3(\u03bbh),hence take advantage of positional information. Interest-ingly, the ConViT-Ti only uses positional information upto layer 4, whereas the ConViT-B uses it up to layer 6 (seeApp.",
+      "token_count": 230
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0031",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "Interest-ingly, the ConViT-Ti only uses positional information upto layer 4, whereas the ConViT-B uses it up to layer 6 (seeApp. D), suggesting that larger models - which are moreunder-speci\ufb01ed - bene\ufb01t more from the convolutional prior.These observations highlight the usefulness of the gatingparameter in terms of interpretability.Head 1Head 2Head 3Layer 2Layer 10(a) Input(b) DeiTThe inner workings of the ConViT are further revealed bythe attention maps of Fig. 7, which are obtained by prop-agating an embedded input image through the layers andselecting a query patch at the center of the image3. In layer10, (bottom row), the attention maps of DeiT and ConViTlook qualitatively similar: they both perform content-basedattention. In layer 2 however (top row), the attention mapsof the ConViT are more varied: some heads pay attentionto content (heads 1 and 2) whereas other focus mainly onposition (heads 3 and 4). Among the heads which focus onposition, some stay highly localized (head 4) whereas othersbroaden their attention span (head 3). The interested readercan \ufb01nd more attention maps in SM.",
+      "token_count": 273
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0032",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "Among the heads which focus onposition, some stay highly localized (head 4) whereas othersbroaden their attention span (head 3). The interested readercan \ufb01nd more attention maps in SM. E.Head 1Head 2Head 3Head 4( ) = 0.00( ) = 0.09( ) = 0.51( ) = 0.73Layer 2( ) = 0.00( ) = 0.00( ) = 0.00( ) = 0.00Layer 10(c) ConViTRef.TraingatingConvinitTrainGPSAUseGPSAFulldata10%dataa (ConViT)82.259.7b82.057.4c81.456.9d81.654.6e (DeiT)79.147.8f78.654.3g73.744.8In Fig. 8(b), we show how performance at various stages oftraining is impacted by the presence of GPSA layers. Wesee that the boost due to GPSA is particularly strong duringthe early stages of training: after 20 epochs, using 9 GPSAlayers leads the test-accuracy to almost double, suggestingthat the convolution initialization gives the model a substan-tial \u201chead start\u201d.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0033",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "This speedup is of practical interest initself, on top of the boost in \ufb01nal performance.Strong locality is desirableWe next investigate how theperformance of the ConViT is affected by two important hy-perparameters of the ConViT: the locality strength, \u03b1, whichdetermines how focused the heads are around their center ofattention, and the number of SA layers replaced by GPSAlayers. We examined the effects of these hyperparameterson ConViT-S, trained on the \ufb01rst 100 classes of ImageNet.As shown in Fig. 8(a), \ufb01nal test accuracy increases both withthe locality strength and with the number of GPSA layers;in other words, the more convolutional, the better.Ablation studyIn Tab. 3, we present an ablation on theConViT, denoted as [a]. We experiment removing the posi-tional gating [b]4, the convolutional initialization [c], bothgating and the convolutional initialization [d], and the GPSAaltogether ([e], which leaves us with a plain DeiT).Surprisingly, on full ImageNet, GPSA without gating [d]already brings a substantial bene\ufb01t over the DeiT (+2.5),which is mildly increased by the convolutional initializa-tion ([b], +2.9).",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0034",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "As for gating, it helps a little in presence3We do not show the attention paid to the class token in the SAlayers4To remove gating, we freeze all gating parameters to \u03bb = 0 sothat the same amount of attention is paid to content and position.ConViT: Improving Vision Transformers with Soft Convolutional Inductive Biasesneed for greedy architectural search while offering higherinterpretability.Number of GPSA layers20 epochs75 epochs130 epochs185 epochs240 epochs295 epochsTop-1 accuracyAnother direction which will be explored in future workis the following: if SA layers bene\ufb01t from being initial-ized as random convolutions, could one reduce even moredrastically their sample complexity by initializing them aspre-trained convolutions?0.010.11Locality strength0369Number of GPSA layersAcknowledgementsWe thank Herv\u00b4e J\u00b4egou and Fran-cisco Massa for helpful discussions. SD and GB acknowl-edge funding from the French government under manage-ment of Agence Nationale de la Recherche as part of the \u201cIn-vestissements d\u2019avenir\u201d program, reference ANR-19-P3IA-0001 (PRAIRIE 3IA Institute).of the convolutional initialization ([a], +3.1), and is un-helpful otherwise.",
+      "token_count": 271
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0035",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "These mild improvements due to gatingand convolutional initialization (likely due to performancesaturation above 80% top-1) become much clearer in thelow data regime. Here, GPSA alone brings +6.8, with anextra +2.3 coming from gating, +2.8 from convolution ini-tialization and +5.1 with the two together, illustrating theircomplementarity.ReferencesAbnar, S., Dehghani, M., and Zuidema, W. Transferringinductive biases through knowledge distillation. arXivpreprint arXiv:2006.00555, 2020.Anandkumar, A., Deng, Y., Ge, R., and Mobahi, H.Homotopy analysis for tensor pca.arXiv preprintarXiv:1610.09322, 2016.We also investigated the performance of the ConViT withall GPSA layers frozen, leaving only the FFNs to be trainedin the \ufb01rst 10 layers. As one could expect, performanceis strongly degraded in the full data regime if we initial-ize the GPSA layers randomly ([f], -5.4 compared to theDeiT). However, the convolutional initialization remarkablyenables the frozen ConViT to reach a very decent perfor-mance, almost equalling that of the DeiT ([e], -0.5).",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0036",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "However, the convolutional initialization remarkablyenables the frozen ConViT to reach a very decent perfor-mance, almost equalling that of the DeiT ([e], -0.5). Inother words, replacing SA layers by random \u201cconvolutions\u201dhardly impacts performance. In the low data regime, thefrozen ConViT even outperforms the DeiT by a margin(+6.5). This naturally begs the question: is attention reallykey to the success of ViTs (Dong et al., 2021; Tolstikhinet al., 2021; Touvron et al., 2021a)?Bahdanau, D., Cho, K., and Bengio, Y. Neural machinetranslation by jointly learning to align and translate. arXivpreprint arXiv:1409.0473, 2014.Bello, I., Zoph, B., Vaswani, A., Shlens, J., and Le, Q. V.Attention augmented convolutional networks. In Proceed-ings of the IEEE International Conference on ComputerVision, pp. 3286\u20133295, 2019.Carion, N., Massa, F., Synnaeve, G., Usunier, N., Kirillov,A., and Zagoruyko, S.",
+      "token_count": 273
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0037",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "End-to-end object detection withtransformers. arXiv preprint arXiv:2005.12872, 2020.Chen, Y., Kalantidis, Y., Li, J., Yan, S., and Feng, J.A2-nets: Double attention networks.arXiv preprintarXiv:1810.11579, 2018.5. Conclusion and perspectivesThe present work investigates the importance of initializa-tion and inductive biases in learning with vision transform-ers. By showing that one can take advantage of convolu-tional constraints in a soft way, we merge the bene\ufb01ts ofarchitectural priors and expressive power. The result is a sim-ple recipe that improves trainability and sample ef\ufb01ciency,without increasing model size or requiring any tuning.Chen, Y.-C., Li, L., Yu, L., El Kholy, A., Ahmed, F., Gan, Z.,Cheng, Y., and Liu, J. Uniter: Universal image-text repre-sentation learning. In European Conference on ComputerVision, pp. 104\u2013120. Springer, 2020.Cordonnier, J.-B., Loukas, A., and Jaggi, M.",
+      "token_count": 258
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0038",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "In European Conference on ComputerVision, pp. 104\u2013120. Springer, 2020.Cordonnier, J.-B., Loukas, A., and Jaggi, M. On the rela-tionship between self-attention and convolutional layers.arXiv preprint arXiv:1911.03584, 2019.Our approach can be summarized as follows: instead ofinterleaving convolutional layers with SA layers as donein hybrid models, let the layers decide whether to be con-volutional or not by adjusting a set of gating parameters.More generally, combining the biases of varied architec-tures and letting the model choose which ones are best for agiven task could become a promising direction, reducing thed\u2019Ascoli, S., Sagun, L., Biroli, G., and Bruna, J. Finding theneedle in the haystack with convolutions: on the bene\ufb01tsof architectural bias. In Advances in Neural InformationProcessing Systems, pp. 9334\u20139345, 2019.ConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesDevlin, J., Chang, M.-W., Lee, K., and Toutanova, K.",
+      "token_count": 254
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0039",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Bert:Pre-training of deep bidirectional transformers for lan-guage understanding. arXiv preprint arXiv:1810.04805,2018.Hu, J., Shen, L., and Sun, G. Squeeze-and-Excitation Net-works. In 2018 IEEE/CVF Conference on Computer Vi-sion and Pattern Recognition, pp. 7132\u20137141, June 2018c.doi: 10.1109/CVPR.2018.00745. ISSN: 2575-7075.Dong, Y., Cordonnier, J.-B., and Loukas, A. Attention isnot all you need: Pure attention loses rank doubly expo-nentially with depth. arXiv preprint arXiv:2103.03404,2021.Krizhevsky, A., Sutskever, I., and Hinton, G. E. Imagenetclassi\ufb01cation with deep convolutional neural networks.Communications of the ACM, 60(6):84\u201390, 2017.LeCun, Y., Boser, B., Denker, J. S., Henderson, D., Howard,R. E., Hubbard, W., and Jackel, L. D. Backpropaga-tion applied to handwritten zip code recognition.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0040",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "S., Henderson, D., Howard,R. E., Hubbard, W., and Jackel, L. D. Backpropaga-tion applied to handwritten zip code recognition. Neuralcomputation, 1(4):541\u2013551, 1989.Dosovitskiy, A., Beyer, L., Kolesnikov, A., Weissenborn,D., Zhai, X., Unterthiner, T., Dehghani, M., Minderer, M.,Heigold, G., Gelly, S., et al. An image is worth 16x16words: Transformers for image recognition at scale. arXivpreprint arXiv:2010.11929, 2020.LeCun, Y., Bottou, L., Bengio, Y., and Haffner, P. Gradient-based learning applied to document recognition. Proceed-ings of the IEEE, 86(11):2278\u20132324, 1998.Elsayed, G., Ramachandran, P., Shlens, J., and Kornblith, S.Revisiting spatial invariance with low-rank local connec-tivity. In International Conference on Machine Learning,pp. 2868\u20132879.",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0041",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "In International Conference on Machine Learning,pp. 2868\u20132879. PMLR, 2020.Locatello, F., Weissenborn, D., Unterthiner, T., Mahendran,A., Heigold, G., Uszkoreit, J., Dosovitskiy, A., and Kipf,T. Object-centric learning with slot attention. arXivpreprint arXiv:2006.15055, 2020.Gers, F. A., Schmidhuber, J., and Cummins, F. Learning toforget: Continual prediction with lstm. 1999.Mitchell, T. M. The need for biases in learning generaliza-tions. Department of Computer Science, Laboratory forComputer Science Research ..., 1980.Goodfellow, I., Bengio, Y., and Courville, A. Deep Learning.MIT Press, 2016.Greff, K., Srivastava, R. K., Koutn\u00b4\u0131k, J., Steunebrink, B. R.,and Schmidhuber, J. LSTM: A Search Space Odyssey.IEEE Transactions on Neural Networks and Learning Sys-tems, 28(10):2222\u20132232, October 2017. ISSN 2162-2388.doi: 10.1109/TNNLS.2016.2582924.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0042",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "ISSN 2162-2388.doi: 10.1109/TNNLS.2016.2582924. Conference Name:IEEE Transactions on Neural Networks and LearningSystems.Neyshabur, B. Towards learning convolutions from scratch.Advances in Neural Information Processing Systems, 33,2020.Radosavovic, I., Kosaraju, R. P., Girshick, R., He, K., andDoll\u00b4ar, P. Designing network design spaces. In Proceed-ings of the IEEE/CVF Conference on Computer Visionand Pattern Recognition, pp. 10428\u201310436, 2020.He, K., Zhang, X., Ren, S., and Sun, J. Deep residual learn-ing for image recognition. In Proceedings of the IEEEconference on computer vision and pattern recognition,pp. 770\u2013778, 2016.Ramachandran, P., Parmar, N., Vaswani, A., Bello, I., Lev-skaya, A., and Shlens, J. Stand-alone self-attention invision models. arXiv preprint arXiv:1906.05909, 2019.Ruderman, D. L. and Bialek, W. Statistics of natural images:Scaling in the woods.",
+      "token_count": 271
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0043",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "L. and Bialek, W. Statistics of natural images:Scaling in the woods. Physical review letters, 73(6):814,1994.Hinton, G., Vinyals, O., and Dean, J.Distillingthe knowledge in a neural network.arXiv preprintarXiv:1503.02531, 2015.Scherer, D., M\u00a8uller, A., and Behnke, S.Evaluation ofPooling Operations in Convolutional Architectures forObject Recognition. In Diamantaras, K., Duch, W., andIliadis, L. S. (eds.), Arti\ufb01cial Neural Networks \u2013 ICANN2010, Lecture Notes in Computer Science, pp. 92\u2013101,Berlin, Heidelberg, 2010. Springer. ISBN 978-3-642-15825-4. doi: 10.1007/978-3-642-15825-4 10.Hu, H., Gu, J., Zhang, Z., Dai, J., and Wei, Y. Relationnetworks for object detection.",
+      "token_count": 233
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0044",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "Relationnetworks for object detection. In Proceedings of the IEEEConference on Computer Vision and Pattern Recognition,pp. 3588\u20133597, 2018a.Hu, J., Shen, L., Albanie, S., Sun, G., and Vedaldi, A.Gather-Excite: Exploiting Feature Context in Convo-lutional Neural Networks. In Bengio, S., Wallach, H.,Larochelle, H., Grauman, K., Cesa-Bianchi, N., and Gar-nett, R. (eds.), Advances in Neural Information Process-ing Systems 31, pp. 9401\u20139411. Curran Associates, Inc.,2018b.Schmidhuber, J.Deep learning in neural networks:An overview.Neural Networks, 61:85\u2013117, January2015. ISSN 0893-6080. doi: 10.1016/j.neunet.2014.09.003.URL http://www.sciencedirect.com/science/article/pii/S0893608014002135.ConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesSimoncelli, E. P. and Olshausen, B. A. Natural image statis-tics and neural representation. Annual review of neuro-science, 24(1):1193\u20131216, 2001.00813.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0045",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "P. and Olshausen, B. A. Natural image statis-tics and neural representation. Annual review of neuro-science, 24(1):1193\u20131216, 2001.00813. URL https://ieeexplore.ieee.org/document/8578911/.Wu, B., Xu, C., Dai, X., Wan, A., Zhang, P., Tomizuka, M.,Keutzer, K., and Vajda, P. Visual Transformers: Token-based Image Representation and Processing for ComputerVision. arXiv:2006.03677 [cs, eess], July 2020. URLhttp://arxiv.org/abs/2006.03677.arXiv:2006.03677.Srinivas, A., Lin, T.-Y., Parmar, N., Shlens, J., Abbeel, P.,and Vaswani, A. Bottleneck Transformers for VisualRecognition. arXiv e-prints, art. arXiv:2101.11605, Jan-uary 2021.Sukhbaatar, S., Grave, E., Bojanowski, P., and Joulin, A.Adaptive attention span in transformers. arXiv preprintarXiv:1905.07799, 2019.Yuan, L., Chen, Y., Wang, T., Yu, W., Shi, Y., Tay, F.",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0046",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "E.,Feng, J., and Yan, S. Tokens-to-token vit: Training visiontransformers from scratch on imagenet. arXiv preprintarXiv:2101.11986, 2021.Sun, C., Myers, A., Vondrick, C., Murphy, K., and Schmid,C. Videobert: A joint model for video and languagerepresentation learning. In Proceedings of the IEEE Inter-national Conference on Computer Vision, pp. 7464\u20137473,2019.Zhai, X., Oliver, A., Kolesnikov, A., and Beyer, L. S4l: Self-supervised semi-supervised learning. In Proceedings ofthe IEEE/CVF International Conference on ComputerVision, pp. 1476\u20131485, 2019.Sundermeyer, M., Schl\u00a8uter, R., and Ney, H. LSTM neuralnetworks for language modeling. In Thirteenth annualconference of the international speech communicationassociation, 2012.Zhao, S., Zhou, L., Wang, W., Cai, D., Lam, T. L., andXu, Y. Splitnet: Divide and co-training. arXiv preprintarXiv:2011.14660, 2020.Tan, M. and Le, Q. Ef\ufb01cientnet: Rethinking model scalingfor convolutional neural networks.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0047",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "Ef\ufb01cientnet: Rethinking model scalingfor convolutional neural networks. In International Con-ference on Machine Learning, pp. 6105\u20136114. PMLR,2019.Tolstikhin, I., Houlsby, N., Kolesnikov, A., Beyer, L., Zhai,X., Unterthiner, T., Yung, J., Keysers, D., Uszkoreit, J.,Lucic, M., et al. Mlp-mixer: An all-mlp architecture forvision. arXiv preprint arXiv:2105.01601, 2021.Touvron, H., Cord, M., Douze, M., Massa, F., Sablayrolles,A., and J\u00b4egou, H. Training data-ef\ufb01cient image trans-formers & distillation through attention. arXiv preprintarXiv:2012.12877, 2020.Touvron, H., Bojanowski, P., Caron, M., Cord, M., El-Nouby, A., Grave, E., Joulin, A., Synnaeve, G., Verbeek,J., and J\u00b4egou, H.",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0048",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "Resmlp: Feedforward networks forimage classi\ufb01cation with data-ef\ufb01cient training. arXivpreprint arXiv:2105.03404, 2021a.Touvron, H., Cord, M., Sablayrolles, A., Synnaeve, G., andJ\u00b4egou, H. Going deeper with image transformers, 2021b.Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones,L., Gomez, A. N., Kaiser, \u0141., and Polosukhin, I. Atten-tion is all you need. In Advances in neural informationprocessing systems, pp. 5998\u20136008, 2017.Wang, X., Girshick, R., Gupta, A., and He, K.Non-local Neural Networks.In 2018 IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition, pp.7794\u20137803, Salt Lake City, UT, USA, June 2018. IEEE.ISBN 978-1-5386-6420-9. doi: 10.1109/CVPR.2018.ConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesA.",
+      "token_count": 269
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0049",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "IEEE.ISBN 978-1-5386-6420-9. doi: 10.1109/CVPR.2018.ConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesA. The importance of positional gatingIn the main text, we discussed the importance of using GPSA layers instead of the standard PSA layers, where contentand positional information are summed before the softmax and lead the attention heads to focus only on the positionalinformation. We give evidence for this claim in Fig. 9, where we train a ConViT-B for 300 epochs on ImageNet, butreplace the GPSA by standard PSA. The convolutional initialization of the PSA still gives the ConViT a large advantageover the DeiT baseline early in training. However, the ConViT stays in the convolutional con\ufb01guration and ignores thecontent information, as can be seen by looking at the attention maps (not shown). Later in training, the DeiT catches up andsurpasses the performance of the ConViT by utilizing content information.Top-1 accuracyConViT - vanilla PSADeiT050100150200250300EpochsB.",
+      "token_count": 241
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0050",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "Later in training, the DeiT catches up andsurpasses the performance of the ConViT by utilizing content information.Top-1 accuracyConViT - vanilla PSADeiT050100150200250300EpochsB. The effect of distillationNonlocalityIn Fig. 10, we compare the nonlocality curves of Fig. 5 of the main text with those obtained when the DeiT istrained via hard distillation from a RegNetY-16GF (84M parameters) (Radosavovic et al., 2020), as in Touvron et al. (2020).In the distillation setup, the nonlocality still drops in the early epochs of training, but increases less at late times compared towithout distillation. Hence, the \ufb01nal internal states of the DeiT are more \u201clocal\u201d due to the distillation. This suggests thatknowledge distillation transfers the locality of the convolutional teacher to the student, in line with the results of (Abnaret al., 2020).PerformanceThe hard distillation introduced in Touvron et al. (2020) greatly improves the performance of the DeiT. Wehave veri\ufb01ed the complementarity of their distillation methods with our ConViT. In the same way as in the DeiT paper, weused a RegNet-16GF teacher and experimented hard distillation during 300 epochs on ImageNet.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0051",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 51,
+      "section": "preamble",
+      "text": "In the same way as in the DeiT paper, weused a RegNet-16GF teacher and experimented hard distillation during 300 epochs on ImageNet. The results we obtain aresummarized in Tab. 4.MethodDeiT-S (22M)DeiT-B (86M)ConViT-S+ (48M)No distillation79.881.882.2Hard distillation80.983.082.9Just like the DeiT, the ConViT bene\ufb01ts from distillation, albeit somewhat less than the DeiT, as can be seen from the DeiT-Bperforming less well than the ConViT-S+ without distillation but better with distillation.",
+      "token_count": 146
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0052",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 52,
+      "section": "preamble",
+      "text": "This hints to the fact that theconvolutional inductive bias transferred from the teacher is redundant with its own convolutional prior.Nevertheless, the performance improvement obtained by the ConViT with hard distillation demonstrates that instantiatingsoft inductive biases directly in a model can yield bene\ufb01ts on top of those obtained by instantiating such biases indirectly, inConViT: Improving Vision Transformers with Soft Convolutional Inductive Biases7.507.50Layer 1Layer 2Layer 3Layer 4Layer 5Layer 6Layer 7Layer 8Layer 9Layer 10Layer 11Layer 127.257.257.007.00Non-locality6.756.756.506.506.256.256.006.005.755.750100200300Epochs0100200300Epochsthis case via distillation.C. Further performance resultsIn Fig. 11, we display the time evolution of the top-1 accuracy of our ConViT+ models on CIFAR100, ImageNet andsubsampled ImageNet, along with a comparison with the corresponding DeiT+ models.For CIFAR100, we kept all hyperparameters unchanged, but rescaled the images to 224 \u00d7 224 and increased the numberof epochs (adapting the learning rate schedule correspondingly) to mimic the ImageNet scenario.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0053",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 53,
+      "section": "preamble",
+      "text": "After 1000 epochs, theConViTs shows clear signs of over\ufb01tting, but reach impressive performances (82.1% top-1 accuracy with 10M parameters,which is better than the Ef\ufb01cientNets reported in (Zhao et al., 2020)).Relative improvement (%)Relative improvement (%)Top-1 accuracyTop-1 accuracyRelative improvement (%)Top-1 accuracybase+small+tiny+BaselineConViTbase+small+tiny+BaselineConViTf = 5%f = 10%f = 30%f = 50%f = 100%DeiT-SConViT-S0100020003000Epochsbase+small+tiny+0100200300Epochsbase+small+tiny+ModelModel0100200300Epochs * f0.050.1 0.3 0.51Subsampling f(a) CIFAR100(b) ImageNet-1k(c) Subsampled ImageNetIn Fig. 12, we study the impact of the various ingredients of the ConViT (presence and number of GPSA layers, gatingparameters, convolutional initialization) on the dynamics of learning.ConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesFrom best to worstTop-1 accuracyTop-1 accuracyGPSA+conv 82.2PSA+conv 82.0PSA 81.6GPSA 81.4Baseline 79.1Frozen conv 78.6Frozen 73.70 GPSA layers3 GPSA layers6 GPSA layers9 GPSA layers0100200300Epochs100200300EpochsD.",
+      "token_count": 342
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0054",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 54,
+      "section": "preamble",
+      "text": "Effect of model sizeIn Fig. 13, we show the analog of Fig. 5 of the main text for the tiny and base models. Results are qualitatively similarto those observed for the small model. Interestingly, the \ufb01rst layers of DeiT-B and ConViT-B reach signi\ufb01cantly highernonlocality than those of the DeiT-Ti and ConViT-Ti.In Fig. 14, we show the analog of Fig. 6 of the main text for the tiny and base models. Again, results are qualitativelysimilar: the average weight of the positional attention, Eh\u03c3(\u03bbh), decreases over time, so that more attention goes to thecontent of the image. Note that in the ConViT-Ti, only the \ufb01rst 4 layers still pay attention to position at the end of training(average gating parameter smaller than one), whereas for ConViT-S, the 5 \ufb01rst layers still do, and for the ConViT-B, the 6\ufb01rst layers still do.",
+      "token_count": 222
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0055",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 55,
+      "section": "preamble",
+      "text": "This suggests that the larger (i.e. the more underspeci\ufb01ed) the model is, the more layers make use of theconvolutional prior.ConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesDeiTConViTLayer 1Layer 2Layer 3Layer 4Layer 5Layer 6Layer 7Layer 8Layer 9Layer 10Layer 11Layer 12Non-locality0100200300Epochs0100200300Epochs(a) DeiT-Ti and ConViT-TiDeiTConViTLayer 1Layer 2Layer 3Layer 4Layer 5Layer 6Layer 7Layer 8Layer 9Layer 10Layer 11Layer 12Non-locality0100200300Epochs0100200300Epochs(b) DeiT-B and ConViT-BConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesLayer 1Layer 2Layer 3Layer 4Layer 5Positional attn1.00.50.50.50.50.502500.002500.002500.002500.002500.01.0Layer 6Layer 7Layer 8Layer 9Layer 10Positional attn0.50.50.50.50.50.00.00.00.00.00250Epochs0250Epochs0250Epochs0250Epochs0250Epochs(a) ConViT-TiLayer 1Layer 2Layer 3Layer 4Layer 5Positional attn1.01.01.01.01.00.50.50.50.50.502500.002500.002500.002500.002500.0Positional attn1.0Layer 61.0Layer 71.0Layer 81.0Layer 91.0Layer 100.50.50.50.50.50.00.00.00.00.00250Epochs0250Epochs0250Epochs0250Epochs0250Epochs(b) ConViT-BConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesE.",
+      "token_count": 461
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0056",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 56,
+      "section": "preamble",
+      "text": "Attention mapsAttention maps of the DeiT reveal localityIn Fig. 15, we give some visual evidence for the fact that vanilla SA layersextract local information by averaging the attention map of the \ufb01rst and tenth layer of the DeiT over 100 images. Beforetraining, the maps look essentially random. After training, however, most of the attention heads of the \ufb01rst layer focus on thequery pixel and its immediate surroundings, whereas the attention heads of the tenth layer capture long-range dependencies.Head 1Head 2Head 3Head 1Head 2Head 3Layer 1Layer 1Layer 10Layer 10(a) Before training(b) After trainingAttention maps of the ConViT reveal the diversity of the attention headsIn Fig. 16, we show a comparison of theattention maps of Deit-Ti and ConViT-Ti for different images of the ImageNet validation set. In Fig. 17, we compare theattention maps of DeiT-S and ConViT-S.In all cases, results are qualitatively similar: the DeiT attention maps look similar across different heads and different layers,whereas those of the ConViT perform very different operations. Notice that in the second layer, the third and forth headfocus stay local whereas the \ufb01rst two heads focus on content.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0057",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 57,
+      "section": "preamble",
+      "text": "Notice that in the second layer, the third and forth headfocus stay local whereas the \ufb01rst two heads focus on content. In the last layer, all the heads ignore positional information,focusing only on content.ConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesHead 1Head 2Head 3( ) = 0.00Head 1( ) = 0.09Head 2( ) = 0.51Head 3( ) = 0.73Head 4Layer 2Layer 2( ) = 0.00( ) = 0.00( ) = 0.00( ) = 0.00Layer 10Layer 10Head 1Head 2Head 3( ) = 0.00Head 1( ) = 0.09Head 2( ) = 0.51Head 3( ) = 0.73Head 4Layer 2Layer 2( ) = 0.00( ) = 0.00( ) = 0.00( ) = 0.00Layer 10Layer 10Head 1Head 2Head 3Head 1Head 2Head 3Head 4( ) = 0.00( ) = 0.09( ) = 0.51( ) = 0.73Layer 2Layer 2( ) = 0.00( ) = 0.00( ) = 0.00( ) = 0.00Layer 10Layer 10(a) Input images(b) DeiT(c) ConViTConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesHead 1Head 2Head 3Head 4Head 5Head 6Layer 1Layer 4Layer 7Layer 10(a) Input image(b) DeiTHead 1Head 2Head 3Head 4Head 5Head 6Head 7Head 8Head 9( ) = 0.01( ) = 0.52( ) = 0.01( ) = 0.00( ) = 0.04( ) = 0.92( ) = 0.07( ) = 0.01( ) = 0.07Layer 1( ) = 0.00( ) = 0.82( ) = 0.03( ) = 0.82( ) = 0.14( ) = 0.84( ) = 0.75( ) = 0.00( ) = 0.34Layer 4( ) = 0.15( ) = 0.00( ) = 0.59( ) = 0.00( ) = 0.04( ) = 0.02( ) = 0.04( ) = 0.00( ) = 0.00Layer 7( ) = 0.00( ) = 0.00( ) = 0.00( ) = 0.00( ) = 0.00( ) = 0.00( ) = 0.00( ) = 0.00( ) = 0.00Layer 10(c) ConViTConViT: Improving Vision Transformers with Soft Convolutional Inductive BiasesF.",
+      "token_count": 709
+    },
+    {
+      "chunk_id": "2103.10697_chunk_0058",
+      "arxiv_id": "2103.10697",
+      "chunk_index": 58,
+      "section": "preamble",
+      "text": "Further ablationsIn this section, we explore masking off various parts of the network to understand which are most crucial.In Tab. 5, we explore the importance of the absolute positional embeddings injected to the input in both the DeiT andConViT. We see that masking them off at test time a mild impact on accuracy for the ConViT, but a signi\ufb01cant impact forthe DeiT, which is expected as the ConViT already has relative positional information in each of the GPSA layers. This alsoshows that the absolute positional information contained in the embeddings is not very useful.In Tab. 6, we explore the relative importance of the positional and content information by masking them off at test time. Todo so, we manually set the gating parameter \u03c3(\u03bb) to 1 (no content attention) or 0 (no positional attention). In the \ufb01rst GPSAlayers, both procedures affect performance similarly, signalling that positional and content information are both useful.However in the last GPSA layers, masking the content information kills performance, whereas masking the positionalinformation does not, con\ufb01rming that content information is more crucial.ModelMask pos embedNo maskDeiT-Ti38.372.2ConViT-Ti67.173.1# layers maskedMask contentMask positionNo mask362.363.573.1535.053.173.1101.346.873.1",
+      "token_count": 290
+    }
+  ]
+}

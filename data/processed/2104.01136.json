@@ -1,0 +1,434 @@
+{
+  "arxiv_id": "2104.01136",
+  "title": "LeViT: a Vision Transformer in ConvNet's Clothing for Faster Inference",
+  "authors": [
+    "Ben Graham",
+    "Alaaeldin El-Nouby",
+    "Hugo Touvron",
+    "Pierre Stock",
+    "Armand Joulin",
+    "Herv\u00e9 J\u00e9gou",
+    "Matthijs Douze"
+  ],
+  "year": 2021,
+  "abstract": "We design a family of image classification architectures that optimize the trade-off between accuracy and efficiency in a high-speed regime. Our work exploits recent findings in attention-based architectures, which are competitive on highly parallel processing hardware. We revisit principles from the extensive literature on convolutional neural networks to apply them to transformers, in particular activation maps with decreasing resolutions. We also introduce the attention bias, a new way to integrate positional information in vision transformers. As a result, we propose LeVIT: a hybrid neural network for fast inference image classification. We consider different measures of efficiency on different hardware platforms, so as to best reflect a wide range of application scenarios. Our extensive experiments empirically validate our technical choices and show they are suitable to most architectures. Overall, LeViT significantly outperforms existing convnets and vision transformers with respect to the speed/accuracy tradeoff. For example, at 80% ImageNet top-1 accuracy, LeViT is 5 times faster than EfficientNet on CPU. We release the code at https://github.com/facebookresearch/LeViT",
+  "categories": [
+    "cs.CV"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2104.01136v2",
+  "page_count": 16,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 51,
+  "chunks": [
+    {
+      "chunk_id": "2104.01136_chunk_0000",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "LeViT: a Vision Transformer in ConvNet\u2019s Clothingfor Faster InferenceBenjamin GrahamAlaaeldin El-NoubyHugo TouvronPierre StockArmand JoulinHerv\u00b4e J\u00b4egouMatthijs DouzeAbstract1 CPU thread 1 GPUDeiT-SmallLeViT-384DeiT-SmallLeViT-384We design a family of image classi\ufb01cation architecturesthat optimize the trade-off between accuracy and ef\ufb01-ciency in a high-speed regime.Our work exploits re-cent \ufb01ndings in attention-based architectures, which arecompetitive on highly parallel processing hardware. Werevisit principles from the extensive literature on convo-lutional neural networks to apply them to transformers,in particular activation maps with decreasing resolutions.We also introduce the attention bias, a new way to inte-grate positional information in vision transformers.As a result, we propose LeVIT: a hybrid neural networkfor fast inference image classi\ufb01cation. We consider dif-ferent measures of ef\ufb01ciency on different hardware plat-forms, so as to best re\ufb02ect a wide range of applicationscenarios.Our extensive experiments empirically vali-date our technical choices and show they are suitable tomost architectures. Overall, LeViT signi\ufb01cantly outper-forms existing convnets and vision transformers with re-spect to the speed/accuracy tradeoff.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0001",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "Overall, LeViT signi\ufb01cantly outper-forms existing convnets and vision transformers with re-spect to the speed/accuracy tradeoff. For example, at 80%ImageNet top-1 accuracy, LeViT is 5 times faster thanEf\ufb01cientNet on CPU. We release the code at https://github.com/facebookresearch/LeViT.Imagenet top-1 accuracy (%)LeViT-256LeViT-256LeViT-192LeViT-192LeViT-128LeViT-128EfficientNetDeiTLeViTDeiT-TinyLeViT-128SDeiT-TinyLeViT-128S1251020501002005001k2k5k10k20kimages/sbilinear function. This is in contrast to 1D convolutionalapproaches that are limited to a \ufb01xed-size neighborhood.Recently, the vision transformer (ViT) architecture [2]obtained state-of-the-art results for image classi\ufb01cationin the speed-accuracy tradeoff with pre-training on largescale dataset. The Data-ef\ufb01cient Image Transformer [3]obtains competitive performance when training the ViTmodels only on ImageNet [4].",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0002",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "The Data-ef\ufb01cient Image Transformer [3]obtains competitive performance when training the ViTmodels only on ImageNet [4]. It also introduces smallermodels adapted for high-throughput inference.In this paper, we explore the design space to offer evenbetter trade-offs than ViT/DeiT models in the regime ofsmall and medium-sized architectures. We are especiallyinterested in optimizing the performance\u2013accuracy trade-off, such as the throughput (images/second) performancedepicted in Figure 1 for Imagenet-1k-val [5].1IntroductionTransformer neural networks were initially introduced forNatural Language Processing applications [1]. They nowdominate in most applications of this \ufb01eld. They manipu-late variable-size sequences of token embeddings that arefed to a residual architecture. The model comprises twosorts for residual blocks: Multi-Layer Perceptron (MLP)and an original type of layer: the self-attention, which al-lows all pairs of tokens in the input to be combined via aWhile many works [6, 7, 8, 9, 10] aim at reducing thememory footprint of classi\ufb01ers and feature extractors, in-ference speed is equally important, with high throughputcorresponding to better energy ef\ufb01ciency.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0003",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "In this work,our goal is to develop a Vision Transformer-based fam-ily of models with better inference speed on both highly-parallel architectures like GPU, regular Intel CPUs, andARM hardware commonly found in mobile devices. Oursolution re-introduces convolutional components in placeof transformer components that learn convolutional-likefeatures. In particular, we replace the uniform structureof a Transformer by a pyramid with pooling, similar tothe LeNet [11] architecture. Hence we call it LeViT.There are compelling reasons why transformers arefaster than convolutional architectures for a given compu-tational complexity. Most hardware accelerators (GPUs,TPUs) are optimized to perform large matrix multipli-cations. In transformers, attention and MLP blocks relymainly on these operations. Convolutions, in contrast, re-quire complex data access patterns, so their operation isoften IO-bound. These considerations are important forour exploration of the speed/accuracy tradeoff.Transformers.The transformer architecture was \ufb01rstintroduced by Vaswani et al. [1] for machine transla-tion.Transformer encoders primarily rely on the self-attention operation in conjunction with feed-forward lay-ers, providing a strong and explicit method for learninglong range dependencies. Transformers have been subse-quently adopted for NLP tasks providing state-of-the-artperformance on various benchmarks [20, 21].",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0004",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "Transformers have been subse-quently adopted for NLP tasks providing state-of-the-artperformance on various benchmarks [20, 21]. There havebeen many attempts at adapting the transformer architec-ture to images [22, 23], \ufb01rst by applying them on pixels.Due to the quadratic computational complexity and num-ber of parameters involved by attention mechanisms, mostauthors [23, 24] initially considered images of small sizeslike in CIFAR or Imagenet64 [25]. Mixed text and im-age embeddings already use transformers with detectionbounding boxes as input [26], i.e. the bulk of the imageprocessing is done in the convolutional domain.The vision transformer (ViT) [2].Interestingly, thistransformer architecture is very close to the initial NLPversion, devoid of explicit convolutions (just \ufb01xed-sizeimage patch linearized into a vector), yet it competes withthe state of the art for image classi\ufb01cation. ViT achievesstrong performance when pre-trained on a large labelleddataset such as the JFT300M (non-public, although train-ing on Imagenet-21k also produces competitive results).The need for this pre-training, in addition to strong dataaugmentation, can be attributed to the fact that transform-ers have less built-in structure than convolutions, in partic-ular they do not have an inductive bias to focus on nearbyimage elements.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0005",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "The authors hypothesized that a largeand varied dataset is needed to regularize the training.In DeiT [3], the need for the large pre-training datasetis replaced with a student-teacher setup and strongerdata augmentation and regularization, such as stochas-tic depth [27] or repeated augmentation [28, 29]. Theteacher is a convolutional neural network that \u201chelps\u201d itsstudent network to acquire an inductive bias for convo-lutions. The vision transformer has been thereafter suc-cessfully adopted by a wider range of computer visiontasks including object detection [30], semantic segmen-tation [31] and image retrieval [32].The contributionsof this paper are techniques that al-low ViT models to be shrunk down, both in terms of thewidth and spatial resolution:\u2022 A multi-stage transformer architecture using attentionas a downsampling mechanism;\u2022 A computationally ef\ufb01cient patch descriptor thatshrinks the number of features in the \ufb01rst layers;\u2022 A learnt, per-head translation-invariant attention biasthat replaces ViT\u2019s positional embeddding;\u2022 A redesigned Attention-MLP block that improves thenetwork capacity for a given compute time.2Related workThe convolutional networks descended from LeNet [11]have evolved substantially over time [12, 13, 14, 15, 16,17].",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0006",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "The most recent families of architectures focus on\ufb01nding a good trade-off between ef\ufb01ciency and perfor-mance [18, 17, 19]. For instance, the Ef\ufb01cientNet [17]family was discovered by carefully designing individualcomponents followed by hyper-parameters search under aFLOPs constraint.Positional encoding.Transformers take a set as input,and hence are invariant to the order of the input. How-ever, in language as well as in images, the inputs comefrom a structure where the order is important. The origi-nal Transformer [1] incorporates absolute non-parametricpositional encoding with the input.Other works hasreplaced them with parametric encoding [33] or adoptFourier-based kernelized versions [22]. Absolute positionencoding enforce a \ufb01xed size for the set of inputs, butsome works use relative position encoding [34] that en-code the relative position between tokens. In our work, wereplace these explicit positional encoding by positional bi-ases that implicitly encode the spatial information.head 3head 8Attention along other mechanisms.Several workshave included attention mechanisms in neural networkarchitectures designed for vision [35, 36, 37, 38].",
+      "token_count": 251
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0007",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "Themechanism is used channel-wise to capture cross-featureinformation that complements convolutional layers [39,40, 41], select paths in different branch of a network [42],or combine both [43].For instance, the squeeze-and-excite network of Hu et al. [44] has an attention-like mod-ule to model the channel-wise relationships between thefeatures of a layer. Li et al. [37] use the attention mecha-nism between branches of the network to adapt the recep-tive \ufb01eld of neurons.Recently, the emergence of transformers led to hybridarchitectures that bene\ufb01t from other modules. Bello [45]proposes an approximated content attention with a posi-tional attention component. Child et al. [23] observe thatmany early layers in the network learn locally connectedpatterns, which resemble convolutions. This suggests thathybrid architectures inspired both by transformers andconvnets are a compelling design choice. A few recentworks explore this avenue for different tasks [46, 47].In image classi\ufb01cation, a recent work that comes outin parallel with ours is the Pyramid Vision Transformer(PVT) [48], whose design is heavily inspired by ResNet.It is principally intended to address object and instancesegmentation tasks.Also concurrently with our work, Yuan et al. [49] pro-pose the Tokens-to-Tokens ViT (T2T-ViT) model.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0008",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "Simi-lar to PVT, its design relies on re-tokenization of the out-put after each layer by aggregating the neighboring tokenssuch number of tokens are progressively reduced. Addi-tionally, Yuan et al. [49] investigate the integration of ar-chitecture design choices from CNNs [44, 50, 51] that canimprove the performance and ef\ufb01ciency of vision trans-formers. As we will see, these recent methods are not asmuch focused as our work on the trade-off between accu-racy and inference time. They are not competitive withrespect to that compromise.3MotivationIn this section we discuss the seemingly convolutional be-havior of the transformer patch projection layer. We thencarry out \u201cgrafting experiments\u201d of a transformer (DeiT-S) on a standard convolutional architecture (ResNet-50).The conclusions drawn by this analysis will motivate oursubsequent design choices in Section 4.3.1Convolutions in the ViT architectureViT\u2019s patch extractor is a 16x16 convolution with stride16. Moreover, the output of the patch extractor is mul-tiplied by learnt weights to form the \ufb01rst self-attentionlayer\u2019s q, k and v embeddings, so we may consider theseto also be convolutional functions of the input. This isalso the case for variants like DeiT [3] and PVT [48].",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0009",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "This isalso the case for variants like DeiT [3] and PVT [48]. InFigure 2 we visualize the \ufb01rst layer of DeiT\u2019s attentionweights, broken down by attention head. This is a moredirect representation than the principal components de-picted by Dosovitskiy et al. [2]. One can observe the typi-cal patterns inherent to convolutional architectures: atten-tion heads specialize in speci\ufb01c patterns (low-frequencycolors / high frequency graylelvels), and the patterns areGrafting.The grafting combines a ResNet-50 and aDeiT-Small. The two networks have similar runtimes.top-1 accuracy (%)We crop the upper stages of the ResNet-50 and like-wise reduce the number of DeiT layers (while keepingthe same number of transformer and MLP blocks). Sincea cropped ResNet produces larger activation maps thanthe 14\u00d714 activations consumed by DeiT, we introduce apooling layer between them. In preliminary experimentswe found average pooling to perform best. The positionalembedding and classi\ufb01cation token are introduced at theinterface between the convolutional and transformer layerstack.",
+      "token_count": 243
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0010",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "In preliminary experimentswe found average pooling to perform best. The positionalembedding and classi\ufb01cation token are introduced at theinterface between the convolutional and transformer layerstack. For the ResNet-50 stages, we use ReLU activationunits [52] and batch normalization [53].DeiT-SResNet-501 stage R50 + 9 Transformer layers2 stage R50 + 6 Transformer layers3 stage R50 + 3 Transformer layers050100150200250300EpochsResults.Table 1 summarizes the results. The graftedarchitecture produces better results than both DeiT andResNet-50 alone. The smallest number of parameters andbest accuracy are with two stages of ResNet-50, becausethis excludes the convnet\u2019s large third stage. Note that inthis experiment, the training process is similar to DeiT:300 epochs, we measure the top-1 validation accuracy onImageNet, and the speed as the number of images that oneGPU can process per second.similar to Gabor \ufb01lters.In convolutions where the convolutional masks overlapsigni\ufb01cantly, the spatial smoothness of the masks comesfrom the overlap: nearby pixel receive approximately thesame gradient. For ViT convolutions there is no over-lap.",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0011",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "For ViT convolutions there is no over-lap. The smoothness mask is likely caused by the dataaugmentation: when an image is presented twice, slightlytranslated, the same gradient goes through each \ufb01lter, soit learns this spatial smoothness.Therefore, in spite of the absence of \u201cinductive bias\u201d intransformer architectures, the training does produce \ufb01ltersthat are similar to traditional convolutional layers.One interesting observation that we show Figure 3 isthat the convergence of grafted models during trainingseems to be similar to a convnet during the early epochsand then switch to a convergence rate similar to DeiT-S. Ahypothesis is that the convolutional layers have the abilityto learn representations of the low-level information in theearlier layers more ef\ufb01ciently due to their strong inductivebiases, noticeably their translation invariance. They relyrapidly on meaningful patch embeddings, which can ex-plain the faster convergence during the \ufb01rst epochs.3.2Preliminary experiment: graftingThe authors of the ViT image classi\ufb01er [2] experimentedwith stacking the transformer layers above a traditionalResNet-50. In that case, the ResNet acts as a feature ex-tractor for the transformer layers and the gradients can bepropagated back through the two networks.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0012",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "In that case, the ResNet acts as a feature ex-tractor for the transformer layers and the gradients can bepropagated back through the two networks. However, intheir experiments, the number of transformer layers was\ufb01xed (e.g. 12 layers for ViT-Base).In this subsection, we investigate the potential of mix-ing transformers with convolutional network under a sim-ilar computational budget: We explore trade-offs ob-tained when varying the number of convolutional stagesand transformer layers. Our objective is to evaluate varia-tions of convolutional and transformer hybrids while con-trolling for the runtime.Discussion.It appears that in a runtime controlledregime it is bene\ufb01cial to insert convolutional stages be-low a transformer. Most of the processing is still done inthe transformer stack for the most accurate variants of thegrafted architecture. Thus, the priority in the next sectionswill be to reduce the computational cost of the transform-ers.",
+      "token_count": 198
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0013",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "Most of the processing is still done inthe transformer stack for the most accurate variants of thegrafted architecture. Thus, the priority in the next sectionswill be to reduce the computational cost of the transform-ers. For this, instead of just grafting, the transformer ar-chitecture needs to be merged more closely with the con-volutional stages.#ResNet#DeiT-Snb. ofFLOPs (M)SpeedIMNETstageslayersParamsconvtransformerim/stop-1DistillationclassifierSupervised classifier01222.0M57451996679.91917.1M820338999580.62613.1M18762260104880.93315.1M33851130105480.14025.5M41190125478.4avg poolMLP 2xattention8 headsMLP 2xattention8 headsConvolutionsstage 1stage 2stage 3MLP 2xattention8 heads4ModelMLP 2xattention8 headsMLP 2x512x4x4In this section we describe the design process of theLeViT architecture and what tradeoffs were taken.",
+      "token_count": 241
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0014",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "Thearchitecture is summarized in Figure 4.shrink attn, 12 headsMLP 2xattention6 heads4.1Design principles of LeViTMLP 2xattention6 headsLeViT builds upon the ViT [2] architecture and DeiT [3]training method. We incorporate components that wereproven useful for convolutional architectures. The \ufb01rststep is to get a compatible representation. Discountingthe role of the classi\ufb01cation embedding, ViT is a stackof layers that processes activation maps. Indeed, the in-termediate \u201ctoken\u201d embeddings can be seen as the tradi-tional C \u00d7 H \u00d7 W activation maps in FCN architectures(BCHW format). Therefore, operations that apply to ac-tivation maps (pooling, convolutions) can be applied tothe intermediate representation of DeiT.In this work we optimize the architecture for compute,not necessarily to minimize the number of parameters.One of the design decisions that makes the ResNet [14]family more ef\ufb01cient than the VGG network [13] is toapply strong resolution reductions with a relatively smallcomputation budget in its \ufb01rst two stages.",
+      "token_count": 240
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0015",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "By the timethe activation map reaches the big third stage of ResNet,its resolution has already shrunk enough that the convolu-tions are applied to small activation maps, which reducesthe computational cost.MLP 2xattention6 headsMLP 2xattention6 headsMLP 2x384x7x7shrink attn, 8 headsMLP 2xattention4 headsMLP 2xattention4 headsMLP 2xattention4 headsMLP 2xattention4 heads256x14x14conv 3x3conv 3x3conv 3x3conv 3x33x224x224FLOPs1120Mparameters 18.9MImage4.2LeViT componentsPatch embedding.The preliminary analysis in Sec-tion 3 showed that the accuracy can be improved when asmall convnet is applied on input to the transformer stack.In LeViT we chose to apply 4 layers of 3\u00d73 convolutions(stride 2) to the input to perform the resolution reduction.The number of channels goes C = 3, 32, 64, 128, 256.This reduces the activation map input to the lower layersof the transformer without losing salient information. Thepatch extractor for LeViT-256 transforms the image shape(3, 224, 224) into (256, 14, 14) with 184 MFLOPs.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0016",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "Thepatch extractor for LeViT-256 transforms the image shape(3, 224, 224) into (256, 14, 14) with 184 MFLOPs. Forcomparison, the \ufb01rst 10 layers of a ResNet-18 performthe same dimensionality reduction with 1042 MFLOPs.a subsampling is applied before the Q transformation,which then propagates to the output of the soft activation.This maps an input tensor of size (C, H, W) to an out-put tensor of size (C\u2032, H/2, W/2) with C\u2032 > C. Due tothe change in scale, this attention block is used without aresidual connection. To prevent loss of information, wetake the number of attention heads to be C/D.Attention bias instead of a positional embedding.The positional embedding in transformer architectures isa location-dependent trainable parameter vector that isadded to the token embeddings prior to inputting them tothe transformer blocks. If it was not there, the transformeroutput would be independent to permutations of the inputtokens. Ablations of the positional embedding result in asharp drop of the classi\ufb01cation accuracy [55].However positional embeddings are included only oninput to the sequence of attention blocks.",
+      "token_count": 258
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0017",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "Ablations of the positional embedding result in asharp drop of the classi\ufb01cation accuracy [55].However positional embeddings are included only oninput to the sequence of attention blocks. Therefore, sincethe positional encoding is important for higher layers aswell, it is likely that it remains in the intermediate repre-sentations and needlessly uses representation capacity.Therefore, our goal is to provide positional informa-tion within each attention block, and to explicitly injectrelative position information in the attention mechanism:we simply add an attention bias to the attention maps.The scalar attention value between two pixels (x, y) \u2208[H]\u00d7[W] and (x\u2032, y\u2032) \u2208[H]\u00d7[W] for one head h \u2208[N]is calculated asNo classi\ufb01cation token.To use the BCHW tensor for-mat, we remove the classi\ufb01cation token. Similar to convo-lutional networks, we replace it by average pooling on thelast activation map, which produces an embedding usedin the classi\ufb01er. For distillation during training, we trainseparate heads for the classi\ufb01cation and distillation tasks.At test time, we average the output from the two heads.",
+      "token_count": 254
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0018",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "For distillation during training, we trainseparate heads for the classi\ufb01cation and distillation tasks.At test time, we average the output from the two heads. Inpractice, LeViT can be implemented using either BNC orBCHW tensor format, whichever is more ef\ufb01cient.Normalization layers and activations.The FC layersin the ViT architecture are equivalent to 1 \u00d7 1 convolu-tions. The ViT uses layer normalization before each at-tention and MLP unit. For LeViT, each convolution isfollowed by a batch normalization. Following [54], eachbatch normalization weight parameter that joins up with aresidual connection is initialized to zero. The batch nor-malization can be merged with the preceding convolutionfor inference, which is a runtime advantage over layernormalization (for example, on Ef\ufb01cientNet B0, this fu-sion speeds up inference on GPU by a factor 2). WhereasDeiT uses the GELU function, all of LeViT\u2019s non-linearactivations are Hardswish [19].Ah(x,y),(x\u2032,y\u2032) = Q(x,y),: \u2022K(x\u2032,y\u2032),: +Bh|x\u2212x\u2032|,|y\u2212y\u2032|. (1)The \ufb01rst term is the classical attention. The second is thetranslation-invariant attention bias. Each head has H \u00d7Wparameters corresponding to different pixel offsets.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0019",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "The second is thetranslation-invariant attention bias. Each head has H \u00d7Wparameters corresponding to different pixel offsets. Sym-metrizing the differences x\u2212x\u2032 and y \u2212y\u2032 encourages themodel to train with \ufb02ip invariance.Multi-resolutionpyramid.Convolutionalarchitec-tures are built as pyramids, where the resolution of theactivation maps decreases as their number of channelsincreases during processing. In Section 3 we used theResNet-50 stages to pre-process the transformer stack.LeViT integrates the ResNet stages within the trans-former architecture. Inside the stages, the architecture issimilar to a visual transformer: a residual structure withalternated MLP and activation blocks. In the following wereview the modi\ufb01cations of the attention blocks (Figure 5)compared to the classical setup [1].Smaller keys.The bias term reduces the pressure on thekeys to encode location information, so we reduce the sizeof the keys matrices relative to the V matrix. If the keyshave size D \u2208{16, 32}, V will have 2D channels.",
+      "token_count": 227
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0020",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "If the keyshave size D \u2208{16, 32}, V will have 2D channels. Re-stricting the size of the keys reduces the time needed tocalculate the key product QK\u22a4.For downsampling layers, where there is no residualconnection, we set the dimension of V to 4D to preventloss of information.Downsampling.Between the LeViT stages, a shrink-ing attention block reduces the size of the activation map:CxHxW5ExperimentsbatchnormC'xH/2xW/2conv 1x1Hardswishconv 1x1batchnormHardswishNx(HWx2D)(2DN)xHxWNx(HW/4x4D)(4DN)xH/2xW/25.1Experimental context\u00d7+SoftmaxSoftmax+Nx(HWxD)Nx(DxHW)Nx(HWxHW)KQVNx(HWx2D)Nx(HWxD)Nx(DxHW/4)Nx(HW/4xHW)KQV\u00d7Nx(HWx4D)Datasets and evaluation.We model our experimentson the DeiT work, that is closest to our approach. It buildsupon PyTorch [56] and the Timm library [57]. We trainon the ImageNet-2012 dataset and evaluate on its valida-tion set.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0021",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "It buildsupon PyTorch [56] and the Timm library [57]. We trainon the ImageNet-2012 dataset and evaluate on its valida-tion set. We do not explore using more training data inthis work.batchnormbatchnormbatchnormbatchnormbatchnormbatchnormconv 1x1conv 1x1 conv 1x1conv 1x1conv 1x1 conv 1x1sub-sampleCxH/2xW/2CxHxWCxHxWResource consumption.The generally accepted mea-sure for inference speed is in units of multiply-add opera-tions (aka FLOPs) because \ufb02oating-point matrix multipli-cations and convolutions can be expressed as those.However, some operations, most notably non-linear ac-tivations, do not perform multiply-add operations. Theyare generally ignored in the FLOP counts (or counted asa single FLOP) because it is assumed that their cost isnegligible w.r.t. the cost of higher-order matrix multipli-cations and convolutions. However, for a small numberof channels, the runtime of complicated activations likeGELU is comparable to that of convolutions.",
+      "token_count": 254
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0022",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "However, for a small numberof channels, the runtime of complicated activations likeGELU is comparable to that of convolutions. Moreover,operations with the same number of FLOPs can be moreor less ef\ufb01cient depending on the hardware and API used.Therefore, we additionally report raw timings on refer-ence hardware, like recent papers [2, 58]. The ef\ufb01ciencyof transformers relies almost exclusively on matrix multi-plications with a large reduction dimension.Attention activation.We apply a Hardswish activationto the product AhV before the regular linear projection isused to combine the output of the different heads. This isakin to a ResNet bottleneck residual block, in the sensethat V is the output of a 1 \u00d7 1 convolution, AhV cor-responds to a spatial convolution, and the projection isanother 1 \u00d7 1 convolution.Reducing the MLP blocks.The MLP residual blockin ViT is a linear layer that increases the embedding di-mension by a factor 4, applies a non-linearity and reducesit back with another non-linearity to the original embed-ding\u2019s dimension. For vision architectures, the MLP isusually more expensive in terms of runtime and parame-ters than the attention block. For LeViT, the \u201cMLP\u201d is a1\u00d71 convolution, followed by the usual batch normaliza-tion.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0023",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "For LeViT, the \u201cMLP\u201d is a1\u00d71 convolution, followed by the usual batch normaliza-tion. To reduce the computational cost of that phase, wereduce the expansion factor of the convolution from 4 to2. One design objective is that attention and MLP blocksconsume approximately the same number of FLOPs.Hardware.In this work, we run all experiments in Py-Torch, thus we are dependent on the available optimiza-tions in that API. In an attempt to obtain more objectivetimings, we time the inference on three different hardwareplatforms, each corresponding to one use case:\u2022 One 16GB NVIDIA Volta GPU (peak performance is12 TFLOP/s). This is a typical training accelerator.\u2022 An Intel Xeon 6138 CPU at 2.0GHz. This is a typicalserver in a datacenter, that performs feature extractionon streams of incoming images. PyTorch is well op-timized for this con\ufb01guration, using MKL and AVX2instructions (16 vector registers of 256 bits each).\u2022 An ARM Graviton2 CPU (Amazon C6g instance). Itis a good model for the type of processors that mobilephones and other edge devices are running.",
+      "token_count": 258
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0024",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "Itis a good model for the type of processors that mobilephones and other edge devices are running. The Gravi-ton2 has 32 cores supporting the NEON vector instruc-tion set with 32 128-bit vector registers (NEON).4.3The LeViT family of modelsThe LeViT models can spawn a range of speed-accuracytradeoffs by varying the size of the computation stages.We identify them by the number of channels input to the\ufb01rst transformer, e.g. LeViT-256 has 256 channels on in-put of the transformer stage.",
+      "token_count": 121
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0025",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "LeViT-256 has 256 channels on in-put of the transformer stage. Table 2 shows how the stagesare designed for the models that we evaluate in this paper.ModelLeViT-128SLeViT-128LeViT-192LeViT-256LeViT-384(D = 16, p = 0)(D = 16, p = 0)(D = 32, p = 0)(D = 32, p = 0)(D = 32, p = 0.1)Stage 1:14 \u00d7 142\u00d7C=128N=44\u00d7C=128N=44\u00d7C=192N=34\u00d7C=256N=44\u00d7C=384N=6SubsampleN=8N=8N=6N=8N=12Stage 2:7 \u00d7 73\u00d7C=256N=64\u00d7C=256N=84\u00d7C=288N=54\u00d7C=384N=64\u00d7C=512N=9 N=16 N=16 N=9 N=12 N=18 SubsampleStage 3:4 \u00d7 44\u00d7C=384N=84\u00d7C=384N=124\u00d7C=384N=64\u00d7C=512N=84\u00d7C=768N=12On the GPU we run timings on large image batchesbecause that corresponds to typical use cases; followingDeiT we use the maximum power-of-two batchsize that\ufb01ts in memory.",
+      "token_count": 315
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0026",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "On the CPU platforms, we measure in-ference time in a single thread, simulating a setting whereseveral threads process separate streams of input images.It is dif\ufb01cult to dissociate the impact of the hardwareand software, so we experiment with several ways to op-timize the network with standard PyTorch tools (the just-in-time compiler, different optimization pro\ufb01les).model trained on ImageNet. In fact, the LeViT trainingtime is dominated by the teacher\u2019s inference time.5.3Speed-accuracy tradeoffs5.2Training LeViTWe use 32 GPUs that perform the 1000 training epochsin 3 to 5 days. This is more than the usual schedule forconvolutional networks, but visual transformers require along training, for example training DeiT for 1000 epochsimproves by another 2 points of top-1 precision over 300epochs.To regularize the training, we use distillationdriven training, similar to DeiT. This means that LeViT istrained with two classi\ufb01cation heads with a cross entropyloss.",
+      "token_count": 229
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0027",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "This means that LeViT istrained with two classi\ufb01cation heads with a cross entropyloss. The \ufb01rst head receives supervision from the ground-truth classes, the second one from a RegNetY-16GF [18]# paramsFLOPsinference speedImageNettop-1GPUIntelARM-Real-V2.Architecture(M)(M)%im/sim/sim/s%%LeViT-128S (ours)7.830576.612880131.139.183.164.3Ef\ufb01cientNet B05.339077.1475430.13.583.564.3LeViT-128 (ours)9.240678.6926694.030.884.766.6LeViT-192 (ours)10.965880.0860165.024.285.768.0Ef\ufb01cientNet B17.870079.1288220.02.384.966.9Ef\ufb01cientNet B29.2100080.1214913.11.385.968.8LeViT-256 (ours)18.9112081.6658242.516.486.870.0DeiT-Tiny5.9122076.6397339.116.883.965.4Ef\ufb01cientNet B312180081.612725.90.886.870.6LeViT-384 (ours)39.1235382.6416523.19.487.671.3Ef\ufb01cientNet B419420082.96062.50.588.072.3DeiT-Small22.5452282.6193113.77.687.871.7Architecture#paramsFLOPsINET top-15.4Comparison with the state of the artT2T-ViTt-14 [49]21.5M5200M80.7T2T-ViTt-1939.0M8400M81.4T2T-ViTt-2464.1M13200M82.2BoT-S1-50 [46]20.8M4270M79.1VT-R34 [47]19.2M3236M79.9VT-R5021.4M3412M80.6VT-R10141.5M7129M82.3PiT-Ti [59]4.9M700M74.6PiT-XS10.6M1400M79.1PiT-S23.5M2900M81.9CvT-13-NAS [60]18M4100M82.2We compare in the FLOPs-accuracy tradeoff, since theother works are very recent and do not necessarily providereference models on which we can time the inference.",
+      "token_count": 590
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0028",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "AllToken-to-token ViT [49] variants take around 5\u00d7 moreFLOPs than LeViT-384 and more parameters for compa-rable accuracies than LeViT. Bottleneck transformers [46]and \u201cVisual Transformers\u201d [47] (not to be confused withViT) are both generic architectures that can also be usedfor detection and object segmentation. Both are about 5\u00d7slower than LeViT-192 at a comparable accuracy. Thesame holds for the pyramid vision transformer [48] (notreported in the table) but its design objectives are differ-ent. The advantage of LeViT compared to these archi-tectures is that it bene\ufb01ted from the DeiT-like distillation,which makes it much more accurate when training on Im-ageNet alone. Two architecture that comes close to LeViTthe \ufb02oat32 operations are not as well optimized comparedto Intel. However, the speed-accuracy trade-off remainsin LeViT\u2019s favor.#id\u2193Ablation of LeViT-128S#paramsFLOPsINET top-1number of variants, to evaluate the design changes relativeto ViT/DeiT. The experiments are run with only 100 train-ing epochs to magnify the differences and reduce train-ing time. The conclusions remain for larger models andlonger training schedules.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0029",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "The experiments are run with only 100 train-ing epochs to magnify the differences and reduce train-ing time. The conclusions remain for larger models andlonger training schedules. We replace one component ata time, when the network needs to be reworked, we makesure the FLOP count remains roughly the same (see Ap-pendix A.2 for details). Table 5 shows that all changesdegrade the accuracy:Base model7.4M305M71.9A1 \u2013 without pyramid shape1.2M308M56.5A2 \u2013 without PatchConv7.4M275M65.3A3 \u2013 without BatchNorm7.4M305M66.6A4 \u2013 without distillation7.4M305M69.7A5 \u2013 without attention bias7.4M305M70.4A6 \u2013 without wider blocks6.2M312M70.9A7 \u2013 without attention activ.7.4M305M71.1A1\u2013 The without pyramid shape ablation makes a straightstack of attention and MLPs (like DeiT). However, in or-der to keep the FLOP count similar to the baseline, thenetwork width is reduced, resulting in a network with asmall number of parameters, resulting in a very low \ufb01nalaccuracy.",
+      "token_count": 271
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0030",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "However, in or-der to keep the FLOP count similar to the baseline, thenetwork width is reduced, resulting in a network with asmall number of parameters, resulting in a very low \ufb01nalaccuracy. This evidences that the reduction of the reso-lution in LeViT is the main tool to keep computationalcomplexity under control.A2\u2013 without PatchConv:we remove the four pre-processing convolutions with a single size-16 convolu-tion. This has little effect on the number of parameters,but the number of \ufb02ops is 10% less. The , and has a strongnegative impact on the accuracy. This can be explainedbecause in a low-capacity regime, the convolutions are aneffective way to compress the 3 \u00b7 162 = 768 dimensionalpatch input.A3\u2013 In without BatchNorm, we replaces BatchNorm withpreactivated LayerNorm, as used in the ViT/DeiT archi-tecture.This slows down the model slightly, as batchstatistics need to be calculated at test time. Removingthe BatchNorm also removes the zero-initialization of theresidual connections, which disrupts training.A4\u2013 Removing the use of hard distillation from aRegNetY-16GF teacher model reduces performance, asseen with DeiT.A5\u2013 The without attention bias ablation replaces the atten-tion bias component with a classical positional embeddingadded on input to the transformer stack (like DeiT).",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0031",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "Al-lowing each attention head to learn a separate bias seemsto be useful.A6\u2013 We use DeiT style blocks, i.e. Q,K and V all have di-mension D = C/N, and the MLP blocks have expansionfactor 4.A7\u2013 LeViT has an extra Hardswish non-linearity addedto the attention, in addition to the softmax non-linearity.Removing it, the without attention activation ablation de-are the pooling-based vision transformer (PiT) [59] andCvT [60], ViT variants with a pyramid structure. PiT, themost promising one, incorporates many of the optimiza-tion ingredients for DeiT but is still 1.2\u00d7 to 2.4\u00d7 slowerthan LeViT.Alternaltive evaluations.In Table 3 we evaluate LeViTon alternative test sets, Imagenet Real [63] and Ima-genet V2 matched frequency [64]. The two datasets usethe same set of classes and training set as ImageNet.Imagenet-Real has re-assessed labels with potentially sev-eral classes per image. Imagenet-V2 (in our case matchfrequency) employs a different test set. It is interestingto measure the performance on both to verify that hyper-parameters adjustments have not led to over\ufb01tting to thevalidation set of ImageNet.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0032",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "Imagenet-V2 (in our case matchfrequency) employs a different test set. It is interestingto measure the performance on both to verify that hyper-parameters adjustments have not led to over\ufb01tting to thevalidation set of ImageNet. Thus, we measure the classi-\ufb01cation performance on the alternative test sets for mod-els that have equivalent accuracies on ImageNet valida-tion. LeViT-256 and Ef\ufb01cientNet B3: the LeViT variantachieves the same score on -Real, but is slightly worse(-0.6) on -V2.LeViT-384 and DeiT-Small: LeViT isslightly worse on -Real (-0.2) and -V2 (-0.4). Althoughin these evaluations LeViT is relatively slightly less accu-rate, the speed-accuracy trade-offs still hold, compared toEf\ufb01cientNet and DeiT.5.5AblationsTo evaluate what contributes to the performance of LeViT,we experiment with the default setting and replace one pa-rameter at a time. We train the LeViT-128S model, and agrades performance, suggesting that extra non-linearity ishelpful for learning classi\ufb01cation class boundaries.Huang, Andrej Karpathy, Aditya Khosla, MichaelBernstein, Alexander C.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0033",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "Berg, and Li Fei-Fei, \u201cIm-agenet large scale visual recognition challenge,\u201d In-ternational journal of Computer Vision, 2015. 16Conclusion[6] Song Han, Huizi Mao, and William J. Dally, \u201cDeepcompression: Compressing deep neural networkswith pruning, trained quantization and huffman cod-ing,\u201d arXiv preprint arXiv:1510.00149, 2016. 2This paper introduced LeViT, a transformer architectureinspired by convolutional approaches. The accuracy ofLeViT stems mainly from the training techniques in DeiT.Its speed comes from a series of carefully controlled de-sign choices. Compared to other ef\ufb01cient neural nets usedfor feature extraction in datacenters or on mobile phones,LeViT is 1.5 to 5 times faster at comparable precision.Thus to the best of our knowledge, it sets a new state ofthe art in the trade-off between accuracy and precision inthe high-speed domain.",
+      "token_count": 212
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0034",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "The corresponding PyTorch codeand models is available at https://github.com/facebookresearch/LeViT.[7] Matthieu Courbariaux, Yoshua Bengio, and Jean-Pierre David, \u201cBinaryconnect: Training deep neuralnetworks with binary weights during propagations,\u201darXiv preprint arXiv:1511.00363, 2016. 2[8] Shuchang Zhou, Yuxin Wu, Zekun Ni, XinyuZhou, He Wen, and Yuheng Zou, \u201cDorefa-net:Training low bitwidth convolutional neural net-works with low bitwidth gradients,\u201d arXiv preprintarXiv:1606.06160, 2018. 2[9] Kuan Wang,Zhijian Liu,Yujun Lin,Ji Lin,and Song Han, \u201cHaq: Hardware-aware automatedquantization with mixed precision,\u201d arXiv preprintarXiv:1811.08886, 2019. 2References[1] Ashish Vaswani, Noam Shazeer, Niki Parmar, JakobUszkoreit, Llion Jones, Aidan N.",
+      "token_count": 247
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0035",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "Gomez, LukaszKaiser, and Illia Polosukhin, \u201cAttention is all youneed,\u201d in Advances in Neural Information Process-ing Systems, 2017. 1, 2, 3, 6[10] Pierre Stock, Armand Joulin, R\u00b4emi Gribonval, Ben-jamin Graham, and Herv\u00b4e J\u00b4egou, \u201cAnd the bit goesdown: Revisiting the quantization of neural net-works,\u201d arXiv preprint arXiv:1907.05686, 2020. 2[2] AlexeyDosovitskiy,LucasBeyer,AlexanderKolesnikov,Dirk Weissenborn,Xiaohua Zhai,Thomas Unterthiner, Mostafa Dehghani, MatthiasMinderer, Georg Heigold, Sylvain Gelly et al.,\u201cAn image is worth 16x16 words:Transform-ers for image recognition at scale,\u201d arXiv preprintarXiv:2010.11929, 2020. 1, 2, 3, 4, 5, 7[11] Yann LeCun, Bernhard Boser, John S Denker, Don-nie Henderson, Richard E Howard, Wayne Hubbard,and Lawrence D Jackel, \u201cBackpropagation appliedto handwritten zip code recognition,\u201d Neural com-putation, vol. 1, no. 4, pp. 541\u2013551, 1989. 2[12] Alex Krizhevsky, Ilya Sutskever, and Geoffrey E.Hinton, \u201cImagenet classi\ufb01cation with deep convo-lutional neural networks,\u201d in Advances in Neural In-formation Processing Systems, 2012. 2[3] Hugo Touvron, Matthieu Cord, Matthijs Douze,Francisco Massa,Alexandre Sablayrolles,andHerv\u00b4e J\u00b4egou, \u201cTraining data-ef\ufb01cient image trans-formers & distillation through attention,\u201d arXivpreprint arXiv:2012.12877, 2021. 1, 2, 3, 5, 8, 9[13] K.",
+      "token_count": 467
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0036",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "Simonyan and A. Zisserman, \u201cVery deep convo-lutional networks for large-scale image recognition,\u201din International Conference on Learning Represen-tations, 2015. 2, 5[4] Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, KaiLi, and Li Fei-Fei, \u201cImagenet: A large-scale hierar-chical image database,\u201d in Conference on ComputerVision and Pattern Recognition, 2009. 1[14] Kaiming He, Xiangyu Zhang, Shaoqing Ren, andJian Sun, \u201cDeep residual learning for image recogni-tion,\u201d in Conference on Computer Vision and PatternRecognition, 2016. 2, 5[5] Olga Russakovsky, Jia Deng, Hao Su, JonathanKrause,Sanjeev Satheesh,Sean Ma,Zhiheng[15] Christian Szegedy, Sergey Ioffe, and Vincent Van-houcke, \u201cInception-v4, inception-resnet and the im-pact of residual connections on learning,\u201d arXivpreprint arXiv:1602.07261, 2016. 2[25] Patryk Chrabaszcz, Ilya Loshchilov, and Frank Hut-ter, \u201cA downsampled variant of imagenet as analternative to the cifar datasets,\u201d arXiv preprintarXiv:1707.08819, 2017. 2[16] Saining Xie,Ross B.",
+      "token_count": 326
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0037",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "Girshick,Piotr Doll\u00b4ar,Zhuowen Tu, and Kaiming He, \u201cAggregated residualtransformations for deep neural networks,\u201d Confer-ence on Computer Vision and Pattern Recognition,2017. 2[26] Xiujun Li, Xi Yin, Chunyuan Li, Pengchuan Zhang,Xiaowei Hu, Lei Zhang, Lijuan Wang, Houdong Hu,Li Dong, Furu Wei et al., \u201cOscar: Object-semanticsaligned pre-training for vision-language tasks,\u201d inEuropean Conference on Computer Vision, 2020. 2[17] Mingxing Tan and Quoc V. Le, \u201cEf\ufb01cientnet: Re-thinking model scaling for convolutional neural net-works,\u201d arXiv preprint arXiv:1905.11946, 2019. 2,8, 9[27] Gao Huang, Yu Sun, Zhuang Liu, Daniel Sedra, andKilian Q.",
+      "token_count": 206
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0038",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "Weinberger, \u201cDeep networks with stochas-tic depth,\u201d in European Conference on Computer Vi-sion, 2016. 2[18] Ilija Radosavovic, Raj Prateek Kosaraju, Ross B.Girshick, Kaiming He, and Piotr Doll\u00b4ar, \u201cDesigningnetwork design spaces,\u201d Conference on ComputerVision and Pattern Recognition, 2020. 2, 8[28] Maxim Berman, Herv\u00b4e J\u00b4egou, Andrea Vedaldi, Ia-sonas Kokkinos, and Matthijs Douze, \u201cMultigrain: auni\ufb01ed image embedding for classes and instances,\u201darXiv preprint arXiv:1902.05509, 2019. 2[19] A. Howard, Mark Sandler, G. Chu, Liang-ChiehChen, B. Chen, M. Tan, W. Wang, Y. Zhu, R. Pang,V. Vasudevan, Quoc V. Le, and H.",
+      "token_count": 224
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0039",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Chu, Liang-ChiehChen, B. Chen, M. Tan, W. Wang, Y. Zhu, R. Pang,V. Vasudevan, Quoc V. Le, and H. Adam, \u201cSearch-ing for MobileNetV3,\u201d in International Conferenceon Computer Vision, 2019. 2, 6[29] Elad Hoffer, Tal Ben-Nun, Itay Hubara, Niv Giladi,Torsten Hoe\ufb02er, and Daniel Soudry, \u201cAugment yourbatch: Improving generalization through instancerepetition,\u201d in Conference on Computer Vision andPattern Recognition, 2020. 2[20] Jacob Devlin, Ming-Wei Chang, Kenton Lee, andKristina Toutanova, \u201cBert: Pre-training of deep bidi-rectional transformers for language understanding,\u201darXiv preprint arXiv:1810.04805, 2018. 2[30] Josh Beal, Eric Kim, Eric Tzeng, Dong HukPark, Andrew Zhai, and Dmitry Kislyuk, \u201cTowardtransformer-based object detection,\u201d arXiv preprintarXiv:2012.09958, 2020. 2[21] Alec Radford, Karthik Narasimhan, Tim Salimans,and Ilya Sutskever, \u201cImproving language under-standing with unsupervised learning,\u201d 2018. 2[31] Sixiao Zheng, Jiachen Lu, Hengshuang Zhao, Xi-atian Zhu, Zekun Luo, Yabiao Wang, YanweiFu, Jianfeng Feng, Tao Xiang, Philip HS Torret al., \u201cRethinking semantic segmentation from asequence-to-sequence perspective with transform-ers,\u201d arXiv preprint arXiv:2012.15840, 2020. 2[22] Niki Parmar, Ashish Vaswani, Jakob Uszkoreit,Lukasz Kaiser, Noam Shazeer, Alexander Ku, andDustin Tran, \u201cImage transformer,\u201d in InternationalConference on Machine Learning.PMLR, 2018,pp. 4055\u20134064. 2, 3[32] Alaaeldin El-Nouby, Natalia Neverova, Ivan Laptev,and Herv\u00b4e J\u00b4egou, \u201cTraining vision transformers forimage retrieval,\u201d arXiv preprint arXiv:2102.05644,2021. 2[23] Rewon Child, Scott G",
+      "token_count": 534
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0040",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "Dauphin, \u201cConvolutionalsequence to sequence learning,\u201d arXiv preprintarXiv:1705.03122, 2017. 3[24] Jean-Baptiste Cordonnier, Andreas Loukas, andMartin Jaggi, \u201cOn the relationship between self-attention and convolutional layers,\u201d arXiv preprintarXiv:1911.03584, 2020. 2[34] Peter Shaw, Jakob Uszkoreit, and Ashish Vaswani,\u201cSelf-attention with relative position representa-tions,\u201d arXiv preprint arXiv:1803.02155, 2018. 3[35] Fei Wang, Mengqing Jiang, Chen Qian, Shuo Yang,Cheng Li, Honggang Zhang, Xiaogang Wang, andXiaoou Tang, \u201cResidual attention network for im-age classi\ufb01cation,\u201d in Conference on Computer Vi-sion and Pattern Recognition, 2017. 3[44] Jie Hu,Li Shen,and Gang Sun,\u201cSqueeze-and-excitationnetworks,\u201darXivpreprintarXiv:1709.01507, 2017. 3[45] Irwan Bello, \u201cLambdanetworks:Modeling long-range interactions without attention,\u201d arXiv preprintarXiv:2102.08602, 2021. 3[36] Sanghyun Woo, Jongchan Park, Joon-Young Lee,and In So Kweon, \u201cCbam: Convolutional block at-tention module,\u201d in European Conference on Com-puter Vision, 2018, pp. 3\u201319. 3[46] A.",
+      "token_count": 360
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0041",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "Srinivas, Tsung-Yi Lin, Niki Parmar, JonathonShlens, P.",
+      "token_count": 23
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0042",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "Srinivas, Tsung-Yi Lin, Niki Parmar, JonathonShlens, P. Abbeel, and Ashish Vaswani, \u201cBottlenecktransformers for visual recognition,\u201d arXiv preprintarXiv:2101.11605, 2021. 3, 9[37] Xiang Li, Wenhai Wang, Xiaolin Hu, and Jian Yang,\u201cSelective kernel networks,\u201d in Conference on Com-puter Vision and Pattern Recognition, 2019, pp.510\u2013519. 3[47] Bichen Wu, Chenfeng Xu, Xiaoliang Dai, AlvinWan, Peizhao Zhang, Masayoshi Tomizuka, KurtKeutzer,and Peter Vajda,\u201cVisual transform-ers:Token-based image representation and pro-cessingforcomputervision,\u201darXivpreprintarXiv:2006.03677, 2020. 3, 9[38] IrwanBello,BarretZoph,AshishVaswani,Jonathon Shlens, and Quoc V Le, \u201cAttention aug-mented convolutional networks,\u201d in Conference onComputer Vision and Pattern Recognition, 2019, pp.3286\u20133295. 3[48] Wenhai Wang, Enze Xie, Xiang Li, Deng-Ping Fan,Kaitao Song, Ding Liang, Tong Lu, Ping Luo, andLing Shao, \u201cPyramid vision transformer: A versa-tile backbone for dense prediction without convolu-tions,\u201d arXiv preprint arXiv:2102.12122, 2021. 3,9[39] X.",
+      "token_count": 356
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0043",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "Wang, Ross B. Girshick, A. Gupta, and Kaim-ing He, \u201cNon-local neural networks,\u201d Conference onComputer Vision and Pattern Recognition, 2018. 3,7[40] Yinpeng Chen, Xiyang Dai, Mengchen Liu, Dong-dong Chen, Lu Yuan, and Zicheng Liu, \u201cDynamicconvolution: Attention over convolution kernels,\u201d inConference on Computer Vision and Pattern Recog-nition, 2020. 3[49] Li Yuan, Yunpeng Chen, Tao Wang, Weihao Yu, Yu-jun Shi, Francis EH Tay, Jiashi Feng, and ShuichengYan, \u201cTokens-to-token vit: Training vision trans-formers from scratch on imagenet,\u201d arXiv preprintarXiv:2101.11986, 2021. 3, 9[41] Hengshuang Zhao, Jiaya Jia, and Vladlen Koltun,\u201cExploring self-attention for image recognition,\u201d inConference on Computer Vision and Pattern Recog-nition, 2020. 3[50] SergeyZagoruykoandNikosKomodakis,\u201cWideresidualnetworks,\u201darXivpreprintarXiv:1605.07146, 2016. 3[51] Gao Huang, Zhuang Liu, Laurens Van Der Maaten,and Kilian Q Weinberger, \u201cDensely connected con-volutional networks,\u201d in Conference on ComputerVision and Pattern Recognition, 2017. 3[42] Christian Szegedy, Wei Liu, Yangqing Jia, PierreSermanet, Scott Reed, Dragomir Anguelov, Du-mitru Erhan, Vincent Vanhoucke, and Andrew Rabi-novich, \u201cGoing deeper with convolutions,\u201d in Con-ference on Computer Vision and Pattern Recogni-tion, 2015. 3[52] Vinod Nair and Geoffrey E Hinton, \u201cRecti\ufb01ed linearunits improve restricted boltzmann machines,\u201d in In-ternational Conference on Machine Learning, 2010.4[43] Hang Zhang, Chongruo Wu, Zhongyue Zhang, YiZhu, Zhi Zhang, Haibin Lin, Yue Sun",
+      "token_count": 478
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0044",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "Manmatha, Mu Li, and AlexanderSmola, \u201cResnest: Split-attention networks,\u201d arXiv[53] Sergey Ioffe and Christian Szegedy, \u201cBatch nor-malization: Accelerating deep network training byreducing internal covariate shift,\u201d in InternationalConference on Machine Learning, 2015. 4[64] B. Recht, Rebecca Roelofs, L. Schmidt, and V.Shankar, \u201cDo imagenet classi\ufb01ers generalize to ima-genet?\u201d arXiv preprint arXiv:1902.10811, 2019. 10[54] Priya Goyal, Piotr Doll\u00b4ar, Ross B.",
+      "token_count": 148
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0045",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "Girshick, PieterNoordhuis, Lukasz Wesolowski, Aapo Kyrola, An-drew Tulloch, Yangqing Jia, and Kaiming He, \u201cAc-curate, large minibatch sgd: Training imagenet in 1hour,\u201d arXiv preprint arXiv:1706.02677, 2017. 6[55] Xiangxiang Chu, Bo Zhang, Zhi Tian, Xiaolin Wei,and Huaxia Xia, \u201cDo we really need explicit positionencodings for vision transformers?\u201d arXiv preprintarXiv:2102.10882, 2021. 6[56] Adam Paszke, Sam Gross, Francisco Massa, AdamLerer, James Bradbury, Gregory Chanan, TrevorKilleen, Zeming Lin, Natalia Gimelshein, LucaAntiga et al., \u201cPytorch: An imperative style, high-performance deep learning library,\u201d in Advances inNeural Information Processing Systems, 2019. 7[57] Ross Wightman, \u201cPytorch image models,\u201d https://github.com/rwightman/pytorch-image-models,2019. 7[58] Zhuoran Shen, Irwan Bello, Raviteja Vemulapalli,Xuhui Jia, and Ching-Hui Chen, \u201cGlobal self-attention networks for image recognition,\u201d arXivpreprint arXiv:2010.03019, 2020. 7[59] Byeongho Heo, Sangdoo Yun, Dongyoon Han,Sanghyuk Chun, Junsuk Choe, and Seong Joon Oh,\u201cRethinking spatial dimensions of vision transform-ers,\u201d 2021. 9, 10[60] Haiping Wu, Bin Xiao, Noel Codella, MengchenLiu, Xiyang Dai, Lu Yuan, and Lei Zhang, \u201cCvt:Introducing convolutions to vision transformers,\u201d2021. 9, 10[61] A.",
+      "token_count": 429
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0046",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "Brock,Soham De,S. L. Smith,and K.Simonyan, \u201cHigh-performance large-scale imagerecognition without normalization,\u201d arXiv preprintarXiv:2102.06171, 2021. 9[62] Mingxing Tan and Quoc V. Le, \u201cEf\ufb01cientnetv2:Smaller models and faster training,\u201d 2021. 9[63] LucasBeyer,OlivierJ.H\u00b4enaff,AlexanderKolesnikov, Xiaohua Zhai, and Aaron van denOord, \u201cAre we done with imagenet?\u201d arXiv preprintAppendixIn this appendix, we report more details and results.Appendix A details the timings of constituent block andprovides more details about our ablation. We provide vi-sualizations of the attention bias in Appendix B.ModelDeiT-tinyLeViT-256DimensionsC = 192N = 3D = 64C = 256N = 4D = 32ADetailed analysisComponentRuntime (\u00b5s)Runtime (\u00b5s)LayerNorm49n/aKeys Q, K299275Values V172275Product QKT228159Product Attention AV161206Attention projection175310MLP13901140A.1Block timingsIn this section we compare the differences in design be-tween DeiT and LeViT blocks from the perspective ofa detailed runtime analysis.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0047",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "We measure the runtime oftheir constituent parts side-by-side in the supplementaryTable 6. For DeiT-Tiny, we replace the GELU activationwith Hardswish, as otherwise it dominates the runtime.For DeiT, we consider a block from DeiT-tiny.ForLeViT, we consider a block from the \ufb01rst stage of LeViT-256. Both operate at resolution 14\u00d714 and have compara-ble run times, although LeViT is 33% wider (C = 256 vsC = 192). Note that stage 1 is the most expensive part ofLeViT-256. In stages 2 and 3, the cost is lower due to thereduction in resolution (see Figure 4 of the main paper).LeViT spends less time calculating the attention QKT ,but more time on the subsequent matrix product AV . De-spite having the larger block width C, LeViT spends lesstime on the MLP component as the expansion factor ishalved from four to two.Total24742365therefore take Q, K, V to all have dimension D = 30,and C = ND = 120, 180, 240 for the three stages. As inDeiT, the MLP expansion ratio is 4.",
+      "token_count": 264
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0048",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "As inDeiT, the MLP expansion ratio is 4. In the subsamplinglayers we use N = 4C/D = 16, 24, respectively.BVisualizations: attention biasThe attention bias maps from Eqn. 1 in the main paper arejust two-dimensional maps. Therefore we can vizualizethem, see Figure 6. They can be read as the amount ofattention between two pixels that are at a certain relativeposition. The lowest values of the bias are low enough (-20) to suppress the attention between the two pixels, sincethey are input to a softmax.We can observe that some heads are quite uniform,while other heads specialize in nearby pixels (e.g. mostheads of the shrinking attention).",
+      "token_count": 151
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0049",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "Some are clearly direc-tional, e.g. heads 1 and 4 of Stage 2/block 1 handle thepixels adjacent vertically and horizontally (respectively).Head 1 of stage 2, block 4 has a speci\ufb01c period-2 patternthat may be due to the fact that its output is fed to a sub-sampling \ufb01lter in the next shrinking attention block.A.2More details on our ablationHere we give additional details of the ablation experi-ments in Section 5.6 and Table 4 of the main paper.A1 \u2013 without pyramid shape.We test the effect of theLeViT pyramid structure, we replace the three stages witha single stage of depth 11 at resolution 14 \u00d7 14. To pre-serve the FLOP count, we take D = 19, N = 3 andC = 2ND = 114.A6 \u2013 without wider blocks.Compared to DeiT, LeViTblocks are relatively wide given the number of FLOPs,with smaller keys and MLP expansion factors. To testthis change we modify LeViT-128S to have more tradi-tional blocks while preserving the number of FLOPs.",
+      "token_count": 252
+    },
+    {
+      "chunk_id": "2104.01136_chunk_0050",
+      "arxiv_id": "2104.01136",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "To testthis change we modify LeViT-128S to have more tradi-tional blocks while preserving the number of FLOPs. WeStage 1, attention block 1 (\ufb01rst one)head 0head 1head 2head 3...Stage 1, attention block 4head 0head 1head 2head 3Shrinking attention between stages 1 and 2head 0head 1head 2head 3head 4head 5head 6head 7Stage 2, attention block 1head 0head 1head 2head 3head 4head 5...Stage 2, attention block 4head 0head 1head 2head 3head 4head 5...Stage 3, attention block 4 (last one)head 0head 1head 2head 3head 4head 5head 6head 7",
+      "token_count": 202
+    }
+  ]
+}

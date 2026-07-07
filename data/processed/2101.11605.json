@@ -1,0 +1,443 @@
+{
+  "arxiv_id": "2101.11605",
+  "title": "Bottleneck Transformers for Visual Recognition",
+  "authors": [
+    "Aravind Srinivas",
+    "Tsung-Yi Lin",
+    "Niki Parmar",
+    "Jonathon Shlens",
+    "Pieter Abbeel",
+    "Ashish Vaswani"
+  ],
+  "year": 2021,
+  "abstract": "We present BoTNet, a conceptually simple yet powerful backbone architecture that incorporates self-attention for multiple computer vision tasks including image classification, object detection and instance segmentation. By just replacing the spatial convolutions with global self-attention in the final three bottleneck blocks of a ResNet and no other changes, our approach improves upon the baselines significantly on instance segmentation and object detection while also reducing the parameters, with minimal overhead in latency. Through the design of BoTNet, we also point out how ResNet bottleneck blocks with self-attention can be viewed as Transformer blocks. Without any bells and whistles, BoTNet achieves 44.4% Mask AP and 49.7% Box AP on the COCO Instance Segmentation benchmark using the Mask R-CNN framework; surpassing the previous best published single model and single scale results of ResNeSt evaluated on the COCO validation set. Finally, we present a simple adaptation of the BoTNet design for image classification, resulting in models that achieve a strong performance of 84.7% top-1 accuracy on the ImageNet benchmark while being up to 1.64x faster in compute time than the popular EfficientNet models on TPU-v3 hardware. We hope our simple and effective approach will serve as a strong baseline for future research in self-attention models for vision",
+  "categories": [
+    "cs.CV",
+    "cs.AI",
+    "cs.LG"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2101.11605v2",
+  "page_count": 11,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 52,
+  "chunks": [
+    {
+      "chunk_id": "2101.11605_chunk_0000",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "Bottleneck Transformers for Visual RecognitionAravind Srinivas1 Tsung-Yi Lin2 Niki Parmar2 Jonathon Shlens2 Pieter Abbeel1 Ashish Vaswani21UC Berkeley2Google Research{aravind}@cs.berkeley.eduAbstractWe present BoTNet, a conceptually simple yet powerfulbackbone architecture that incorporates self-attention formultiple computer vision tasks including image classi\ufb01ca-tion, object detection and instance segmentation. By justreplacing the spatial convolutions with global self-attentionin the \ufb01nal three bottleneck blocks of a ResNet and no otherchanges, our approach improves upon the baselines signi\ufb01-cantly on instance segmentation and object detection whilealso reducing the parameters, with minimal overhead in la-tency. Through the design of BoTNet, we also point out howResNet bottleneck blocks with self-attention can be viewed asTransformer blocks. Without any bells and whistles, BoTNetachieves 44.4% Mask AP and 49.7% Box AP on the COCOInstance Segmentation benchmark using the Mask R-CNNframework; surpassing the previous best published singlemodel and single scale results of ResNeSt [67] evaluatedon the COCO validation set.",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0001",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "Finally, we present a simpleadaptation of the BoTNet design for image classi\ufb01cation,resulting in models that achieve a strong performance of84.7% top-1 accuracy on the ImageNet benchmark whilebeing up to 1.64x faster in \u201ccompute\u201d1 time than the popu-lar Ef\ufb01cientNet models on TPU-v3 hardware. We hope oursimple and effective approach will serve as a strong baselinefor future research in self-attention models for vision.ships across objects [32]. In order to globally aggregate thelocally captured \ufb01lter responses, convolution based archi-tectures require stacking multiple layers [54, 28]. Althoughstacking more layers indeed improves the performance ofthese backbones [67], an explicit mechanism to model global(non-local) dependencies could be a more powerful and scal-able solution without requiring as many layers.Modeling long-range dependencies is critical to naturallanguage processing (NLP) tasks as well. Self-attentionis a computational primitive [61] that implements pairwiseentity interactions with a content-based addressing mecha-nism, thereby learning a rich hierarchy of associative featuresacross long sequences.",
+      "token_count": 240
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0002",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "Self-attentionis a computational primitive [61] that implements pairwiseentity interactions with a content-based addressing mecha-nism, thereby learning a rich hierarchy of associative featuresacross long sequences. This has now become a standard toolin the form of Transformer [61] blocks in NLP with promi-nent examples being GPT [46, 5] and BERT [14, 42] models.A simple approach to using self-attention in vision is toreplace spatial convolutional layers with the multi-head self-attention (MHSA) layer proposed in the Transformer [61](Figure 1). This approach has seen progress on two seem-ingly different approaches in the recent past. On the onehand, we have models such as SASA [49], AACN [4],SANet [68], Axial-SASA [62], etc that propose to replacespatial convolutions in ResNet botleneck blocks [28] with1. IntroductionDeep convolutional backbone architectures [37, 54, 28,66, 56] have enabled signi\ufb01cant progress in image classi\ufb01-cation [52], object detection [17, 40, 21, 20, 50], instancesegmentation [25, 13, 27].",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0003",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "Most landmark backbone archi-tectures [37, 54, 28] use multiple layers of 3\u00d73 convolutions.While the convolution operation can effectively capturelocal information, vision tasks such as object detection, in-stance segmentation, keypoint detection require modelinglong range dependencies. For example, in instance segmen-tation, being able to collect and associate scene informationfrom a large neighborhood can be useful in learning relation-1Forward and backward propagation for batch size 32different forms of self-attention (local, global, vector, axial,etc). On the other hand, we have the Vision Transformer(ViT) [15], that proposes to stack Transformer blocks [61]operating on linear projections of non-overlapping patches.It may appear that these approaches present two differentclasses of architectures. We point out that it is not the case.Rather, ResNet botteneck blocks with the MHSA layer canbe viewed as Transformer blocks with a bottleneck struc-ture, modulo minor differences such as the residual connec-tions, choice of normalization layers, etc. (Figure 3).",
+      "token_count": 223
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0004",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "Giventhis equivalence, we call ResNet bottleneck blocks with theMHSA layer as Bottleneck Transformer (BoT) blocks.Here are a few challenges when using self-attention invision: (1) Image sizes are much larger (1024 \u00d7 1024) in ob-ject detection and instance segmentation compared to imageclassi\ufb01cation (224 \u00d7 224). (2) The memory and computa-tion for self-attention scale quadratically with spatial dimen-sions [58], causing overheads for training and inference.changes. Or in other words, take a ResNet and only replacethe \ufb01nal three 3 \u00d7 3 convolutions with MHSA layers (Fig1, Table 1). This simple change improves the mask AP by1.2% on the COCO instance segmentation benchmark [40]over our canonical baseline that uses ResNet-50 in the MaskR-CNN framework [27] with no hyperparameter differencesand minimal overheads for training and inference.",
+      "token_count": 206
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0005",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "Movingforward, we call this simple instantiation as BoTNet givenits connections to the Transformer through the BoT blocks.While we note that there is no novelty in its construction,we believe the simplicity and performance make it a usefulreference backbone architecture that is worth studying.Using BoTNet, we demonstrate signi\ufb01cantly improved re-sults on instance segmentation without any bells and whistlessuch as Cascade R-CNN [7], FPN changes [41, 19, 43, 57],hyperparameter changes [56], etc.",
+      "token_count": 113
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0006",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "A few key results fromBoTNet are: (1) Performance gains across various trainingcon\ufb01gurations (Section 4.1), data augmentations (Section4.2) and ResNet family backbones (Section 4.4); (2) Signif-icant boost from BoTNet on small objects (+2.4 Mask APand +2.6 Box AP) (Appendix); (3) Performance gains overNon-Local layers (Section 4.6); (4) Gains that scale wellwith larger images resulting in 44.4% mask AP, competitivewith state-of-the-art performance among entries that onlystudy backbone architectures with modest training schedules(up to 72 epochs) and no extra data or augmentations.2.To overcome these challenges, we consider the followingdesign: (1) Use convolutions to ef\ufb01ciently learn abstract andlow resolution featuremaps from large images; (2) Use global(all2all) self-attention to process and aggregate the informa-tion contained in the featuremaps captured by convolutions.Such a hybrid design [4] (1) uses existing and well optimizedprimitives for both convolutions and all2all self-attention; (2)can deal with large images ef\ufb01ciently by having convolutionsdo the spatial downsampling and letting attention work onsmaller resolutions.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0007",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "Here is a simple practical instantiationof this hybrid design: Replace only the \ufb01nal three bottle-neck blocks of a ResNet with BoT blocks without any other2SoTA is based on https://paperswithcode.com/sota/instance-segmentation-on-coco-minival.Lastly, we scale BoTNets, taking inspiration from thetraining and scaling strategies in [56, 49, 38, 51, 48, 67, 3],after noting that BoTNets do not provide substantial gains ina smaller scale training regime. We design a family of BoT-Net models that achieve up to 84.7% top-1 accuracy on theImageNet validation set, while being upto 1.64x faster thanthe popular Ef\ufb01cientNet models in terms of compute timeon TPU-v3 hardware. By providing strong results throughBoTNet, we hope that self-attention becomes a widely usedprimitive in future vision architectures.Connection to the Transformer: As the title of the pa-per suggests, one key message in this paper is that ResNetbottleneck blocks with Multi-Head Self-Attention (MHSA)layers can be viewed as Transformer blocks with a bottle-neck structure. This is visually explained in Figure 3 andwe name this block as Bottleneck Transformer (BoT). Wenote that the architectural design of the BoT block is notour contribution.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0008",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "This is visually explained in Figure 3 andwe name this block as Bottleneck Transformer (BoT). Wenote that the architectural design of the BoT block is notour contribution. Rather, we point out the relationship be-tween MHSA ResNet bottleneck blocks and the Transformerwith the hope that it improves our understanding of archi-tecture design spaces [47, 48] for self-attention in computervision.",
+      "token_count": 86
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0009",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "Rather, we point out the relationship be-tween MHSA ResNet bottleneck blocks and the Transformerwith the hope that it improves our understanding of archi-tecture design spaces [47, 48] for self-attention in computervision. There are still a few differences aside from the onesalready visible in the \ufb01gure (residual connections and blockboundaries): (1) Normalization: Transformers use LayerNormalization [1] while BoT blocks use Batch Normaliza-tion [35] as is typical in ResNet bottleneck blocks [28]; (2)Non-Linearities: Transformers use one non-linearity in theFFN block, while the ResNet structure allows BoT block touse three non-linearities; (3) Output projections: The MHSAblock in a Transformer contains an output projection whilethe MHSA layer (Fig 4) in a BoT block (Fig 1) does not;(4) We use the SGD with momentum optimizer typicallyused in computer vision [28, 27, 22] while Transformers aregenerally trained with the Adam optimizer [36, 61, 10, 15].Connection to DETR: Detection Transformer (DETR)is a detection framework that uses a Transformer to implicitlyperform region proposals and localization of objects insteadof using an R-CNN [21, 20, 50, 27].",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0010",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "Both DETR and BoT-Net attempt to use self-attention to improve the performanceon object detection and instance (or panoptic) segmentation.The difference lies in the fact that DETR uses Transformerblocks outside the backbone architecture with the motivationto get rid of region proposals and non-maximal suppressionfor simplicity. On the other hand, the goal in BoTNet is toprovide a backbone architecture that uses Transformer-likeblocks for detection and instance segmentation. We are ag-nostic to the detection framework (be it DETR or R-CNN).We perform our experiments with the Mask [27] and FasterR-CNN [50] systems and leave it for future work to integrateBoTNet as the backbone in the DETR framework. Withvisibly good gains on small objects in BoTNet, we believethere maybe an opportunity to address the lack of gain onsmall objects found in DETR, in future (refer to Appendix).Connection to Non-Local Neural Nets:3 Non-Local(NL) Nets [63] make a connection between the Transformerand the Non-Local-Means algorithm [6]. They insert NLblocks into the \ufb01nal one (or) two blockgroups (c4,c5) in aResNet and improve the performance on video recognitionand instance segmentation. Like NL-Nets [63, 8], BoTNet isa hybrid design using convolutions and global self-attention.2.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0011",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "Like NL-Nets [63, 8], BoTNet isa hybrid design using convolutions and global self-attention.2. Related WorkA taxonomy of deep learning architectures that employself-attention for vision is presented in Figure 2. In thissection, we focus on: (1) Transformer vs BoTNet; (2) DETRvs BoTNet; (3) Non-Local vs BoTNet.3The replacement vs insertion contrast has previously been pointed outin AA-ResNet (Bello et. al) [4]. The difference in our work is the completereplacement as opposed to fractional replacement in Bello et al.(1) Three differences between a NL layer and a MHSA layer(illustrated in Figure 4): use of multiple heads, value pro-jection and position encodings in MHSA; (2) NL blocksuse a bottleneck with channel factor reduction of 2 (insteadof 4 in BoT blocks which adopt the ResNet structure); (3)NL blocks are inserted as additional blocks into a ResNetbackbone as opposed to replacing existing convolutionalblocks as done by BoTNet. Section 4.6 offers a comparisonbetween BoTNet, NLNet as well as a NL-like version ofBoTNet where we insert BoT blocks in the same manner asNL blocks instead of replacing.to the input image, respectively.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0012",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "Section 4.6 offers a comparisonbetween BoTNet, NLNet as well as a NL-like version ofBoTNet where we insert BoT blocks in the same manner asNL blocks instead of replacing.to the input image, respectively. Stacks [c2,c3,c4,c5]consist of multiple bottleneck blocks with residual connec-tions (e.g, R50 has [3,4,6,3] bottleneck blocks).Self-Attention LayerH x W x dH*W x H*WH*W x dsoftmaxH*W x H*WH*W x H*Wcontent-contentcontent-positionqkTqrTH x W x d3.",
+      "token_count": 141
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0013",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "MethodqrkvH x 1 x d1 x W x dH x W x dH x W x dH x W x dstageoutputResNet-50BoTNet-50WK : 1 x 1WQ : 1 x 1WV : 1 x 1c1 512 \u00d7 5127\u00d77, 64, stride 27\u00d77, 64, stride 23\u00d73 max pool, stride 23\u00d73 max pool, stride 2\uf8eeH x W x d\uf8ef\uf8f01\u00d71, 643\u00d73, 641\u00d71, 256\uf8ef\uf8f01\u00d71, 643\u00d73, 641\u00d71, 256c2 256 \u00d7 256\uf8fa\uf8fb\u00d73\uf8fa\uf8fb\u00d73\uf8ef\uf8f01\u00d71, 1283\u00d73, 1281\u00d71, 512\uf8ef\uf8f01\u00d71, 1283\u00d73, 1281\u00d71, 512c3 128 \u00d7 128\uf8fa\uf8fb\u00d74\uf8fa\uf8fb\u00d74\uf8ef\uf8f01\u00d71, 2563\u00d73, 2561\u00d71, 1024\uf8ef\uf8f01\u00d71, 2563\u00d73, 2561\u00d71, 1024c464 \u00d7 64\uf8fa\uf8fb\u00d76\uf8fa\uf8fb\u00d76\uf8ef\uf8f01\u00d71, 5123\u00d73, 5121\u00d71, 2048\uf8ef\uf8f01\u00d71, 512MHSA, 5121\u00d71, 2048c532 \u00d7 32\uf8fa\uf8fb\u00d73\uf8fa\uf8fb\u00d73# params.25.5\u00d710620.8\u00d7106M.Adds85.4\u00d7109102.98\u00d7109TPU steptime786.5 ms1032.66 msApproaches that use self-attention throughout the back-bone [49, 4, 68, 15] are feasible for input resolutions(224 \u00d7 224 (for classi\ufb01cation) and 640 \u00d7 640 (for detec-tion experiments in SASA [49])) considered in these papers.Our goal is to use attention in more realistic settings of highperformance instance segmentation models, where typicallyimages of larger resolution (1024 \u00d7 1024) are used.",
+      "token_count": 530
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0014",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "Con-sidering that self-attention when performed globally acrossn entities requires O(n2d) memory and computation [61],we believe that the simplest setting that adheres to the abovefactors would be to incorporate self-attention at the low-est resolution featuremaps in the backbone, ie, the residualblocks in the c5 stack. The c5 stack in a ResNet backbonetypically uses 3 blocks with one spatial 3 \u00d7 3 convolutionin each. Replacing them with MHSA layers forms the basisof the BoTNet architecture. The \ufb01rst block in c5 uses a3 \u00d7 3 convolution of stride 2 while the other two use a strideof 1. Since all2all attention is not a strided operation,we use a 2 \u00d7 2 average-pooling with a stride 2 for the \ufb01rstBoT block. The BoTNet architecture is described in Table 1and the MHSA layer is presented in Figure 4. The stridedBoTNet by design is simple: replace the \ufb01nal three spa-tial (3 \u00d7 3) convolutions in a ResNet with Multi-Head Self-Attention (MHSA) layers that implement global (all2all)self-attention over a 2D featuremap (Fig 4).",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0015",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "A ResNet typ-ically has 4 stages (or blockgroups) commonly referred toas [c2,c3,c4,c5] with strides [4,8,16,32] relativeversion of the BoT block is presented in the Appendix.Backbone epochsAPbbAPmkR501239.035.0Relative Position Encodings:In order to make the atten-tion operation position aware, Transformer based architec-tures typically make use of a position encoding [61]. It hasbeen observed lately that relative-distance-aware positionencodings [53] are better suited for vision tasks [4, 49, 68].This can be attributed to attention not only taking into ac-count the content information but also relative distancesbetween features at different locations, thereby, being ableto effectively associate information across objects with po-sitional awareness.",
+      "token_count": 172
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0016",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "In BoTNet, we adopt the 2D relativeposition self-attention implementation from [49, 4].teBoT501239.4 (+ 0.4) 35.3 (+ 0.3)R502441.236.9BoT502442.8 (+ 1.6) 38.0 (+ 1.1)R503642.137.7BoT503643.6 (+ 1.5) 38.9 (+ 1.2)R507242.837.9BoT507243.7 (+ 0.9) 38.7 (+ 0.8)4. Experiments3x: 36 epochs, 6x: 72 epochs8, all using the same hyper-parameters for both the backbones across all the trainingschedules (Table 2). We clearly see that BoT50 is a signi\ufb01-cant improvement on top of R50 barring the 1x schedule (12epochs). This suggests that BoT50 warrants longer trainingin order to show signi\ufb01cant improvement over R50. We alsosee that the improvement from BoT50 in the 6x schedule (72epochs) is worse than its improvement in the 3x schedule(32 epochs). This suggests that training much longer withthe default scale jitter hurts.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0017",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "We alsosee that the improvement from BoT50 in the 6x schedule (72epochs) is worse than its improvement in the 3x schedule(32 epochs). This suggests that training much longer withthe default scale jitter hurts. We address this by using a moreaggressive scale jitter (Section 4.2).We study the bene\ufb01ts of BoTNet for instance segmen-tation and object detection. We perform a thorough abla-tion study of various design choices through experimentson the COCO dataset [40]. We report the standard COCOmetrics including the APbb (averaged over IoU thresholds),APbb50, APbb75, APmk; APmk50 , APmk75 for box and mask respec-tively. As is common practice these days, we train usingthe COCO train set and report results on the COCO val(or minival) set as followed in Detectron [22]4. Our ex-periments are based on the Google Cloud TPU detectioncodebase5. We run all the baselines and ablations withthe same codebase. Unless explicitly speci\ufb01ed, our train-ing infrastructure uses v3-8 Cloud-TPU which contains8 cores with 16 GB memory per core.",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0018",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "We run all the baselines and ablations withthe same codebase. Unless explicitly speci\ufb01ed, our train-ing infrastructure uses v3-8 Cloud-TPU which contains8 cores with 16 GB memory per core. We train with thebfloat16 precision and cross-replica batch normaliza-tion [35, 64, 27, 22, 45] using a batch size of 64.4.2. Scale Jitter helps BoTNet more than ResNetBackbone jitterAPbbAPmkR50[0.8, 1.25]42.837.94.1. BoTNet improves over ResNet on COCO In-stance Segmentation with Mask R-CNNBoT50[0.8, 1.25] 43.7 (+ 0.9) 38.7 (+ 0.8)R50[0.5, 2.0]43.739.1We consider the simplest and most widely used setting:ResNet-506 backbone with FPN7.",
+      "token_count": 221
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0019",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "We use images of resolu-tion 1024 \u00d71024 with a multi-scale jitter of [0.8, 1.25] (scal-ing the image dimension between 820 and 1280, in order tobe consistent with the Detectron setting of using 800\u00d71300).In this setting, we benchmark both the ResNet-50 (R50) andBoT ResNet-50 (BoT50) as the backbone architectures formultiple training schedules: 1x: 12 epochs, 2x: 24 epochs,BoT50[0.5, 2.0] 45.3 (+ 1.8) 40.5 (+ 1.4)R50[0.1, 2.0]43.839.2BoT50[0.1, 2.0] 45.9 (+ 2.1) 40.7 (+ 1.5)In Section 4.1, we saw that training much longer (72epochs) reduced the gains for BoT50. One way to addressthis is to increase the amount of multi-scale jitter which hasbeen known to improve the performance of detection andsegmentation systems [16, 18].",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0020",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "One way to addressthis is to increase the amount of multi-scale jitter which hasbeen known to improve the performance of detection andsegmentation systems [16, 18]. Table 3 shows that BoT50is signi\ufb01cantly better than R50 ( + 2.1% on APbb and +1.7% on APmk) for multi-scale jitter of [0.5, 2.0], while alsoshowing signi\ufb01cant gains ( + 2.2% on APbb and + 1.6% on4train - 118K images, val - 5K images5https://github.com/tensorflow/tpu/tree/master/models/official/detection6We use the ResNet backbones pre-trained on ImageNet classi\ufb01cation asis common practice. For BoTNet, the replacement layers are not pre-trainedbut randomly initialized for simplicity; the remaining layers are initializedfrom a pre-trained ResNet.7FPN refers to Feature Pyramid Network [39].",
+      "token_count": 215
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0021",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "For BoTNet, the replacement layers are not pre-trainedbut randomly initialized for simplicity; the remaining layers are initializedfrom a pre-trained ResNet.7FPN refers to Feature Pyramid Network [39]. We use it in everyexperiment we report results on, and our FPN levels from 2 to 6 (p2 to p6)similar to Detectron [22].81x, 2x, 3x and 6x convention is adopted from MoCo [26].APmk) for scale jitter of [0.1, 2.0], suggesting that BoTNet(self-attention) bene\ufb01ts more from extra augmentations suchas multi-scale jitter compared to ResNet (pure convolutions).through attention than stacking convolution layers.10BackboneAPbbAPmk4.3. Relative Position Encodings Boost PerformanceR5042.137.7BoT5043.6 (+ 1.5) 38.9 (+ 1.2)BoTNet uses relative position encodings [53]. We presentan ablation for the use of relative position encodings bybenchmarking the individual gains from content-content in-teraction (qkT ) and content-position interaction (qrT ) whereq, k, r represent the query, key and relative position encod-ings respectively. The ablations (Table 4) are performedwith the canonical setting9.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0022",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "The ablations (Table 4) are performedwith the canonical setting9. We see that the gains from qrTR10143.338.4BoT10145.5 (+ 2.2) 40.4 (+ 2.0)R15244.239.1BoT15246.0 (+ 1.8) 40.6 (+ 1.5)and qkT are complementary with qrT more important, ie,qkT standalone contributes to 0.6% APbb and 0.6% APmkimprovement over the R50 baseline, while qrT standalonecontributes to 1.0% APbb and 0.7 % APmk improvement.When combined together (qkT + qrT ), the gains on bothAPbb and APmk are additive ( 1.5% and 1.2% respectively).We also see that using absolute position encodings (qrTabs)does not provide as much gain as relative. This suggests thatintroducing relative position encodings into architectureslike DETR [10] is an interesting direction for future work.4.5.",
+      "token_count": 234
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0023",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "This suggests thatintroducing relative position encodings into architectureslike DETR [10] is an interesting direction for future work.4.5. BoTNet scales well with larger imagesWe benchmark BoTNet as well as baseline ResNet whentrained on 1280 \u00d7 1280 images in comparison to 1024 \u00d71024 using the best con\ufb01g: multi-scale jitter of [0.1, 2.0] andtraining for 72 epochs. Results are presented in Tables 6and 8. Results in Table 6 suggest that BoTNet bene\ufb01ts fromtraining on larger images for all of R50, R101 and R152.BoTNet trained on 1024 \u00d7 1024 (leave alone 1280 \u00d7 1280)is signi\ufb01cantly better than baseline ResNet trained on 1280\u00d71280. Further, BoT200 trained with 1280 \u00d7 1280 achieves aAPbb of 49.7% and APmk of 44.4%. We believe this resulthighlights the power of self-attention, in particular, becauseit has been achieved without any bells and whistles such asmodi\ufb01ed FPN [41, 19, 16, 57], cascade RCNN [7], etc.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0024",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "Thisresult surpasses the previous best published single modelsingle scale instance segmentation result from ResNeSt [67]evaluated on the COCO minival (44.2% APmk).BackboneAtt. TypeAPbbAPmkR50-42.137.7BoT50qkT42.7 (+ 0.6) 38.3 (+ 0.6)BoT50qrTrelative43.1 (+ 1.0) 38.4 (+ 0.7)BoT50qkT + qrTrelative 43.6 (+ 1.5) 38.9 (+ 1.2)BoT50qkT + qrTabs42.5 (+ 0.4) 38.1 (+ 0.4)Backbone resAPbbAPmk4.4. BoTNet improves backbones in ResNet FamilyR50128044.039.5How well does the replacement setup of BoTNet workfor other backbones in the ResNet family? Table 5 presentsthe results for BoTNet with R50, R101, and R152. Allthese experiments use the canonical training setting (referto footnote in 4.3). These results demonstrate that BoTNetis applicable as a drop-in replacement for any ResNet back-bone.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0025",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "Allthese experiments use the canonical training setting (referto footnote in 4.3). These results demonstrate that BoTNetis applicable as a drop-in replacement for any ResNet back-bone. Note that BoT50 is better than R101 (+ 0.3% APbb,+ 0.5% APmk) while it is competitive with R152 on APmk.Replacing 3 spatial convolutions with all2all attentiongives more improvement in the metrics compared to stacking50 more layers of convolutions (R101), and is competitivewith stacking 100 more layers (R152), supporting our initialhypothesis that long-range dependencies are better capturedBoT501024 45.9 (+ 1.9) 40.7 (+ 1.2)BoT501280 46.1 (+ 2.1) 41.2 (+ 1.8)R101128046.441.2BoT1011024 47.4 (+ 1.0) 42.0 (+ 0.8)BoT1011280 47.9 (+ 1.5) 42.4 (+ 1.2)10Note that while one may argue that the improvements of BoT50 overR50 could be attributed to having 1.2x more M.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0026",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "Adds, BoT50 (121 \u00d7109 M.Adds) is also better than R101 (162.99 \u00d7 109 B M. Adds andis competitive with R152 (240.56 \u00d7 109 M. Adds) despite performingsigni\ufb01cantly less computation.9res:1024x1024, 36 epochs (3x schedule),multi-scale jitter:[0.8, 1.25]BackboneChange in backboneAPbbAPmk\ufb01t of reducing the parameters while maintaining comparablecomputation (M.Adds).A simple method to \ufb01x this lack of gain is to take advan-tage of the image sizes typically used for image classi\ufb01cation.In image classi\ufb01cation, we often deal with much smaller im-age sizes (224 \u00d7 224) compared to those used in objectdetection and segmentation (1024\u00d71024). The featuremapson which the BoT blocks operate are hence much smaller(e.g 14 \u00d7 14, 7 \u00d7 7) compared to those in instance segmen-tation and detection (e.g 64 \u00d7 64, 32 \u00d7 32). With the samenumber of parameters, and, without a signi\ufb01cant increasein computation, the BoTNet design in the c5 blockgroupcan be changed to uniformly use a stride of 1 in all the \ufb01nalMHSA layers.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0027",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "We call this design as BoTNet-S1 (S1 todepict stride 1 in the \ufb01nal blockgroup). We note that this ar-chitecture is similar in design to the hybrid models exploredin Vision Transformer (ViT) [15] that use a ResNet up tostage c4 prior to stacking Transformer blocks. The maindifference between BoTNet-S1 and the hybrid ViT modelslies in the use of BoT blocks as opposed to regular Trans-former blocks (other differences being normalization layer,optimizer, etc as mentioned in the contrast to Transformer inRelated Work (Sec. 2). The architectural distinction amongstResNet, BoTNet and BoTNet-S1, in the \ufb01nal blockgroup, isvisually explained in the Appendix).",
+      "token_count": 160
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0028",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "The architectural distinction amongstResNet, BoTNet and BoTNet-S1, in the \ufb01nal blockgroup, isvisually explained in the Appendix). The strided BoT blockis visually explained in the Appendix.R50-42.137.7R50 + NL [63]+ 1 NL block in c443.138.4R50 + BoT (c4)+ 1 BoT block in c443.738.9R50 + BoT (c4, c5)+ 2 BoT blocks in c4,c544.939.7BoT50Replacement in c543.638.9BackboneAPbbAPbb50APbb75APmkAPmk50APmk75BoT15249.571.054.243.768.247.4BoT20049.771.354.644.468.948.24.6. Comparison with Non-Local Neural NetworksHow does BoTNet compare to Non-Local Neural Net-works? NL ops are inserted into the c4 stack of a ResNetbackbone between the pre-\ufb01nal and \ufb01nal bottleneck blocks.This adds more parameters to the model, whereas BoTNetends up reducing the model parameters (Table 5). In theNL mould, we add ablations where we introduce BoT blockin the exact same manner as the NL block.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0029",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "In theNL mould, we add ablations where we introduce BoT blockin the exact same manner as the NL block. We also run anablation with the insertion of two BoT blocks, one each inthe c4,c5 stacks. Results are presented in Table 7. Addinga NL improves APbb by 1.0 and APbb by 0.7, while adding aBoT block gives +1.6 APbb and +1.2 APmk showing that BoTblock design is better than NL. Further, BoT-R50 (whichreplaces instead of adding new blocks) provides +1.5 APbb4.7.2Evaluation in the standard training settingWe \ufb01rst evaluate this design for the 100 epoch setting alongwith R50 and BoT50. We see that BoT-S1-50 improves ontop of R50 by 0.9% in the regular setting (Table 9). Thisimprovement does however come at the cost of more compu-tation (m.adds). Nevertheless, the improvement is a promis-ing signal for us to design models that scale well with largerimages and improved training conditions that have becomemore commonly used since Ef\ufb01cientNets [56].and + 1.2 APmk, as good as adding another BoT block andbetter than adding one additional NL block.4.7.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0030",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "Image Classi\ufb01cation on ImageNetBackbone M.Adds Params top-1 acc.4.7.1BoTNet-S1 architectureR503.86G25.5M76.8While we motivated the design of BoTNet for detection andsegmentation, it is a natural question to ask whether theBoTNet architecture design also helps improve the imageclassi\ufb01cation performance on the ImageNet [52] benchmark.Prior work [65] has shown that adding Non-Local blocksto ResNets and training them using canonical settings doesnot provide substantial gains. We observe a similar \ufb01nd-ing for BoTNet-50 when contrasted with ResNet-50, withboth models trained with the canonical hyperparameters forImageNet [48]: 100 epochs, batch size 1024, weight decay1e-4, standard ResNet data augmentation, cosine learningrate schedule (Table 9).",
+      "token_count": 191
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0031",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "BoT50 does not provide signi\ufb01cantgains over R50 on ImageNet though it does provide the bene-BoT503.79G20.8M 77.0 (+0.2)BoT-S1-50 4.27G20.8M 77.7 (+ 0.9)4.7.3Effect of data augmentation and longer trainingWe saw from our instance segmentation experiments thatBoTNet and self-attention bene\ufb01t more from regularizationsuch as data augmentation (in the case of segmentation, in-creased multi-scale jitter) and longer training. It is naturalto expect that the gains from BoT and BoT-S1 could im-prove when training under an improved setting: 200 epochs,batch size 4096, weight decay 8e-5, RandAugment (2 layers,magnitude 10), and label smoothing of 0.1. In line with ourintuition, the gains are much more signi\ufb01cant in this settingfor both BoT50 (+ 0.6%) and BoT-S1-50 (+ 1.4%) comparedto the baseline R50 (Table 10).and data augmentation). We additionally show Ef\ufb01cientNetand DeiT [60] (regularized version of ViT [15])11 to under-stand the performance of BoTNets compared with popularConvNets and Transformer models.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0032",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "We additionally show Ef\ufb01cientNetand DeiT [60] (regularized version of ViT [15])11 to under-stand the performance of BoTNets compared with popularConvNets and Transformer models. Ef\ufb01cientNets and DeiTare trained under strong data augmentation, model regular-ization, and long training schedules, similar to the trainingsettings of BoTNets in the experiments.ResNets and SENets are strong baselines until 83%top-1 accuracy. ResNets and SENets achieve strong perfor-mance in the improved Ef\ufb01cientNet training setting. BoT-Nets T3 and T4 do not outperform SENets, while T5 doesperform on par with S4. This suggests that pure convo-lutional models such as ResNets and SENets are still thebest performing models until an accuracy regime of 83%.BoTNets scale better beyond 83% top-1 accuracy. WhileSENets are a powerful model class outperforms BoTNets(up to T4), we found gains to diminish beyond SE-350 (350layer SENet described in Appendix) trained with image size384. This model is referred to as S5 and achieves 83.8%top-1 accuracy.",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0033",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "This model is referred to as S5 and achieves 83.8%top-1 accuracy. On the other hand, BoTNets scale well tolarger image sizes (corroborating with our results in instancesegmentation when the gains from self-attention were muchmore visible for larger images). In particular, T7 achieves84.7% top-1 acc., matching the accuracy of B7-RA, with a1.64x speedup in ef\ufb01ciency. BoTNets perform better thanViT-regularized (DeiT-384), showing the power of hybridmodels that make use of both convolutions and self-attentioncompared to pure attention models on ImageNet-1K.Backbonetop-1 acc.top-5 acc.R5077.793.9BoT5078.3 (+ 0.6) 94.2 (+ 0.3)BoT-S1-50 79.1 (+ 1.4) 94.4 (+ 0.5)4.7.4Scaling BoTNets85.0B7-RA84.5T7-32084.0Top-1 Accuracy (%)83.583.0ViT Regularized (DeiT-384)82.55.",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0034",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "Conclusion82.081.5BoTNets (T)EfficientNets (B)SENets (S)The design of vision backbone architectures that useself-attention is an exciting topic.We hope that ourwork helps in improving the understanding of architec-ture design in this space. Incorporating self-attention forother computer vision tasks such as keypoint detection [9]and 3D shape prediction [23]; studying self-attention ar-chitectures for self-supervised learning in computer vi-sion [29, 26, 59, 11, 24, 12]; and scaling to much largerdatasets such as JFT, YFCC and Instagram, are ripe avenuesfor future research. Comparing to, and incorporating al-ternatives to self-attention such as lambda-layers [2] is animportant future direction as well.81.00200400600800100012001400TPU-v3 Compute Steptime for Batch Size 32 (milliseconds)The previous ablations show the BoNets performancewith a ResNet-50 backbone and 224 \u00d7 224 image resolution.Here we study BoTNets when scaling up the model capacityand image resolution.",
+      "token_count": 244
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0035",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "There have been several works improv-ing the performance of ConvNets on ImageNet [67, 56, 3].Bello et al. [3] recently propose scaling strategies that mainlyincrease model depths and increase the image resolutionsmuch slower compared to the compound scaling rule pro-posed in Ef\ufb01cientNets [56]. We use similar scaling rulesand design a family of BoTNets. The details of modeldepth and image resolutions are in the Appendix. We com-pare to the SENets baseline to understand the impact of theBoT blocks. The BoTNets and SENets experiments are per-formed under the same training settings (e.g., regularization6. AcknowledgementsWe thank Ilija Radosavovic for several useful discus-sions; Pengchong Jin and Xianzhi Du for help with theTF Detection codebase; Irwan Bello, Barret Zoph, Neil11ViT refers to Vision Transformer [15], while DeiT refers to Data-Ef\ufb01cient Image Transformer [60]. DeiT can be viewed as a regularizedversion of ViT with augmentations, better training hyperparameters tunedfor ImageNet, and knowledge distillation [30]. We do not compare tothe distilled version of DeiT since it\u2019s an orthogonal axis of improvementapplicable to all models.Houlsby, Alexey Dosovitskiy for feedback.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0036",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "We do not compare tothe distilled version of DeiT since it\u2019s an orthogonal axis of improvementapplicable to all models.Houlsby, Alexey Dosovitskiy for feedback. We thank ZakStone for extensive compute support throughout this projectthe through TFRC program providing Google Cloud TPUs(https://www.tensorflow.org/tfrc).[14] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and KristinaToutanova.BERT: Pre-training of deep bidirectionaltransformers for language understanding.arXiv preprintarXiv:1810.04805, 2018.[15] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov,Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner,Mostafa Dehghani, Matthias Minderer, Georg Heigold, Syl-vain Gelly, Jakob Uszkoreit, and Neil Houlsby.",
+      "token_count": 199
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0037",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "An image isworth 16x16 words: Transformers for image recognition atscale, 2020.[16] Xianzhi Du, Tsung-Yi Lin, Pengchong Jin, Golnaz Ghiasi,Mingxing Tan, Yin Cui, Quoc V Le, and Xiaodan Song.Spinenet: Learning scale-permuted backbone for recognitionand localization. arXiv preprint arXiv:1912.05027, 2019.[17] Mark Everingham, Luc Van Gool, Christopher KI Williams,John Winn, and Andrew Zisserman. The pascal visual objectclasses (voc) challenge. International journal of computervision, 88(2):303\u2013338, 2010.[18] Golnaz Ghiasi, Yin Cui, Aravind Srinivas, Rui Qian, Tsung-Yi Lin, Ekin D. Cubuk, Quoc V. Le, and Barret Zoph. Simplecopy-paste is a strong data augmentation method for instancesegmentation, 2020.[19] Golnaz Ghiasi, Tsung-Yi Lin, and Quoc V Le. Nas-fpn:Learning scalable feature pyramid architecture for object de-tection. In Proceedings of the IEEE Conference on ComputerVision and Pattern Recognition, pages 7036\u20137045, 2019.[20] Ross Girshick. Fast r-cnn.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0038",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "In Proceedings of the IEEE Conference on ComputerVision and Pattern Recognition, pages 7036\u20137045, 2019.[20] Ross Girshick. Fast r-cnn. In Proceedings of the IEEE inter-national conference on computer vision, pages 1440\u20131448,2015.[21] Ross Girshick, Jeff Donahue, Trevor Darrell, and JitendraMalik. Rich feature hierarchies for accurate object detectionand semantic segmentation.In Proceedings of the IEEEconference on computer vision and pattern recognition, pages580\u2013587, 2014.[22] Ross Girshick, Ilija Radosavovic, Georgia Gkioxari, PiotrDoll\u00e1r, and Kaiming He. Detectron, 2018.[23] Georgia Gkioxari, Jitendra Malik, and Justin Johnson. Meshr-cnn. In Proceedings of the IEEE International Conferenceon Computer Vision, pages 9785\u20139795, 2019.[24] Jean-Bastien Grill, Florian Strub, Florent Altch\u00e9, CorentinTallec, Pierre H Richemond, Elena Buchatskaya, Carl Do-ersch, Bernardo Avila Pires, Zhaohan Daniel Guo, Moham-mad Gheshlaghi Azar, et al.",
+      "token_count": 273
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0039",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Bootstrap your own latent: Anew approach to self-supervised learning. arXiv preprintarXiv:2006.07733, 2020.[25] Bharath Hariharan, Pablo Arbel\u00e1ez, Ross Girshick, and Ji-tendra Malik. Simultaneous detection and segmentation. InEuropean Conference on Computer Vision, pages 297\u2013312.Springer, 2014.[26] Kaiming He, Haoqi Fan, Yuxin Wu, Saining Xie, and RossGirshick. Momentum contrast for unsupervised visual repre-sentation learning, 2019.[27] Kaiming He, Georgia Gkioxari, Piotr Doll\u00e1r, and Ross Gir-shick. Mask r-cnn. In ICCV, 2017.[28] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.Deep residual learning for image recognition. In Proceed-ings of the IEEE conference on computer vision and patternrecognition, pages 770\u2013778, 2016.References[1] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hin-ton. Layer normalization. arXiv preprint arXiv:1607.06450,2016.[2] Irwan Bello. Lambdanetworks: Modeling long-range inter-actions without attention.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0040",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "Layer normalization. arXiv preprint arXiv:1607.06450,2016.[2] Irwan Bello. Lambdanetworks: Modeling long-range inter-actions without attention. In International Conference onLearning Representations, 2021.[3] Irwan Bello, William Fedus, Xianzhi Du, Ekin D. Cubuk,Aravind Srinivas, Tsung-Yi Lin, Jonathon Shlens, and BarretZoph. Revisiting ResNets: Improved Training and ScalingStrategies, 2021.[4] Irwan Bello, Barret Zoph, Ashish Vaswani, Jonathon Shlens,and Quoc V Le. Attention augmented convolutional networks.In Proceedings of the IEEE International Conference on Com-puter Vision, pages 3286\u20133295, 2019.[5] Tom B Brown, Benjamin Mann, Nick Ryder, Melanie Sub-biah, Jared Kaplan, Prafulla Dhariwal, Arvind Neelakan-tan, Pranav Shyam, Girish Sastry, Amanda Askell, et al.Language models are few-shot learners.arXiv preprintarXiv:2005.14165, 2020.[6] Antoni Buades, Bartomeu Coll, and J-M Morel. A non-localalgorithm for image denoising.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0041",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "A non-localalgorithm for image denoising. In 2005 IEEE Computer Soci-ety Conference on Computer Vision and Pattern Recognition(CVPR\u201905), volume 2, pages 60\u201365. IEEE, 2005.[7] Zhaowei Cai and Nuno Vasconcelos. Cascade r-cnn: Delvinginto high quality object detection. In Proceedings of the IEEEconference on computer vision and pattern recognition, pages6154\u20136162, 2018.[8] Yue Cao, Jiarui Xu, Stephen Lin, Fangyun Wei, and HanHu. Gcnet: Non-local networks meet squeeze-excitation net-works and beyond. In Proceedings of the IEEE InternationalConference on Computer Vision Workshops, pages 0\u20130, 2019.[9] Zhe Cao, Tomas Simon, Shih-En Wei, and Yaser Sheikh.Realtime multi-person 2d pose estimation using part af\ufb01nity\ufb01elds. In Proceedings of the IEEE conference on computervision and pattern recognition, pages 7291\u20137299, 2017.[10] Nicolas Carion, Francisco Massa, Gabriel Synnaeve, NicolasUsunier, Alexander Kirillov, and Sergey Zagoruyko.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0042",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "End-to-end object detection with transformers. arXiv preprintarXiv:2005.12872, 2020.[11] Ting Chen, Simon Kornblith, Mohammad Norouzi, and Ge-offrey Hinton. A simple framework for contrastive learningof visual representations. arXiv preprint arXiv:2002.05709,2020.[12] Xinlei Chen and Kaiming He. Exploring simple siameserepresentation learning. arXiv preprint arXiv:2011.10566,2020.[13] Jifeng Dai, Kaiming He, and Jian Sun. Instance-aware se-mantic segmentation via multi-task network cascades.",
+      "token_count": 146
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0043",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "Instance-aware se-mantic segmentation via multi-task network cascades. InProceedings of the IEEE Conference on Computer Vision andPattern Recognition, pages 3150\u20133158, 2016.[29] Olivier J H\u00e9naff, Aravind Srinivas, Jeffrey De Fauw, AliRazavi, Carl Doersch, SM Eslami, and Aaron van den Oord.Data-ef\ufb01cient image recognition with contrastive predictivecoding. arXiv preprint arXiv:1905.09272, 2019.[30] Geoffrey Hinton, Oriol Vinyals, and Jeff Dean.Distill-ing the knowledge in a neural network.arXiv preprintarXiv:1503.02531, 2015.[31] Jonathan Ho, Nal Kalchbrenner, Dirk Weissenborn, and TimSalimans. Axial attention in multidimensional transformers.arXiv preprint arXiv:1912.12180, 2019.[32] Han Hu, Jiayuan Gu, Zheng Zhang, Jifeng Dai, and YichenWei. Relation networks for object detection. In Proceedingsof the IEEE Conference on Computer Vision and PatternRecognition, pages 3588\u20133597, 2018.[33] Han Hu, Zheng Zhang, Zhenda Xie, and Stephen Lin. Localrelation networks for image recognition.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0044",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "Localrelation networks for image recognition. In Proceedings of theIEEE International Conference on Computer Vision, pages3464\u20133473, 2019.[34] Zilong Huang, Xinggang Wang, Lichao Huang, Chang Huang,Yunchao Wei, and Wenyu Liu. Ccnet: Criss-cross attentionfor semantic segmentation. In Proceedings of the IEEE In-ternational Conference on Computer Vision, pages 603\u2013612,2019.[35] Sergey Ioffe and Christian Szegedy. Batch normalization:Accelerating deep network training by reducing internal co-variate shift. arXiv preprint arXiv:1502.03167, 2015.[36] Diederik P Kingma and Jimmy Ba. Adam: A method forstochastic optimization.arXiv preprint arXiv:1412.6980,2014.[37] Alex Krizhevsky, Ilya Sutskever, and Geoffrey E Hinton. Im-agenet classi\ufb01cation with deep convolutional neural networks.In NeurIPS, 2012.[38] Jungkyu Lee, Taeryun Won, Tae Kwan Lee, Hyemin Lee,Geonmo Gu, and Kiho Hong.",
+      "token_count": 256
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0045",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "Compounding the performanceimprovements of assembled techniques in a convolutionalneural network. arXiv preprint arXiv:2001.06268, 2020.[39] Tsung-Yi Lin, Piotr Doll\u00e1r, Ross Girshick, Kaiming He,Bharath Hariharan, and Serge Belongie. Feature pyramidnetworks for object detection. In Proceedings of the IEEEconference on computer vision and pattern recognition, pages2117\u20132125, 2017.[40] Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays,Pietro Perona, Deva Ramanan, Piotr Doll\u00e1r, and C LawrenceZitnick. Microsoft coco: Common objects in context. InEuropean conference on computer vision, pages 740\u2013755.Springer, 2014.[41] Shu Liu, Lu Qi, Haifang Qin, Jianping Shi, and Jiaya Jia. Pathaggregation network for instance segmentation. In Proceed-ings of the IEEE Conference on Computer Vision and PatternRecognition, pages 8759\u20138768, 2018.[42] Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, MandarJoshi, Danqi Chen, Omer Levy, Mike Lewis, Luke Zettle-moyer, and Veselin Stoyanov.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0046",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "Roberta: A robustly optimizedbert pretraining approach. arXiv preprint arXiv:1907.11692,2019.[43] Yudong Liu, Yongtao Wang, Siwei Wang, TingTing Liang,Qijie Zhao, Zhi Tang, and Haibin Ling. Cbnet: A novelcomposite backbone network architecture for object detection.arXiv preprint arXiv:1909.03625, 2019.[44] Jiasen Lu, Dhruv Batra, Devi Parikh, and Stefan Lee. Vilbert:Pretraining task-agnostic visiolinguistic representations forvision-and-language tasks. In Advances in Neural InformationProcessing Systems, pages 13\u201323, 2019.[45] Chao Peng, Tete Xiao, Zeming Li, Yuning Jiang, XiangyuZhang, Kai Jia, Gang Yu, and Jian Sun. Megdet: A large mini-batch object detector. In Proceedings of the IEEE Conferenceon Computer Vision and Pattern Recognition, pages 6181\u20136189, 2018.[46] Alec Radford, Jeffrey Wu, Rewon Child, David Luan, DarioAmodei, and Ilya Sutskever. Language models are unsuper-vised multitask learners.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0047",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "Language models are unsuper-vised multitask learners. OpenAI Blog, 1(8):9, 2019.[47] Ilija Radosavovic, Justin Johnson, Saining Xie, Wan-Yen Lo,and Piotr Doll\u00e1r. On network design spaces for visual recog-nition. In Proceedings of the IEEE International Conferenceon Computer Vision, pages 1882\u20131890, 2019.[48] Ilija Radosavovic, Raj Prateek Kosaraju, Ross Girshick, Kaim-ing He, and Piotr Doll\u00e1r. Designing network design spaces.In Proceedings of the IEEE/CVF Conference on ComputerVision and Pattern Recognition, pages 10428\u201310436, 2020.[49] Prajit Ramachandran, Niki Parmar, Ashish Vaswani, IrwanBello, Anselm Levskaya, and Jonathon Shlens.Stand-alone self-attention in vision models.arXiv preprintarXiv:1906.05909, 2019.[50] Shaoqing Ren, Kaiming He, Ross Girshick, and Jian Sun.Faster r-cnn: Towards real-time object detection with regionproposal networks. In NeurIPS, 2015.[51] Tal Ridnik, Hussam Lawen, Asaf Noy, Emanuel Ben Baruch,Gilad Sharir, and Itamar Friedman.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0048",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "In NeurIPS, 2015.[51] Tal Ridnik, Hussam Lawen, Asaf Noy, Emanuel Ben Baruch,Gilad Sharir, and Itamar Friedman. Tresnet: High perfor-mance gpu-dedicated architecture. In Proceedings of theIEEE/CVF Winter Conference on Applications of ComputerVision, pages 1400\u20131409, 2021.[52] Olga Russakovsky, Jia Deng, Hao Su, Jonathan Krause, San-jeev Satheesh, Sean Ma, Zhiheng Huang, Andrej Karpathy,Aditya Khosla, Michael Bernstein, et al. Imagenet largescale visual recognition challenge. International journal ofcomputer vision, 115(3):211\u2013252, 2015.[53] Peter Shaw, Jakob Uszkoreit, and Ashish Vaswani. Self-attention with relative position representations. arXiv preprintarXiv:1803.02155, 2018.[54] Karen Simonyan and Andrew Zisserman. Very deep convo-lutional networks for large-scale image recognition. arXivpreprint arXiv:1409.1556, 2014.[55] Chen Sun, Austin Myers, Carl Vondrick, Kevin Murphy, andCordelia Schmid. Videobert: A joint model for video andlanguage representation learning.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0049",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "Videobert: A joint model for video andlanguage representation learning. In Proceedings of the IEEEInternational Conference on Computer Vision, pages 7464\u20137473, 2019.[56] Mingxing Tan and Quoc V Le. Ef\ufb01cientnet: Rethinking modelscaling for convolutional neural networks. arXiv preprintarXiv:1905.11946, 2019.[57] Mingxing Tan, Ruoming Pang, and Quoc V Le. Ef\ufb01cient-det: Scalable and ef\ufb01cient object detection. arXiv preprintarXiv:1911.09070, 2019.[58] Yi Tay, Mostafa Dehghani, Dara Bahri, and Donald Met-zler.Ef\ufb01cient transformers: A survey.arXiv preprintarXiv:2009.06732, 2020.[59] Yonglong Tian, Dilip Krishnan, and Phillip Isola. Contrastivemultiview coding. arXiv preprint arXiv:1906.05849, 2019.[60] Hugo Touvron, Matthieu Cord, Matthijs Douze, FranciscoMassa, Alexandre Sablayrolles, and Herv\u00e9 J\u00e9gou.",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0050",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "Trainingdata-ef\ufb01cient image transformers and distillation through at-tention, 2021.[61] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszko-reit, Llion Jones, Aidan N Gomez, \u0141ukasz Kaiser, and IlliaPolosukhin. Attention is all you need. In Advances in neuralinformation processing systems, pages 5998\u20136008, 2017.[62] Huiyu Wang, Yukun Zhu, Bradley Green, Hartwig Adam,Alan Yuille, and Liang-Chieh Chen. Axial-deeplab: Stand-alone axial-attention for panoptic segmentation.arXivpreprint arXiv:2003.07853, 2020.[63] Xiaolong Wang, Ross Girshick, Abhinav Gupta, and KaimingHe. Non-local neural networks. In Proceedings of the IEEEconference on computer vision and pattern recognition, pages7794\u20137803, 2018.[64] Yuxin Wu and Kaiming He. Group normalization. In Pro-ceedings of the European Conference on Computer Vision(ECCV), pages 3\u201319, 2018.[65] Cihang Xie, Yuxin Wu, Laurens van der Maaten, Alan LYuille, and Kaiming He. Feature denoising for improving ad-versarial robustness.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2101.11605_chunk_0051",
+      "arxiv_id": "2101.11605",
+      "chunk_index": 51,
+      "section": "preamble",
+      "text": "Feature denoising for improving ad-versarial robustness. In Proceedings of the IEEE Conferenceon Computer Vision and Pattern Recognition, pages 501\u2013509,2019.[66] Saining Xie, Ross Girshick, Piotr Doll\u00e1r, Zhuowen Tu, andKaiming He. Aggregated residual transformations for deepneural networks. In Proceedings of the IEEE conference oncomputer vision and pattern recognition, pages 1492\u20131500,2017.[67] Hang Zhang, Chongruo Wu, Zhongyue Zhang, Yi Zhu, ZhiZhang, Haibin Lin, Yue Sun, Tong He, Jonas Mueller, R.Manmatha, Mu Li, and Alexander Smola. Resnest: Split-attention networks, 2020.[68] Hengshuang Zhao, Jiaya Jia, and Vladlen Koltun. Exploringself-attention for image recognition, 2020.",
+      "token_count": 194
+    }
+  ]
+}

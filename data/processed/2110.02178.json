@@ -1,0 +1,615 @@
+{
+  "arxiv_id": "2110.02178",
+  "title": "MobileViT: Light-weight, General-purpose, and Mobile-friendly Vision Transformer",
+  "authors": [
+    "Sachin Mehta",
+    "Mohammad Rastegari"
+  ],
+  "year": 2021,
+  "abstract": "Light-weight convolutional neural networks (CNNs) are the de-facto for mobile vision tasks. Their spatial inductive biases allow them to learn representations with fewer parameters across different vision tasks. However, these networks are spatially local. To learn global representations, self-attention-based vision trans-formers (ViTs) have been adopted. Unlike CNNs, ViTs are heavy-weight. In this paper, we ask the following question: is it possible to combine the strengths of CNNs and ViTs to build a light-weight and low latency network for mobile vision tasks? Towards this end, we introduce MobileViT, a light-weight and general-purpose vision transformer for mobile devices. MobileViT presents a different perspective for the global processing of information with transformers, i.e., transformers as convolutions. Our results show that MobileViT significantly outperforms CNN- and ViT-based networks across different tasks and datasets. On the ImageNet-1k dataset, MobileViT achieves top-1 accuracy of 78.4% with about 6 million parameters, which is 3.2% and 6.2% more accurate than MobileNetv3 (CNN-based) and DeIT (ViT-based) for a similar number of parameters. On the MS-COCO object detection task, MobileViT is 5.7% more accurate than MobileNetv3 for a similar number of parameters.   Our source code is open-source and available at: https://github.com/apple/ml-cvnets",
+  "categories": [
+    "cs.CV",
+    "cs.AI",
+    "cs.LG"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2110.02178v2",
+  "page_count": 26,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 74,
+  "chunks": [
+    {
+      "chunk_id": "2110.02178_chunk_0000",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "Published as a conference paper at ICLR 2022MOBILEVIT:LIGHT-WEIGHT,GENERAL-PURPOSE,AND MOBILE-FRIENDLY VISION TRANSFORMERSachin MehtaAppleMohammad RastegariAppleABSTRACTLight-weight convolutional neural networks (CNNs) are the de-facto for mo-bile vision tasks. Their spatial inductive biases allow them to learn representa-tions with fewer parameters across different vision tasks. However, these net-works are spatially local. To learn global representations, self-attention-basedvision transformers (ViTs) have been adopted. Unlike CNNs, ViTs are heavy-weight.In this paper, we ask the following question: is it possible to com-bine the strengths of CNNs and ViTs to build a light-weight and low latencynetwork for mobile vision tasks? Towards this end, we introduce MobileViT, alight-weight and general-purpose vision transformer for mobile devices. Mobile-ViT presents a different perspective for the global processing of information withtransformers. Our results show that MobileViT signi\ufb01cantly outperforms CNN-and ViT-based networks across different tasks and datasets.",
+      "token_count": 241
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0001",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "Mobile-ViT presents a different perspective for the global processing of information withtransformers. Our results show that MobileViT signi\ufb01cantly outperforms CNN-and ViT-based networks across different tasks and datasets. On the ImageNet-1kdataset, MobileViT achieves top-1 accuracy of 78.4% with about 6 million pa-rameters, which is 3.2% and 6.2% more accurate than MobileNetv3 (CNN-based)and DeIT (ViT-based) for a similar number of parameters. On the MS-COCOobject detection task, MobileViT is 5.7% more accurate than MobileNetv3 for asimilar number of parameters. Our source code is open-source and available at:https://github.com/apple/ml-cvnets.1INTRODUCTIONSelf-attention-based models, especially vision transformers (ViTs; Figure 1a; Dosovitskiy et al.,2021), are an alternative to convolutional neural networks (CNNs) to learn visual representations.Brie\ufb02y, ViT divides an image into a sequence of non-overlapping patches and then learns inter-patch representations using multi-headed self-attention in transformers (Vaswani et al., 2017).",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0002",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "Thegeneral trend is to increase the number of parameters in ViT networks to improve the performance(e.g., Touvron et al., 2021a; Graham et al., 2021; Wu et al., 2021). However, these performanceimprovements come at the cost of model size (network parameters) and latency. Many real-worldapplications (e.g., augmented reality and autonomous wheelchairs) require visual recognition tasks(e.g., object detection and semantic segmentation) to run on resource-constrained mobile devices ina timely fashion. To be effective, ViT models for such tasks should be light-weight and fast. Even ifthe model size of ViT models is reduced to match the resource constraints of mobile devices, theirperformance is signi\ufb01cantly worse than light-weight CNNs. For instance, for a parameter budgetof about 5-6 million, DeIT (Touvron et al., 2021a) is 3% less accurate than MobileNetv3 (Howardet al., 2019). Therefore, the need to design light-weight ViT models is imperative.Light-weight CNNs have powered many mobile vision tasks. However, ViT-based networks arestill far from being used on such devices. Unlike light-weight CNNs that are easy to optimize andintegrate with task-speci\ufb01c networks, ViTs are heavy-weight (e.g., ViT-B/16 vs.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0003",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "Unlike light-weight CNNs that are easy to optimize andintegrate with task-speci\ufb01c networks, ViTs are heavy-weight (e.g., ViT-B/16 vs. MobileNetv3: 86vs. 7.5 million parameters), harder to optimize (Xiao et al., 2021), need extensive data augmen-tation and L2 regularization to prevent over-\ufb01tting (Touvron et al., 2021a; Wang et al., 2021), andrequire expensive decoders for down-stream tasks, especially for dense prediction tasks. For in-stance, a ViT-based segmentation network (Ranftl et al., 2021) learns about 345 million parametersand achieves similar performance as the CNN-based network, DeepLabv3 (Chen et al., 2017), with59 million parameters. The need for more parameters in ViT-based models is likely because theylack image-speci\ufb01c inductive bias, which is inherent in CNNs (Xiao et al., 2021).",
+      "token_count": 222
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0004",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "The need for more parameters in ViT-based models is likely because theylack image-speci\ufb01c inductive bias, which is inherent in CNNs (Xiao et al., 2021). To build robustand high-performing ViT models, hybrid approaches that combine convolutions and transformersPublished as a conference paper at ICLR 2022LinearTransformerLinearLogitsFlatten image patchesPositional encoding(a) Standard visual transformer (ViT)MobileViT blockTransformers as ConvolutionsWHConv-n \u00d7 nLocalrepresentations(global representations)Conv-n \u00d7 n\uf8e6yConv-1x1TransformerConv-1x1FusionUnfoldFoldL = 2L = 4L = 3Conv-3 \u00d7 3\u21932MV2MV2\u21932MV2MV2\u21932MobileViTblockMV2\u21932MobileViTblockMV2\u21932MobileViTblockConv-1 \u00d7 1Global pool\u2192LinearLogitsh = w = 2h = w = 2h = w = 2128 \u00d7 12864 \u00d7 6432 \u00d7 3216 \u00d7 168 \u00d7 81 \u00d7 1Output spatial \u2192dimensions(b) MobileViT. Here, Conv-n \u00d7 n in the MobileViT block represents a standard n \u00d7 n convolution andMV2 refers to MobileNetv2 block.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0005",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "Here, Conv-n \u00d7 n in the MobileViT block represents a standard n \u00d7 n convolution andMV2 refers to MobileNetv2 block. Blocks that perform down-sampling are marked with \u21932.5.7 MBackbonesmAP (MSCOCO)Mobilenetv1MobileNetv2MobileNetv3MNASNetMixNetMobileViT (Ours)2.7MBetter : 1.8%Smaller : 1.8 \u00d75.1 M4.9 M4.5 M4.3 M4.9 M70717273747576777879Top1 accuracy (ImageNet)are gaining interest (Xiao et al., 2021; d\u2019Ascoli et al., 2021; Chen et al., 2021b). However, thesehybrid models are still heavy-weight and are sensitive to data augmentation. For example, remov-ing CutMix (Zhong et al., 2020) and DeIT-style (Touvron et al., 2021a) data augmentation causes asigni\ufb01cant drop in ImageNet accuracy (78.1% to 72.4%) of Heo et al. (2021).It remains an open question to combine the strengths of CNNs and transformers to build ViT modelsfor mobile vision tasks.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0006",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "Mobile vision tasks require light-weight, low latency, and accurate modelsthat satisfy the device\u2019s resource constraints, and are general-purpose so that they can be applied todifferent tasks (e.g., segmentation and detection). Note that \ufb02oating-point operations (FLOPs) arenot suf\ufb01cient for low latency on mobile devices because FLOPs ignore several important inference-related factors such as memory access, degree of parallelism, and platform characteristics (Ma et al.,2018). For example, the ViT-based method of Heo et al. (2021), PiT, has 3\u00d7 fewer FLOPs thanDeIT (Touvron et al., 2021a) but has a similar inference speed on a mobile device (DeIT vs. PiTon iPhone-12: 10.99 ms vs. 10.56 ms). Therefore, instead of optimizing for FLOPs1, this paperfocuses on designing a light-weight (\u00a73), general-purpose (\u00a74.1 & \u00a74.2), and low latency (\u00a74.3)network for mobile vision tasks. We achieve this goal with MobileViT that combines the bene\ufb01tsof CNNs (e.g., spatial inductive biases and less sensitivity to data augmentation) and ViTs (e.g.,input-adaptive weighting and global processing).",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0007",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "We achieve this goal with MobileViT that combines the bene\ufb01tsof CNNs (e.g., spatial inductive biases and less sensitivity to data augmentation) and ViTs (e.g.,input-adaptive weighting and global processing). Speci\ufb01cally, we introduce the MobileViT blockthat encodes both local and global information in a tensor effectively (Figure 1b). Unlike ViT and itsvariants (with and without convolutions), MobileViT presents a different perspective to learn globalrepresentations. Standard convolution involves three operations: unfolding, local processing, and1MobileViT FLOPs can be further reduced using existing methods (e.g., DynamicViT (Rao et al., 2021)).Published as a conference paper at ICLR 2022folding. MobileViT block replaces local processing in convolutions with global processing usingtransformers. This allows MobileViT block to have CNN- and ViT-like properties, which helps itlearn better representations with fewer parameters and simple training recipes (e.g., basic augmen-tation). To the best of our knowledge, this is the \ufb01rst work that shows that light-weight ViTs canachieve light-weight CNN-level performance with simple training recipes across different mobilevision tasks.",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0008",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "To the best of our knowledge, this is the \ufb01rst work that shows that light-weight ViTs canachieve light-weight CNN-level performance with simple training recipes across different mobilevision tasks. For a parameter budget of about 5-6 million, MobileViT achieves a top-1 accuracy of78.4% on the ImageNet-1k dataset (Russakovsky et al., 2015), which is 3.2% more accurate thanMobileNetv3 and has a simple training recipe (MobileViT vs. MobileNetv3: 300 vs. 600 epochs;1024 vs. 4096 batch size). We also observe signi\ufb01cant gains in performance when MobileViT isused as a feature backbone in highly optimized mobile vision task-speci\ufb01c architectures. ReplacingMNASNet (Tan et al., 2019) with MobileViT as a feature backbone in SSDLite (Sandler et al., 2018)resulted in a better (+1.8% mAP) and smaller (1.8\u00d7) detection network (Figure 2).2RELATED WORKLight-weight CNNs. The basic building layer in CNNs is a standard convolutional layer.",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0009",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "The basic building layer in CNNs is a standard convolutional layer. Becausethis layer is computationally expensive, several factorization-based methods have been proposed tomake it light-weight and mobile-friendly (e.g., Jin et al., 2014; Chollet, 2017; Mehta et al., 2020).Of these, separable convolutions of Chollet (2017) have gained interest, and are widely used acrossstate-of-the-art light-weight CNNs for mobile vision tasks, including MobileNets (Howard et al.,2017; Sandler et al., 2018; Howard et al., 2019), Shuf\ufb02eNetv2 (Ma et al., 2018), ESPNetv2 (Mehtaet al., 2019), MixNet (Tan & Le, 2019b), and MNASNet (Tan et al., 2019). These light-weightCNNs are versatile and easy to train. For example, these networks can easily replace the heavy-weight backbones (e.g., ResNet (He et al., 2016)) in existing task-speci\ufb01c models (e.g., DeepLabv3)to reduce the network size and improve latency. Despite these bene\ufb01ts, one major drawback of thesemethods is that they are spatially local.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0010",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "Despite these bene\ufb01ts, one major drawback of thesemethods is that they are spatially local. This work views transformers as convolutions; allowing toleverage the merits of both convolutions (e.g., versatile and simple training) and transformers (e.g.,global processing) to build light-weight (\u00a73) and general-purpose (\u00a74.1 and \u00a74.2) ViTs.Vision transformers. Dosovitskiy et al. (2021) apply transformers of Vaswani et al. (2017) forlarge-scale image recognition and showed that with extremely large-scale datasets (e.g., JFT-300M),ViTs can achieve CNN-level accuracy without image-speci\ufb01c inductive bias. With extensive dataaugmentation, heavy L2 regularization, and distillation, ViTs can be trained on the ImageNet datasetto achieve CNN-level performance (Touvron et al., 2021a;b; Zhou et al., 2021). However, unlikeCNNs, ViTs show substandard optimizability and are dif\ufb01cult to train.",
+      "token_count": 225
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0011",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "However, unlikeCNNs, ViTs show substandard optimizability and are dif\ufb01cult to train. Subsequent works (e.g.,Graham et al., 2021; Dai et al., 2021; Liu et al., 2021; Wang et al., 2021; Yuan et al., 2021b; Chenet al., 2021b) shows that this substandard optimizability is due to the lack of spatial inductive biasesin ViTs. Incorporating such biases using convolutions in ViTs improves their stability and perfor-mance. Different designs have been explored to reap the bene\ufb01ts of convolutions and transformers.For instance, ViT-C of Xiao et al. (2021) adds an early convolutional stem to ViT. CvT (Wu et al.,2021) modi\ufb01es the multi-head attention in transformers and uses depth-wise separable convolutionsinstead of linear projections. BoTNet (Srinivas et al., 2021) replaces the standard 3\u00d73 convolution inthe bottleneck unit of ResNet with multi-head attention. ConViT (d\u2019Ascoli et al., 2021) incorporatessoft convolutional inductive biases using a gated positional self-attention. PiT (Heo et al., 2021)extends ViT with depth-wise convolution-based pooling layer.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0012",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "PiT (Heo et al., 2021)extends ViT with depth-wise convolution-based pooling layer. Though these models can achievecompetitive performance to CNNs with extensive augmentation, the majority of these models areheavy-weight. For instance, PiT and CvT learns 6.1\u00d7 and 1.7\u00d7 more parameters than Ef\ufb01cientNet(Tan & Le, 2019a) and achieves similar performance (top-1 accuracy of about 81.6%) on ImageNet-1k dataset, respectively. Also, when these models are scaled down to build light-weight ViT models,their performance is signi\ufb01cantly worse than light-weight CNNs. For a parameter budget of about 6million, ImageNet-1k accuracy of PiT is 2.2% less than MobileNetv3.Discussion. Combining convolutions and transformers results in robust and high-performing ViTsas compared to vanilla ViTs. However, an open question here is: how to combine the strengths ofconvolutions and transformers to build light-weight networks for mobile vision tasks? This paperfocuses on designing light-weight ViT models that outperform state-of-the-art models with simpletraining recipes. Towards this end, we introduce MobileViT that combines the strengths of CNNsand ViTs to build a light-weight, general-purpose, and mobile-friendly network.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0013",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "Towards this end, we introduce MobileViT that combines the strengths of CNNsand ViTs to build a light-weight, general-purpose, and mobile-friendly network. MobileViT bringsseveral novel observations. (i) Better performance: For a given parameter budget, MobileViT mod-Published as a conference paper at ICLR 2022MobileViT-XXSMobileViT-XSMobileViT-SMobileViT-XXSMobileViT-XSMobileViT-SModel# Params. Top-1 Top-5MobileViT-XXS1.3 M69.088.9MobileViT-XS2.3 M74.892.3MobileViT-S5.6 M78.494.1Validation error (%)Training error (%)(c) Validation accuracy2.52.0MobileViT-XXSMobileViT-XSMobileViT-SParameters(in million)1.51.0050100150200250300Epochs050100150200250300Epochs0.50.01282 6423221628212Output spatial dimensions(a) Training error(b) Validation error(d) Parameter distributionels achieve better performance as compared to existing light-weight CNNs across different mobilevision tasks (\u00a74.1 and \u00a74.2). (ii) Generalization capability: Generalization capability refers tothe gap between training and evaluation metrics.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0014",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "For two models with similar training metrics,the model with better evaluation metrics is more generalizable because it can predict better on anunseen dataset. Unlike previous ViT variants (with and without convolutions) which show poorgeneralization capability even with extensive data augmentation as compared to CNNs (Dai et al.,2021), MobileViT shows better generalization capability (Figure 3). (iii) Robust: A good modelshould be robust to hyper-parameters (e.g., data augmentation and L2 regularization) because tuningthese hyper-parameters is time- and resource-consuming. Unlike most ViT-based models, Mobile-ViT models train with basic augmentation and are less sensitive to L2 regularization (\u00a7C).3MOBILEVIT: A LIGHT-WEIGHT TRANSFORMERA standard ViT model, shown in Figure 1a, reshapes the input X \u2208RH\u00d7W \u00d7C into a sequence of\ufb02attened patches Xf \u2208RN\u00d7P C, projects it into a \ufb01xed d-dimensional space Xp \u2208RN\u00d7d, and thenlearn inter-patch representations using a stack of L transformer blocks. The computational cost ofself-attention in vision transformers is O(N 2d). Here, C, H, and W represent the channels, height,and width of the tensor respectively, and P = wh is number of pixels in the patch with height h andwidth w, and N is the number of patches.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0015",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "Here, C, H, and W represent the channels, height,and width of the tensor respectively, and P = wh is number of pixels in the patch with height h andwidth w, and N is the number of patches. Because these models ignore the spatial inductive biasthat is inherent in CNNs, they require more parameters to learn visual representations. For instance,DPT (Dosovitskiy et al., 2021), a ViT-based network, learns 6\u00d7 more parameters as compared toDeepLabv3 (Chen et al., 2017), a CNN-based network, to deliver similar segmentation performance(DPT vs. DeepLabv3: 345 M vs. 59 M). Also, in comparison to CNNs, these models exhibit sub-standard optimizability. These models are sensitive to L2 regularization and require extensive dataaugmentation to prevent over\ufb01tting (Touvron et al., 2021a; Xiao et al., 2021).This paper introduces a light-weight ViT model, MobileViT. The core idea is to learn global repre-sentations with transformers as convolutions.",
+      "token_count": 236
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0016",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "The core idea is to learn global repre-sentations with transformers as convolutions. This allows us to implicitly incorporate convolution-like properties (e.g., spatial bias) in the network, learn representations with simple training recipes(e.g., basic augmentation), and easily integrate MobileViT with downstream architectures (e.g.,DeepLabv3 for segmentation).3.1MOBILEVIT ARCHITECTUREMobileViT block. The MobileViT block, shown in Figure 1b, aims to model the local and globalinformation in an input tensor with fewer parameters. Formally, for a given input tensor X \u2208RH\u00d7W \u00d7C, MobileViT applies a n \u00d7 n standard convolutional layer followed by a point-wise (or1\u00d71) convolutional layer to produce XL \u2208RH\u00d7W \u00d7d. The n\u00d7n convolutional layer encodes localspatial information while the point-wise convolution projects the tensor to a high-dimensional space(or d-dimensional, where d > C) by learning linear combinations of the input channels.With MobileViT, we want to model long-range non-local dependencies while having an effectivereceptive \ufb01eld of H \u00d7 W. One of the widely studied methods to model long-range dependenciesPublished as a conference paper at ICLR 2022is dilated convolutions. However, such approaches require careful selection of dilation rates.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0017",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "One of the widely studied methods to model long-range dependenciesPublished as a conference paper at ICLR 2022is dilated convolutions. However, such approaches require careful selection of dilation rates. Oth-erwise, weights are applied to padded zeros instead of the valid spatial region (Yu & Koltun, 2016;Chen et al., 2017; Mehta et al., 2018). Another promising solution is self-attention (Wang et al.,2018; Ramachandran et al., 2019; Bello et al., 2019; Dosovitskiy et al., 2021). Among self-attentionmethods, vision transformers (ViTs) with multi-head self-attention are shown to be effective forvisual recognition tasks. However, ViTs are heavy-weight and exhibit sub-standard optimizability.This is because ViTs lack spatial inductive bias (Xiao et al., 2021; Graham et al., 2021).To enable MobileViT to learn global representations with spatial inductive bias, we unfold XLinto N non-overlapping \ufb02attened patches XU \u2208RP \u00d7N\u00d7d. Here, P = wh, N =HWPis thenumber of patches, and h \u2264n and w \u2264n are height and width of a patch respectively.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0018",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "Here, P = wh, N =HWPis thenumber of patches, and h \u2264n and w \u2264n are height and width of a patch respectively. Foreach p \u2208{1, \u00b7 \u00b7 \u00b7 , P}, inter-patch relationships are encoded by applying transformers to obtainXG \u2208RP \u00d7N\u00d7d as:XG(p) = Transformer(XU(p)), 1 \u2264p \u2264P(1)Unlike ViTs that lose the spatial order of pixels, MobileViT neither loses the patch order nor thespatial order of pixels within each patch (Figure 1b). Therefore, we can fold XG \u2208RP \u00d7N\u00d7d toobtain XF \u2208RH\u00d7W \u00d7d. XF is then projected to low C-dimensional space using a point-wiseconvolution and combined with X via concatenation operation. Another n \u00d7 n convolutional layeris then used to fuse these concatenated features. Note that because XU(p) encodes local informationfrom n \u00d7 n region using convolutions and XG(p) encodes global information across P patches forthe p-th location, each pixel in XG can encode information from all pixels in X, as shown in Figure4. Thus, the overall effective receptive \ufb01eld of MobileViT is H \u00d7 W.Relationship to convolutions.",
+      "token_count": 264
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0019",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "Thus, the overall effective receptive \ufb01eld of MobileViT is H \u00d7 W.Relationship to convolutions. Standard convolutions can be viewed as a stack of three sequentialoperations: (1) unfolding, (2) matrix multiplication (to learn local representations), and (3) fold-ing. MobileViT block is similar to convolutions in the sense that it also leverages the same build-ing blocks. MobileViT block replaces the local processing (matrix multiplication) in convolutionswith deeper global processing (a stack of transformer layers). As a consequence, MobileViT hasconvolution-like properties (e.g., spatial bias). Hence, the MobileViT block can be viewed as trans-formers as convolutions. An advantage of our intentionally simple design is that low-level ef\ufb01cientimplementations of convolutions and transformers can be used out-of-the-box; allowing us to useMobileViT on different devices without any extra effort.Light-weight. MobileViT block uses standard convolutions and transformers to learn local andglobal representations respectively. Because previous works (e.g., Howard et al., 2017; Mehta et al.,2021a) have shown that networks designed using these layers are heavy-weight, a natural questionarises: Why MobileViT is light-weight? We believe that the issues lie primarily in learning globalrepresentations with transformers.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0020",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "We believe that the issues lie primarily in learning globalrepresentations with transformers. For a given patch, previous works (e.g., Touvron et al., 2021a;Graham et al., 2021) convert the spatial information into latent by learning a linear combinationof pixels (Figure 1a). The global information is then encoded by learning inter-patch informationusing transformers. As a result, these models lose image-speci\ufb01c inductive bias, which is inherent inCNNs. Therefore, they require more capacity to learn visual representations. Hence, they are deepand wide. Unlike these models, MobileViT uses convolutions and transformers in a way that theresultant MobileViT block has convolution-like properties while simultaneously allowing for globalprocessing. This modeling capability allows us to design shallow and narrow MobileViT models,which in turn are light-weight.",
+      "token_count": 178
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0021",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "This modeling capability allows us to design shallow and narrow MobileViT models,which in turn are light-weight. Compared to the ViT-based model DeIT that uses L=12 and d=192,Published as a conference paper at ICLR 2022Standard samplerMulti-scale samplerBatchHeightGPU-1GPU-1TensorSampler# UpdatesEpoch timeGPU-2GPU-2WidthStandard375 k380 secMulti-scale (ours)232 k270 secGPU-3GPU-3GPU-4GPU-4Gradient sync.(b) Training ef\ufb01ciency.Here, standardsampler refers to PyTorch\u2019s Distributed-DataParallel sampler.timetime(a) Standard vs. multi-scale sampler illustrationMobileViT model uses L= {2, 4, 3} and d={96, 120, 144} at spatial levels 32 \u00d7 32, 16 \u00d7 16, and8 \u00d7 8, respectively. The resulting MobileViT network is faster (1.85\u00d7), smaller (2\u00d7), and better(+1.8%) than DeIT network (Table 3; \u00a74.3).Computational cost. The computational cost of multi-headed self-attention in MobileViT and ViTs(Figure 1a) is O(N 2Pd) and O(N 2d), respectively. In theory, MobileViT is inef\ufb01cient as comparedto ViTs.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0022",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "In theory, MobileViT is inef\ufb01cient as comparedto ViTs. However, in practice, MobileViT is more ef\ufb01cient than ViTs. MobileViT has 2\u00d7 fewerFLOPs and delivers 1.8% better accuracy than DeIT on the ImageNet-1K dataset (Table 3; \u00a74.3).We believe that this is because of similar reasons as for the light-weight design (discussed above).MobileViT architecture. Our networks are inspired by the philosophy of light-weight CNNs. Wetrain MobileViT models at three different network sizes (S: small, XS: extra small, and XXS: extraextra small) that are typically used for mobile vision tasks (Figure 3c). The initial layer in Mo-bileViT is a strided 3 \u00d7 3 standard convolution, followed by MobileNetv2 (or MV2) blocks andMobileViT blocks (Figure 1b and \u00a7A). We use Swish (Elfwing et al., 2018) as an activation func-tion. Following CNN models, we use n = 3 in the MobileViT block. The spatial dimensions offeature maps are usually multiples of 2 and h, w \u2264n. Therefore, we set h = w = 2 at all spatiallevels (see \u00a7C for more results).",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0023",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "The spatial dimensions offeature maps are usually multiples of 2 and h, w \u2264n. Therefore, we set h = w = 2 at all spatiallevels (see \u00a7C for more results). The MV2 blocks in MobileViT network are mainly responsible fordown-sampling. Therefore, these blocks are shallow and narrow in MobileViT network. Spatial-level-wise parameter distribution of MobileViT in Figure 3d further shows that the contribution ofMV2 blocks towards total network parameters is very small across different network con\ufb01gurations.3.2MULTI-SCALE SAMPLER FOR TRAINING EFFICIENCYA standard approach in ViT-based models to learn multi-scale representations is \ufb01ne-tuning. For in-stance, Touvron et al. (2021a) \ufb01ne-tunes the DeIT model trained at a spatial resolution of 224 \u00d7 224on varying sizes independently. Such an approach for learning multi-scale representations is prefer-able for ViTs because positional embeddings need to be interpolated based on the input size, and thenetwork\u2019s performance is subjective to interpolation methods. Similar to CNNs, MobileViT doesnot require any positional embeddings and it may bene\ufb01t from multi-scale inputs during training.Previous CNN-based works (e.g., Redmon & Farhadi, 2017; Mehta et al., 2021b) have shown thatmulti-scale training is effective.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0024",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "However, most of these works sample a new spatial resolution aftera \ufb01xed number of iterations. For example, YOLOv2 (Redmon & Farhadi, 2017) samples a newspatial resolution from a pre-de\ufb01ned set at every 10-th iteration and uses the same resolution acrossdifferent GPUs during training. This leads to GPU under-utilization and slower training becausethe same batch size (determined using the maximum spatial resolution in the pre-de\ufb01ned set) isused across all resolutions. To facilitate MobileViT learn multi-scale representations without \ufb01ne-tuning and to further improve training ef\ufb01ciency (i.e., fewer optimization updates), we extend themulti-scale training method to variably-sized batch sizes. Given a sorted set of spatial resolutionsS = {(H1, W1), \u00b7 \u00b7 \u00b7 , (Hn, Wn)} and a batch size b for a maximum spatial resolution of (Hn, Wn),we randomly sample a spatial resolution (Ht, Wt) \u2208S at t-th training iteration on each GPU andcompute the batch size for t-th iteration as: bt = HnWnbHtWt . As a result, larger batch sizes are used forsmaller spatial resolutions.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0025",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "As a result, larger batch sizes are used forsmaller spatial resolutions. This reduces optimizer updates per epoch and helps in faster training.Published as a conference paper at ICLR 2022Model# Params.w Top-1~wMobileNetv12.6 M68.4MobileNetv22.6 M69.8MobileNetv32.5 M67.4Shuf\ufb02eNetv22.3 M69.4ESPNetv22.3 M69.2MobileViT-XS (Ours)2.3 M74.8Top-1 accuracy (%)Mobilenetv1MobileNetv2MobileNetv3ShuffleNetv2ESPNetv2MobileViT (Ours)(b) Comparison with light-weight CNNs (similar parameters)Model# Params.w Top-1~wDenseNet-16914 M76.2Ef\ufb01cientNet-B05.3 M76.3ResNet-10144.5 M77.4ResNet-101-SE49.3 M77.6MobileViT-S (Ours)5.6 M78.41234567# Parameters (in million)(a) Comparison with light-weight CNNs(c) Comparison with heavy-weight CNNsas compared to the one trained with the standard sampler.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0026",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "In \u00a7B, we also show that the multi-scalesampler is generic and improves the performance of CNNs (e.g., MobileNetv2).4EXPERIMENTAL RESULTSIn this section, we \ufb01rst evaluate MobileViTs performance on the ImageNet-1k dataset and show thatMobileViT delivers better performance than state-of-the-art networks (\u00a74.1). In \u00a74.2 and \u00a74.3, weshow MobileViTs are general-purpose and mobile-friendly, respectively.4.1IMAGE CLASSIFICATION ON THE IMAGENET-1K DATASETImplementation details. We train MobileViT models from scratch on the ImageNet-1k classi\ufb01ca-tion dataset (Russakovsky et al., 2015). The dataset provides 1.28 million and 50 thousand imagesfor training and validation, respectively. The MobileViT networks are trained using PyTorch for 300epochs on 8 NVIDIA GPUs with an effective batch size of 1,024 images using AdamW optimizer(Loshchilov & Hutter, 2019), label smoothing cross-entropy loss (smoothing=0.1), and multi-scalesampler (S = {(160, 160), (192, 192), (256, 256), (288, 288), (320, 320)}).",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0027",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "The learning rate is in-creased from 0.0002 to 0.002 for the \ufb01rst 3k iterations and then annealed to 0.0002 using a cosineschedule (Loshchilov & Hutter, 2017). We use L2 weight decay of 0.01. We use basic data augmen-tation (i.e., random resized cropping and horizontal \ufb02ipping) and evaluate the performance using asingle crop top-1 accuracy. For inference, an exponential moving average of model weights is used.Comparison with CNNs. Figure 6a shows that MobileViT outperforms light-weight CNNs acrossdifferent network sizes (MobileNetv1 (Howard et al., 2017), MobileNetv2 (Sandler et al., 2018),Shuf\ufb02eNetv2 (Ma et al., 2018), ESPNetv2 (Mehta et al., 2019), and MobileNetv3 (Howard et al.,2019)). For instance, for a model size of about 2.5 million parameters (Figure 6b), MobileViT out-performs MobileNetv2 by 5%, Shuf\ufb02eNetv2 by 5.4%, and MobileNetv3 by 7.4% on the ImageNet-1k validation set.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0028",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "Figure 6c further shows that MobileViT delivers better performance than heavy-weight CNNs (ResNet (He et al., 2016), DenseNet (Huang et al., 2017), ResNet-SE (Hu et al.,2018), and Ef\ufb01cientNet (Tan & Le, 2019a)).",
+      "token_count": 70
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0029",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "For instance, MobileViT is 2.1% more accurate thanEf\ufb01centNet for a similar number of parameters.Comparison with ViTs.Figure 7 compares MobileViT with ViT variants that are trained fromscratch on the ImageNet-1k dataset without distillation (DeIT (Touvron et al., 2021a), T2T (Yuanet al., 2021b), PVT (Wang et al., 2021), CAIT (Touvron et al., 2021b), DeepViT (Zhou et al., 2021),CeiT (Yuan et al., 2021a), CrossViT (Chen et al., 2021a), LocalViT (Li et al., 2021), PiT (Heo et al.,2021), ConViT (d\u2019Ascoli et al., 2021), ViL (Zhang et al., 2021), BoTNet (Srinivas et al., 2021),and Mobile-former (Chen et al., 2021b)).",
+      "token_count": 234
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0030",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "Unlike ViT variants that bene\ufb01t signi\ufb01cantly from ad-vanced augmentation (e.g., PiT w/ basic vs. advanced: 72.4 (R4) vs. 78.1 (R17); Figure 7b), Mo-bileViT achieves better performance with fewer parameters and basic augmentation. For instance,MobileViT is 2.5\u00d7 smaller and 2.6% better than DeIT (R3 vs.",
+      "token_count": 99
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0031",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "For instance,MobileViT is 2.5\u00d7 smaller and 2.6% better than DeIT (R3 vs. R8 in Figure 7b).Overall, these results show that, similar to CNNs, MobileViTs are easy and robust to optimize.Therefore, they can be easily applied to new tasks and datasets.Published as a conference paper at ICLR 2022Row # ModelAugmentation # Params.w Top-1~wR1DeITBasic5.7 M68.7R2T2TAdvanced4.3 M71.7R3DeITAdvanced5.7 M72.2R4PiTBasic10.6 M72.4R5Mobile-formerAdvanced4.6 M72.8R6PiTAdvanced4.9 M73.0R7CrossViTAdvanced6.9 M73.4R8MobileViT-XS (Ours)Basic2.3 M74.8R9CeiTAdvanced6.4 M76.4R10DeITAdvanced10 M75.9R11T2TAdvanced6.9 M76.5R12ViLAdvanced6.7 M76.7R13LocalVitAdvanced7.7 M76.1R14Mobile-formerAdvanced9.4 M76.7R15PVTAdvanced13.2 M75.1R16ConViTAdvanced10 M76.7R17PiTAdvanced10.6 M78.1R18BoTNetBasic20.8 M77.0R19BoTNetAdvanced20.8 M78.3R20MobileViT-S (Ours)Basic5.6 M78.480.077.5Top-1 accuracy (%)75.072.5DeITConViTMobile-formerCrossViTDeepViTLocalViTT2TMobileViT (Ours)70.067.565.062.560.0246810# Parameters (in million)(a)(b)4.2MOBILEVIT AS A GENERAL-PURPOSE BACKBONETo evaluate the general-purpose nature of MobileViT, we benchmark MobileViT on two widelystudied mobile vision tasks: (1) object detection (\u00a74.2.1) and (2) semantic segmentation (\u00a74.2.2).4.2.1MOBILE OBJECT DETECTIONImplementation details.We integrate MobileViT witha single shot object detection backbone (SSD; Liu et al.,2016).",
+      "token_count": 523
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0032",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "Following light-weight CNNs (e.g., MobileNets), wereplace standard convolutions in the SSD head with separa-ble convolutions and call the resultant network as SSDLite.We \ufb01netune MobileViT, pre-trained on the ImageNet-1kdataset, at an input resolution of 320 \u00d7 320 using AdamWon the MS-COCO dataset (Lin et al., 2014) that contains117k training and 5k validation images. We use smooth L1and cross-entropy losses for object localization and classi-\ufb01cation, respectively. The performance is evaluated on thevalidation set using mAP@IoU of 0.50:0.05:0.95.",
+      "token_count": 149
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0033",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "The performance is evaluated on thevalidation set using mAP@IoU of 0.50:0.05:0.95. For otherhyper-parameters, see \u00a7D.Feature backbone# Params.w mAP~wMobileNetv34.9 M22.0MobileNetv24.3 M22.1MobileNetv15.1 M22.2MixNet4.5 M22.3MNASNet4.9 M23.0MobileViT-XS (Ours)2.7 M24.8MobileViT-S (Ours)5.7 M27.7(a) Comparison w/ light-weight CNNsFeature backbone# Params.w mAP~wVGG35.6 M25.1ResNet5022.9 M25.2MobileViT-S (Ours)5.7 M27.7(b) Comparison w/ heavy-weight CNNsResults. Table 1a shows that, for the same input resolu-tion of 320 \u00d7 320, SSDLite with MobileViT outperformsSSDLite with other light-weight CNN models (MobileNetv1/v2/v3, MNASNet, and MixNet). Forinstance, SSDLite\u2019s performance improves by 1.8%, and its model size reduces by 1.8\u00d7 when Mo-bileViT is used as a backbone instead of MNASNet.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0034",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "Forinstance, SSDLite\u2019s performance improves by 1.8%, and its model size reduces by 1.8\u00d7 when Mo-bileViT is used as a backbone instead of MNASNet. Further, SSDLite with MobileViT outperformsstandard SSD-300 with heavy-weight backbones while learning signi\ufb01cantly fewer parameters (Ta-ble 1b). Also, qualitative results in \u00a7F con\ufb01rms MobileViT\u2019s ability to detect variety of objects.4.2.2MOBILE SEMANTIC SEGMENTATIONImplementation details.We integrate Mobile-ViT with DeepLabv3 (Chen et al., 2017). We \ufb01ne-tune MobileViT using AdamW with cross-entropyloss on the PASCAL VOC 2012 dataset (Ever-ingham et al., 2015). Following a standard train-ing practice (e.g., Chen et al., 2017; Mehta et al.,2019), we also use extra annotations and data fromHariharan et al. (2011) and Lin et al. (2014), re-spectively. The performance is evaluated on the validation set using mean intersection over union(mIOU).",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0035",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "The performance is evaluated on the validation set using mean intersection over union(mIOU). For other hyper-parameters, see \u00a7D.Feature backbone# Params.w mIOU~wMobileNetv111.2 M75.3MobileNetv24.5 M75.7MobileViT-XXS (Ours)1.9 M73.6MobileViT-XS (Ours)2.9 M77.1ResNet-10158.2 M80.5MobileViT-S (Ours)6.4 M79.1Published as a conference paper at ICLR 2022SPatch sizes8,4,22,2,2mAP@.50:.05:.95SPatch sizes8,4,22,2,2SPatch sizes8,4,22,2,2Top-1 accuracymIoUXXSXXSReal-timeXXSReal-timeXXSXXSReal-timeXXS345678910Inference time (in ms)681012141618Inference time (in ms)152025303540Inference time (in ms)(a) Classi\ufb01cation @ 256 \u00d7 256(b) Detection @ 320 \u00d7 320(c) Segmentation @ 512 \u00d7 512Results. Table 2 shows that DeepLabv3 with MobileViT is smaller and better.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0036",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "Table 2 shows that DeepLabv3 with MobileViT is smaller and better. The performanceof DeepLabv3 is improved by 1.4%, and its size is reduced by 1.6\u00d7 when MobileViT is used as abackbone instead of MobileNetv2. Also, MobileViT gives competitive performance to model withResNet-101 while requiring 9\u00d7 fewer parameters; suggesting MobileViT is a powerful backbone.Also, results in \u00a7G shows that MobileViT learns generalizable representations of the objects andperform well on an unseen dataset.4.3PERFORMANCE ON MOBILE DEVICESLight-weight and low latency networks are important for enabling mobile vision applications. Todemonstrate the effectiveness of MobileViT for such applications, pre-trained full-precision Mobile-ViT models are converted to CoreML using publicly available CoreMLTools (2021). Their inferencetime is then measured (average over 100 iterations) on a mobile device, i.e., iPhone 12.Mobile-friendly. Figure 8 shows the inference time of MobileViT networks with two patch sizesettings (Con\ufb01g-A: 2, 2, 2 and Con\ufb01g-B: 8, 4, 2) on three different tasks.",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0037",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "Here p1, p2, p3 in Con\ufb01g-X denotes the height h (width w = h) of a patch at an output stride2 of 8, 16, and 32, respectively.The models with smaller patch sizes (Con\ufb01g-A) are more accurate as compared to larger patches(Con\ufb01g-B). This is because, unlike Con\ufb01g-A models, Con\ufb01g-B models are not able to encode theinformation from all pixels (Figure 13 and \u00a7C). On the other hand, for a given parameter budget,Con\ufb01g-B models are faster than Con\ufb01g-A even though the theoretical complexity of self-attentionin both con\ufb01gurations is the same, i.e., O(N 2Pd). With larger patch sizes (e.g., P=82=64), wehave fewer number of patches N as compared to smaller patch sizes (e.g., P=22=4). As a result,the computation cost of self-attention is relatively less. Also, Con\ufb01g-B models offer a higher degreeof parallelism as compared to Con\ufb01g-A because self-attention can be computed simultaneously formore pixels in a larger patch (P=64) as compared to a smaller patch (P=4). Hence, Con\ufb01g-B modelsare faster than Con\ufb01g-A.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0038",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "Hence, Con\ufb01g-B modelsare faster than Con\ufb01g-A. To further improve MobileViT\u2019s latency, linear self-attention (Wang et al.,2020) can be used. Regardless, all models in both con\ufb01gurations run in real-time (inference speed\u226530 FPS) on a mobile device except for MobileViT-S models for the segmentation task. This isexpected as these models process larger inputs (512\u00d7512) as compared to classi\ufb01cation (256\u00d7256)and detection (320 \u00d7 320) networks.Discussion. We observe that MobileViT and other ViT-based networks (e.g., DeIT and PiT) are slower as com-pared to MobileNetv2 on mobile devices (Table 3). Thisobservation contradicts previous works which show thatViTs are more scalable as compared to CNNs (Dosovit-skiy et al., 2021). This difference is primarily becauseof two reasons. First, dedicated CUDA kernels exist fortransformers on GPUs, which are used out-of-the-box inViTs to improve their scalability and ef\ufb01ciency on GPUs (e.g., Shoeybi et al., 2019; Lepikhin et al.,2021). Second, CNNs bene\ufb01t from several device-level optimizations, including batch normaliza-tion fusion with convolutional layers (Jacob et al., 2018).",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0039",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Second, CNNs bene\ufb01t from several device-level optimizations, including batch normaliza-tion fusion with convolutional layers (Jacob et al., 2018). These optimizations improve latency andmemory access. However, such dedicated and optimized operations for transformers are currentlynot available for mobile devices. Hence, the resultant inference graph of MobileViT and ViT-basednetworks for mobile devices is sub-optimal. We believe that similar to CNNs, the inference speedof MobileViT and ViTs will further improve with dedicated device-level operations in the future.Model# Params.w FLOPswTimew Top-1~wMobileNetv2\u20203.5 M0.3 G0.92 ms73.3DeIT5.7 M1.3 G10.99 ms72.2PiT4.9 M0.7 G10.56 ms73.0MobileViT (Ours)2.3 M0.7 G7.28 ms74.82Output stride: Ratio of the spatial dimension of the input to the feature map.Published as a conference paper at ICLR 20225ACKNOWLEDGEMENTSWe are grateful to Ali Farhadi, Peter Zatloukal, Oncel Tuzel, Ashish Shrivastava, Frank Sun, MaxHorton, Anurag Ranjan, and anonymous reviewers for their helpful comments.",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0040",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "We are also thankfulto Apple\u2019s infrastructure and open-source teams for their help with training infrastructure and open-source release of the code and pre-trained models.REFERENCESIrwan Bello, Barret Zoph, Ashish Vaswani, Jonathon Shlens, and Quoc V Le. Attention augmentedconvolutional networks. In Proceedings of the IEEE/CVF international conference on computervision, pp. 3286\u20133295, 2019.Chun-Fu Chen, Quanfu Fan, and Rameswar Panda. CrossVit: Cross-attention multi-scale visiontransformer for image classi\ufb01cation. In Proceedings of the IEEE/CVF International Conferenceon Computer Vision (ICCV), 2021a.Liang-Chieh Chen, George Papandreou, Florian Schroff, and Hartwig Adam. Rethinking atrousconvolution for semantic image segmentation. arXiv preprint arXiv:1706.05587, 2017.Yinpeng Chen, Xiyang Dai, Dongdong Chen, Mengchen Liu, Xiaoyi Dong, Lu Yuan, and ZichengLiu. Mobile-former: Bridging mobilenet and transformer. arXiv preprint arXiv:2108.05895,2021b.Franc\u00b8ois Chollet. Xception: Deep learning with depthwise separable convolutions.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0041",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "Xception: Deep learning with depthwise separable convolutions. In Proceedingsof the IEEE conference on computer vision and pattern recognition, pp. 1251\u20131258, 2017.CoreMLTools. Use coremltools to convert models from third-party libraries to CoreML. https://coremltools.readme.io/docs, 2021. [Online; accessed 2-September-2021].Ekin D Cubuk, Barret Zoph, Dandelion Mane, Vijay Vasudevan, and Quoc V Le. Autoaugment:Learning augmentation strategies from data. In Proceedings of the IEEE/CVF Conference onComputer Vision and Pattern Recognition, pp. 113\u2013123, 2019.Zihang Dai, Hanxiao Liu, Quoc V Le, and Mingxing Tan.",
+      "token_count": 168
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0042",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "In Proceedings of the IEEE/CVF Conference onComputer Vision and Pattern Recognition, pp. 113\u2013123, 2019.Zihang Dai, Hanxiao Liu, Quoc V Le, and Mingxing Tan. Coatnet: Marrying convolution andattention for all data sizes. arXiv preprint arXiv:2106.04803, 2021.St\u00b4ephane d\u2019Ascoli, Hugo Touvron, Matthew Leavitt, Ari Morcos, Giulio Biroli, and Levent Sagun.Convit: Improving vision transformers with soft convolutional inductive biases. arXiv preprintarXiv:2103.10697, 2021.Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, ThomasUnterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszko-reit, and Neil Houlsby. An image is worth 16x16 words: Transformers for image recognition atscale. In International Conference on Learning Representations, 2021.Stefan Elfwing, Eiji Uchibe, and Kenji Doya. Sigmoid-weighted linear units for neural networkfunction approximation in reinforcement learning.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0043",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "In International Conference on Learning Representations, 2021.Stefan Elfwing, Eiji Uchibe, and Kenji Doya. Sigmoid-weighted linear units for neural networkfunction approximation in reinforcement learning. Neural Networks, 107:3\u201311, 2018.Mark Everingham, SM Ali Eslami, Luc Van Gool, Christopher KI Williams, John Winn, and AndrewZisserman. The pascal visual object classes challenge: A retrospective. International journal ofcomputer vision, 111(1):98\u2013136, 2015.Ben Graham, Alaaeldin El-Nouby, Hugo Touvron, Pierre Stock, Armand Joulin, Herv\u00b4e J\u00b4egou, andMatthijs Douze. Levit: a vision transformer in convnet\u2019s clothing for faster inference. arXivpreprint arXiv:2104.01136, 2021.Bharath Hariharan, Pablo Arbel\u00b4aez, Lubomir Bourdev, Subhransu Maji, and Jitendra Malik. Se-mantic contours from inverse detectors. In 2011 International Conference on Computer Vision,pp. 991\u2013998. IEEE, 2011.Published as a conference paper at ICLR 2022Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recog-nition.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0044",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "IEEE, 2011.Published as a conference paper at ICLR 2022Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recog-nition. In Proceedings of the IEEE conference on computer vision and pattern recognition, pp.770\u2013778, 2016.Byeongho Heo, Sangdoo Yun, Dongyoon Han, Sanghyuk Chun, Junsuk Choe, and Seong JoonOh. Rethinking spatial dimensions of vision transformers. In Proceedings of the IEEE/CVFInternational Conference on Computer Vision (ICCV), 2021.Andrew Howard, Mark Sandler, Grace Chu, Liang-Chieh Chen, Bo Chen, Mingxing Tan, WeijunWang, Yukun Zhu, Ruoming Pang, Vijay Vasudevan, et al. Searching for mobilenetv3. In Pro-ceedings of the IEEE/CVF International Conference on Computer Vision, pp. 1314\u20131324, 2019.Andrew G Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, Tobias Weyand,Marco Andreetto, and Hartwig Adam. Mobilenets: Ef\ufb01cient convolutional neural networks formobile vision applications. arXiv preprint arXiv:1704.04861, 2017.Jie Hu, Li Shen, and Gang Sun.",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0045",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "Mobilenets: Ef\ufb01cient convolutional neural networks formobile vision applications. arXiv preprint arXiv:1704.04861, 2017.Jie Hu, Li Shen, and Gang Sun. Squeeze-and-excitation networks. In Proceedings of the IEEEconference on computer vision and pattern recognition, pp. 7132\u20137141, 2018.Gao Huang, Zhuang Liu, Laurens Van Der Maaten, and Kilian Q Weinberger. Densely connectedconvolutional networks. In Proceedings of the IEEE conference on computer vision and patternrecognition, pp. 4700\u20134708, 2017.Benoit Jacob, Skirmantas Kligys, Bo Chen, Menglong Zhu, Matthew Tang, Andrew Howard,Hartwig Adam, and Dmitry Kalenichenko.Quantization and training of neural networks foref\ufb01cient integer-arithmetic-only inference. In Proceedings of the IEEE conference on computervision and pattern recognition, pp. 2704\u20132713, 2018.Jonghoon Jin, Aysegul Dundar, and Eugenio Culurciello.",
+      "token_count": 235
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0046",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "In Proceedings of the IEEE conference on computervision and pattern recognition, pp. 2704\u20132713, 2018.Jonghoon Jin, Aysegul Dundar, and Eugenio Culurciello. Flattened convolutional neural networksfor feedforward acceleration. arXiv preprint arXiv:1412.5474, 2014.Dmitry Lepikhin, HyoukJoong Lee, Yuanzhong Xu, Dehao Chen, Orhan Firat, Yanping Huang,Maxim Krikun, Noam Shazeer, and Zhifeng Chen. {GS}hard: Scaling giant models with condi-tional computation and automatic sharding. In International Conference on Learning Represen-tations, 2021.Yawei Li, Kai Zhang, Jiezhang Cao, Radu Timofte, and Luc Van Gool. Localvit: Bringing localityto vision transformers. arXiv preprint arXiv:2104.05707, 2021.Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva Ramanan, PiotrDoll\u00b4ar, and C Lawrence Zitnick. Microsoft coco: Common objects in context. In Europeanconference on computer vision, pp. 740\u2013755.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0047",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "Microsoft coco: Common objects in context. In Europeanconference on computer vision, pp. 740\u2013755. Springer, 2014.Wei Liu, Dragomir Anguelov, Dumitru Erhan, Christian Szegedy, Scott Reed, Cheng-Yang Fu, andAlexander C Berg. Ssd: Single shot multibox detector. In European conference on computervision, pp. 21\u201337. Springer, 2016.Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and BainingGuo. Swin transformer: Hierarchical vision transformer using shifted windows. arXiv preprintarXiv:2103.14030, 2021.Jonathan Long, Evan Shelhamer, and Trevor Darrell. Fully convolutional networks for semanticsegmentation. In Proceedings of the IEEE conference on computer vision and pattern recognition,pp. 3431\u20133440, 2015.Ilya Loshchilov and Frank Hutter. Sgdr: Stochastic gradient descent with warm restarts. In Interna-tional Conference on Learning Representations, 2017.Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In International Confer-ence on Learning Representations, 2019.Ningning Ma, Xiangyu Zhang, Hai-Tao Zheng, and Jian Sun.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0048",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "Decoupled weight decay regularization. In International Confer-ence on Learning Representations, 2019.Ningning Ma, Xiangyu Zhang, Hai-Tao Zheng, and Jian Sun. Shuf\ufb02enet v2: Practical guidelines foref\ufb01cient cnn architecture design. In Proceedings of the European conference on computer vision(ECCV), pp. 116\u2013131, 2018.Published as a conference paper at ICLR 2022Sachin Mehta, Mohammad Rastegari, Anat Caspi, Linda Shapiro, and Hannaneh Hajishirzi. Espnet:Ef\ufb01cient spatial pyramid of dilated convolutions for semantic segmentation. In Proceedings ofthe european conference on computer vision (ECCV), pp. 552\u2013568, 2018.Sachin Mehta, Mohammad Rastegari, Linda Shapiro, and Hannaneh Hajishirzi. Espnetv2: A light-weight, power ef\ufb01cient, and general purpose convolutional neural network. In Proceedings of theIEEE/CVF Conference on Computer Vision and Pattern Recognition, pp. 9190\u20139200, 2019.Sachin Mehta, Hannaneh Hajishirzi, and Mohammad Rastegari. Dicenet: Dimension-wise convo-lutions for ef\ufb01cient networks.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0049",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "Dicenet: Dimension-wise convo-lutions for ef\ufb01cient networks. IEEE Transactions on Pattern Analysis and Machine Intelligence,2020.Sachin Mehta, Marjan Ghazvininejad, Srinivasan Iyer, Luke Zettlemoyer, and Hannaneh Hajishirzi.Delight: Deep and light-weight transformer. In International Conference on Learning Represen-tations, 2021a.Sachin Mehta, Amit Kumar, Fitsum Reda, Varun Nasery, Vikram Mulukutla, Rakesh Ranjan, andVikas Chandra. Evrnet: Ef\ufb01cient video restoration on edge devices. In Proceedings of the ACMMultimedia, 2021b.PyTorch. Torchvision semantic segmentation. https://pytorch.org/vision/stable/models.html#semantic-segmentation, 2021. Online; accessed 15 November 2021.Prajit Ramachandran, Niki Parmar, Ashish Vaswani, Irwan Bello, Anselm Levskaya, and Jon Shlens.Stand-alone self-attention in vision models.In H. Wallach, H. Larochelle, A. Beygelzimer,F. d'Alch\u00b4e-Buc, E. Fox, and R. Garnett (eds.), Advances in Neural Information Processing Sys-tems, volume 32.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0050",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "Larochelle, A. Beygelzimer,F. d'Alch\u00b4e-Buc, E. Fox, and R. Garnett (eds.), Advances in Neural Information Processing Sys-tems, volume 32. Curran Associates, Inc., 2019.Ren\u00b4e Ranftl, Alexey Bochkovskiy, and Vladlen Koltun. Vision transformers for dense prediction.arXiv preprint arXiv:2103.13413, 2021.Yongming Rao, Wenliang Zhao, Benlin Liu, Jiwen Lu, Jie Zhou, and Cho-Jui Hsieh. Dynamicvit:Ef\ufb01cient vision transformers with dynamic token sparsi\ufb01cation. arXiv preprint arXiv:2106.02034,2021.Joseph Redmon and Ali Farhadi. Yolo9000: better, faster, stronger. In Proceedings of the IEEEconference on computer vision and pattern recognition, pp. 7263\u20137271, 2017.Olga Russakovsky, Jia Deng, Hao Su, Jonathan Krause, Sanjeev Satheesh, Sean Ma, ZhihengHuang, Andrej Karpathy, Aditya Khosla, Michael Bernstein, et al. Imagenet large scale visualrecognition challenge.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0051",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 51,
+      "section": "preamble",
+      "text": "Imagenet large scale visualrecognition challenge. International journal of computer vision, 115(3):211\u2013252, 2015.Mark Sandler, Andrew Howard, Menglong Zhu, Andrey Zhmoginov, and Liang-Chieh Chen. Mo-bilenetv2: Inverted residuals and linear bottlenecks. In Proceedings of the IEEE conference oncomputer vision and pattern recognition, pp. 4510\u20134520, 2018.Mohammad Shoeybi, Mostofa Patwary, Raul Puri, Patrick LeGresley, Jared Casper, and BryanCatanzaro. Megatron-lm: Training multi-billion parameter language models using model par-allelism. arXiv preprint arXiv:1909.08053, 2019.Aravind Srinivas, Tsung-Yi Lin, Niki Parmar, Jonathon Shlens, Pieter Abbeel, and Ashish Vaswani.Bottleneck transformers for visual recognition. In Proceedings of the IEEE/CVF Conference onComputer Vision and Pattern Recognition, pp. 16519\u201316529, 2021.Mingxing Tan and Quoc Le. Ef\ufb01cientnet: Rethinking model scaling for convolutional neural net-works. In International Conference on Machine Learning, pp. 6105\u20136114. PMLR, 2019a.Mingxing Tan and Quoc V Le.",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0052",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 52,
+      "section": "preamble",
+      "text": "In International Conference on Machine Learning, pp. 6105\u20136114. PMLR, 2019a.Mingxing Tan and Quoc V Le. Mixconv: Mixed depthwise convolutional kernels. In Proceedingsof the British Machine Vision Conference (BMVC), 2019b.Mingxing Tan, Bo Chen, Ruoming Pang, Vijay Vasudevan, Mark Sandler, Andrew Howard, andQuoc V Le. Mnasnet: Platform-aware neural architecture search for mobile. In Proceedings ofthe IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp. 2820\u20132828, 2019.Published as a conference paper at ICLR 2022Hugo Touvron, Matthieu Cord, Matthijs Douze, Francisco Massa, Alexandre Sablayrolles, andHerv\u00b4e J\u00b4egou.Training data-ef\ufb01cient image transformers & distillation through attention.InInternational Conference on Machine Learning, pp. 10347\u201310357. PMLR, 2021a.Hugo Touvron, Matthieu Cord, Alexandre Sablayrolles, Gabriel Synnaeve, and Herv\u00b4e J\u00b4egou.",
+      "token_count": 247
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0053",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 53,
+      "section": "preamble",
+      "text": "PMLR, 2021a.Hugo Touvron, Matthieu Cord, Alexandre Sablayrolles, Gabriel Synnaeve, and Herv\u00b4e J\u00b4egou. Goingdeeper with image transformers. arXiv preprint arXiv:2103.17239, 2021b.Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez,\u0141ukasz Kaiser, and Illia Polosukhin. Attention is all you need. In Advances in neural informationprocessing systems, pp. 5998\u20136008, 2017.Sinong Wang, Belinda Z Li, Madian Khabsa, Han Fang, and Hao Ma. Linformer: Self-attentionwith linear complexity. arXiv preprint arXiv:2006.04768, 2020.Wenhai Wang, Enze Xie, Xiang Li, Deng-Ping Fan, Kaitao Song, Ding Liang, Tong Lu, Ping Luo,and Ling Shao. Pyramid vision transformer: A versatile backbone for dense prediction withoutconvolutions. In Proceedings of the IEEE/CVF international conference on computer vision,2021.Xiaolong Wang, Ross Girshick, Abhinav Gupta, and Kaiming He. Non-local neural networks.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0054",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 54,
+      "section": "preamble",
+      "text": "In Proceedings of the IEEE/CVF international conference on computer vision,2021.Xiaolong Wang, Ross Girshick, Abhinav Gupta, and Kaiming He. Non-local neural networks. InProceedings of the IEEE conference on computer vision and pattern recognition, pp. 7794\u20137803,2018.Haiping Wu, Bin Xiao, Noel Codella, Mengchen Liu, Xiyang Dai, Lu Yuan, and Lei Zhang. Cvt:Introducing convolutions to vision transformers. arXiv preprint arXiv:2103.15808, 2021.Tete Xiao, Mannat Singh, Eric Mintun, Trevor Darrell, Piotr Doll\u00b4ar, and Ross Girshick.Earlyconvolutions help transformers see better. arXiv preprint arXiv:2106.14881, 2021.Fisher Yu and Vladlen Koltun. Multi-scale context aggregation by dilated convolutions. In Interna-tional Conference on Learning Representations, 2016.Kun Yuan, Shaopeng Guo, Ziwei Liu, Aojun Zhou, Fengwei Yu, and Wei Wu.",
+      "token_count": 240
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0055",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 55,
+      "section": "preamble",
+      "text": "In Interna-tional Conference on Learning Representations, 2016.Kun Yuan, Shaopeng Guo, Ziwei Liu, Aojun Zhou, Fengwei Yu, and Wei Wu. Incorporating con-volution designs into visual transformers. arXiv preprint arXiv:2103.11816, 2021a.Li Yuan, Yunpeng Chen, Tao Wang, Weihao Yu, Yujun Shi, Zihang Jiang, Francis EH Tay, JiashiFeng, and Shuicheng Yan. Tokens-to-token vit: Training vision transformers from scratch onimagenet. In Proceedings of the IEEE/CVF international conference on computer vision, 2021b.Hongyi Zhang, Moustapha Cisse, Yann N. Dauphin, and David Lopez-Paz. mixup: Beyond empiri-cal risk minimization. In International Conference on Learning Representations, 2018.Pengchuan Zhang, Xiyang Dai, Jianwei Yang, Bin Xiao, Lu Yuan, Lei Zhang, and Jianfeng Gao.Multi-scale vision longformer: A new vision transformer for high-resolution image encoding.arXiv preprint arXiv:2103.15358, 2021.Zhun Zhong, Liang Zheng, Guoliang Kang, Shaozi Li, and Yi Yang. Random erasing data aug-mentation.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0056",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 56,
+      "section": "preamble",
+      "text": "Random erasing data aug-mentation. In Proceedings of the AAAI Conference on Arti\ufb01cial Intelligence, volume 34, pp.13001\u201313008, 2020.Daquan Zhou, Bingyi Kang, Xiaojie Jin, Linjie Yang, Xiaochen Lian, Zihang Jiang, Qibin Hou,and Jiashi Feng. Deepvit: Towards deeper vision transformer. arXiv preprint arXiv:2103.11886,2021.Published as a conference paper at ICLR 2022AMOBILEVIT ARCHITECTUREMobileViT\u2019s are inspired by the philosophy of light-weight CNNs and the overall architecture ofMobileViT at different parameter budgets is given in Table 4. The initial layer in MobileViT isa strided 3 \u00d7 3 standard convolution, followed by MobileNetv2 (or MV2) blocks and Mobile-ViT blocks. We use Swish (Elfwing et al., 2018) as an activation function. Following CNN models,we use n = 3 in the MobileViT block. The spatial dimensions of feature maps are usually mul-tiples of 2 and h, w \u2264n. Therefore, we set h = w = 2 at all spatial levels. The MV2 blocksin MobileViT network are mainly responsible for down-sampling.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0057",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 57,
+      "section": "preamble",
+      "text": "Therefore, we set h = w = 2 at all spatial levels. The MV2 blocksin MobileViT network are mainly responsible for down-sampling. Therefore, in these blocks, weuse an expansion factor of four, except for MobileViT-XXS where we use an expansion factor of 2.The transformer layer in MobileViT takes a d-dimensional input, as shown in Figure 1b. We set theoutput dimension of the \ufb01rst feed-forward layer in a transformer layer as 2d instead of 4d, a defaultvalue in the standard transformer block of Vaswani et al. (2017).BMULTI-SCALE SAMPLERMulti-scale sampler reduces generalization gap. Generalization capability refers to the gap be-tween training and evaluation metrics. For two models with similar training metrics,the model withbetter evaluation metrics is more generalizable because it can predict better on an unseen dataset.Figure 9a and Figure 9b compares the training and validation error of the MobileViT-S model trainedwith standard and multi-scale samplers. The training error of MobileViT-S with multi-scale sampleris higher than standard sampler while validation error is lower. Also, the gap between training errorand validation error of MobileViT-S with multi-scale sampler is close to zero. This suggests that amulti-scale sampler improves generalization capability.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0058",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 58,
+      "section": "preamble",
+      "text": "Also, the gap between training errorand validation error of MobileViT-S with multi-scale sampler is close to zero. This suggests that amulti-scale sampler improves generalization capability. Also, when MobileViT-S trained indepen-dently with standard and multi-scale sampler is evaluated at different input resolutions (Figure 9c),we observe that MobileViT-S trained with multi-scale sampler is more robust as compared to the onetrained with the standard sampler. We also observe that multi-scale sampler improves the perfor-mance of MobileViT models at different model sizes by about 0.5% (Figure 10). These observationsin conjunction with impact on training ef\ufb01ciency (Figure 5b) suggests that a multi-scale sampler iseffective. Pytorch implementation of multi-scale sampler is provided in Listing 1.Multi-scale sampler is generic.We train a heavy-weight (ResNet-50) and a light-weight(MobileNetv2-1.0) CNN with the multi-scale sampler to demonstrate its generic nature.",
+      "token_count": 209
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0059",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 59,
+      "section": "preamble",
+      "text": "Resultsin Table 5 show that a multi-scale sampler improves the performance as well as training ef\ufb01ciency.LayerOutput sizeOutput strideRepeatOutput channelsXXSXSSImage256 \u00d7 2561Conv-3 \u00d7 3, \u21932128 \u00d7 12821161616MV21163232MV2, \u2193264 \u00d7 6441244864MV22244864MV2, \u2193232 \u00d7 3281486496MobileViT block (L = 2)148 (d = 64)64 (d = 96)96 (d = 144)MV2, \u2193216 \u00d7 161616480128MobileViT block (L = 4)164 (d = 80)80 (d = 120)128 (d = 192)MV2, \u219328 \u00d7 83218096160MobileViT block (L = 3)180 (d = 96)96 (d = 144)160 (d = 240)Conv-1 \u00d7 11320384640Global pool1 \u00d7 12561Linear100010001000Network Parameters1.3 M2.3 M5.6 MPublished as a conference paper at ICLR 2022StandardMulti-scale (Ours)StandardMulti-scale (Ours)Multi-scale (Ours)StandardTraining error (%)Validation error (%)Top-1 accuracy (%)050100150200250300Epochs050100150200250300Epochs160x160192x192256x256Input resolution(a) Training error(b) Validation error(c) Validation acc. vs. input resolutionStandardMulti-scale (Ours)Top-1 accuracy (%)XXSXSSMobileViT modelsModel# Params# Epochs# UpdateswTop-1 accuracy~wTraining timewResNet-50 w/ standard sampler (PyTorch)25 M\u2013\u201376.2(0.0%)\u2013\u2013ResNet-50 w/ standard sampler (our repro.)\u202025 M150187 k77.1(+0.9%)54 k sec.(1.35\u00d7)ResNet-50 w/ multi-scale sampler (Ours)\u202025 M150116 k78.6(+2.4%)40 k sec.(1\u00d7)MobileNetv2-1.0 w/ standard sampler (PyTorch)3.5 M\u2013\u201371.9(0.0%)\u2013(\u2013)MobileNetv2-1.0 w/ standard sampler (our repro.)\u20203.5 M300375 k72.1(+0.2%)78 k sec.(1.16\u00d7)MobileNetv2-1.0 w/ multi-scale sampler (Ours)\u20203.5 M300232 k73.3(+1.4%)67 k s",
+      "token_count": 565
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0060",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 60,
+      "section": "preamble",
+      "text": "A good model should be insensitive or less sensitive to L2 regularization(or weight decay) because tuning it for each task and dataset is time- and resource-consuming.Unlike CNNs, ViT models are sensitive to weight decay (Dosovitskiy et al., 2021; Touvron et al.,2021a; Xiao et al., 2021). To study if MobileViT models are sensitive to weight decay or not, wetrain the MobileViT-S model by varying the value of weight decay from 0.1 to 0.0001. Results areshown in Figure 11. With an exception to the MobileViT model trained with a weight decay of 0.1,all other models converged to a similar solution. This shows that MobileViT models are robust toweight decay. In our experiments, we use the value of weight decay as 0.01. Note that 0.0001 isthe widely used value of weight decay in most CNN-based models, such as ResNet and DenseNet.Even at this value of weight decay, MobileViT outperforms CNNs on the ImageNet-1k dataset (e.g.,DenseNet vs. MobileViT: 76.2 with 14 M parameters vs. 77.4 with 5.7 M parameters).Impact of skip-connection.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0061",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 61,
+      "section": "preamble",
+      "text": "MobileViT: 76.2 with 14 M parameters vs. 77.4 with 5.7 M parameters).Impact of skip-connection. Figure 12 studies the impact of skip-connection in the MobileViT block(red arrow in Figure 1b). With this connection, the performance of MobileViT-S improves by 0.5%on the ImageNet dataset. Note that even without this skip-connection, MobileViT-S delivers similaror better performance than state-of-the-art CNN- (Figure 6) and ViT-based (Figure 7b) models, thattoo with basic data augmentation.Impact of patch sizes. MobileViT combines convolutions and transformers to learn local and globalrepresentations effectively.",
+      "token_count": 152
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0062",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 62,
+      "section": "preamble",
+      "text": "MobileViT combines convolutions and transformers to learn local and globalrepresentations effectively. Because convolutions are applied on n \u00d7 n regions and self-attentionPublished as a conference paper at ICLR 2022Weight decay0.10.010.0010.0001Weight decay0.10.010.0010.0001Training error (%)Validation error (%)Weight decayTop-1~w0.176.50.0178.40.00177.60.000177.4050100150200250300Epochs050100150200250300Epochs(a) Training error(b) Validation error(c) Validation accuracyw/o skipw/ skipw/o skipw/ skipTraining error (%)Validation error (%)Skip-connectionTop-1~w77.978.4050100150200250300Epochs050100150200250300Epochs(a) Training error(b) Validation error(c) Validation accuracyPatch sizes# Params.TimewTop-1~w2,2,25.7 M9.85 ms78.43,3,3\u20205.7 M14.69 ms78.54,4,45.7 M8.23 ms77.68,4,25.7 M8.20 ms77.3is computed over patches with spatial dimensions of h and w, it is essential to establish a goodrelationship between n, h, and w.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0063",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 63,
+      "section": "preamble",
+      "text": "Following previous works on CNN designs, we set n = 3and then vary h and w. Speci\ufb01cally, we study four con\ufb01gurations: (i) h = w = 2 at all spatiallevels (Figure 13a). In this case, h, w < n and would allow each pixel to encode information fromevery other pixel using MobileViT. (ii) h = w = 3 at all spatial levels (Figure 13b). In this case,h = w = n. Similar to (i), this con\ufb01guration would also allow each pixel to encode informationfrom every other pixel using MobileViT. (iii) h = w = 4 at all spatial levels (Figure 13c). In thiscase, h, w > n and would not allow each pixel to aggregate information from other pixels in thetensor. (iv) h = w = 8, h = w = 4, and h = w = 2 at spatial level of 32 \u00d7 32, 16 \u00d7 16, and 8 \u00d7 8,respectively. Unlike (i), (ii), and (iii), the number of patches N is the same across different spatialresolutions in (iv). Also, h, w < n only for a spatial level of 8 \u00d7 8 where h = w = 2.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0064",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 64,
+      "section": "preamble",
+      "text": "Also, h, w < n only for a spatial level of 8 \u00d7 8 where h = w = 2. Note thatall these models have the same number of network parameters and the same computational cost ofself-attention, i.e., O(N 2Pd). Here, N is the number of patches, P = hw is the number of pixelsin a patch with height h and width w, and d is the model dimension.Results are shown in Table 6. We can see that when h, w \u2264n, MobileViT can aggregate informationmore effectively, which helps improve performance. In our experiments, we used h = w = 2instead of h = w = 3 because spatial dimensions of feature maps are multiples of 2, and usingPublished as a conference paper at ICLR 2022(a) h = w = 2 < n = 3(b) h = w = n = 3(c) h = w = 4 > n = 3LSEMATop-1~w78.078.378.4h = w = 3 requires additional operations. For folding and unfolding, we need to either pad orresize. In the case of padding, we need to mask the padded pixels in self-attention in transformers.These additional operations result in latency, as shown in Table 6.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0065",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 65,
+      "section": "preamble",
+      "text": "For folding and unfolding, we need to either pad orresize. In the case of padding, we need to mask the padded pixels in self-attention in transformers.These additional operations result in latency, as shown in Table 6. To avoid these extra operations,we choose h = w = 2 in our experiments, which also provides a good trade-off between latencyand accuracy.Impact of exponential moving average and label smoothing. Exponential moving average (EMA)and label smoothing (LS) are two standard training methods that are used to improve CNN- andTransformer-based models performance (Sandler et al., 2018; Howard et al., 2019; Tan et al., 2019;Touvron et al., 2021a; Dai et al., 2021; Xiao et al., 2021). Table 7 shows that LS marginally improvesthe performance of MobileViT-S while EMA has little or no effect on model\u2019s performance on theImageNet-1k dataset.",
+      "token_count": 207
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0066",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 66,
+      "section": "preamble",
+      "text": "Table 7 shows that LS marginally improvesthe performance of MobileViT-S while EMA has little or no effect on model\u2019s performance on theImageNet-1k dataset. Because previous works have shown these methods to be effective in reducingstochastic noise and prevent network from becoming over-con\ufb01dent, we use these methods to trainMobileViT models.DTRAINING DETAILS FOR SSDLITE AND DEEPLABV3All SSDLite-MobileViT and DeepLabv3-MobileViT networks are trained for 200 and 50 epochswith a standard sampler on 4 NVIDIA GPUs and with an effective batch size of 128 images, re-spectively. The learning rate is increased from 0.00009 to 0.0009 in the \ufb01rst 500 iterations andthen annealed to 0.00009 using a cosine learning rate scheduler. We use L2 weight decay of 0.01.We change the stride of MV2 block from two to one at an output stride of 32 in Table 4 to obtainDeepLabv3-MobileViT models at an output stride of 16.For these models, we do not use a multi-scale sampler. This is because these task-speci\ufb01c networksare resolution-dependent. For example, DeepLabv3 uses an atrous (or dilation) rate of 6, 12, and18 at an output stride of 16 to learn multi-scale representations.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0067",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 67,
+      "section": "preamble",
+      "text": "For example, DeepLabv3 uses an atrous (or dilation) rate of 6, 12, and18 at an output stride of 16 to learn multi-scale representations. If we use a lower resolution (say256 \u00d7 256) than 512 \u00d7 512, then the atrous kernel weights will be applied to padded zeros; makingmulti-scale learning ineffective.Published as a conference paper at ICLR 2022EEXTENDED DISCUSSIONMemory footprint.A light-weight network running on mobile devices should be memory ef\ufb01-cient. Similar to MobileNetv2, we measure the memory that needs to be materialized at each spatiallevel (Table 8). At lower spatial levels (i.e., an output stride of 8, 16, and 32) where MobileViTblocks are employed, required memory is lesser or comparable to light-weight CNNs. Therefore,similar to light-weight CNNs, MobileViT networks are also memory ef\ufb01cient.FLOPs.Floating point operations (FLOPs) is another metric that is widely used to measure theef\ufb01ciency of a neural network. Table 9 compare FLOPs of MobileViT with different ViT-basednetworks on the ImageNet-1k dataset. For similar number of FLOPs, MobileViT is faster, smaller,and better.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0068",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 68,
+      "section": "preamble",
+      "text": "Table 9 compare FLOPs of MobileViT with different ViT-basednetworks on the ImageNet-1k dataset. For similar number of FLOPs, MobileViT is faster, smaller,and better. For instance, PiT and MobileViT has the same number of FLOPs, but MobileViT is1.45\u00d7 faster, 2.1\u00d7 smaller, and 1.8% better (R2 vs. R4 in Table 9). It is important to note that FLOPsfor networks in R2-R4 are the same, but their latency and performance are different. This shows thatFLOPs is not a suf\ufb01cient metric for network ef\ufb01ciency as it does not account for inference-relatedfactors such as memory access, degree of parallelism, and platform characteristics.The ImageNet-1k pre-training helps in performance improvement in down-stream tasks such asobject detection and semantic segmentation (Long et al., 2015; Chen et al., 2017; Redmon & Farhadi,2017). Because such tasks are used in real-world applications and often uses higher image inputs ascompared to the ImageNet-1k classi\ufb01cation task, it is important to compare the FLOPs of a networkon down-stream tasks.",
+      "token_count": 271
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0069",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 69,
+      "section": "preamble",
+      "text": "Because such tasks are used in real-world applications and often uses higher image inputs ascompared to the ImageNet-1k classi\ufb01cation task, it is important to compare the FLOPs of a networkon down-stream tasks. Towards this end, we compare the FLOPs of MobileViT with MobileNetv2on three tasks, i.e., classi\ufb01cation, detection, and segmentation. Results are shown in Table 10. Wecan observe that (1) the gap between MobileNetv2 and MobileViT FLOPs reduces as the inputresolution increases. For instance, MobileNetv2 has 2\u00d7 fewer FLOPs as compared to MobileViTonthe ImageNet-1k classi\ufb01cation task, but on the semantic segmentation, they have similar FLOPs(Table 10a vs. Table 10c) and (2) MobileNetv2 models are signi\ufb01cantly faster but less accurate thanMobileViT models across different tasks. The low-latency of MobileNetv2 models is likely becauseof dedicated and optimized hardware-level operations on iPhone.",
+      "token_count": 232
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0070",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 70,
+      "section": "preamble",
+      "text": "The low-latency of MobileNetv2 models is likely becauseof dedicated and optimized hardware-level operations on iPhone. We believe that (1) the inferencespeed of MobileViT will further improve with such dedicated operations and (2) our results willinspire future research in the area of hardware design and optimization.Inference time on different devices.Table 11 compares the inference time of different modelson three different devices, i.e., iPhone12 CPU, iPhone12 neural engine, and NVIDIA V100 GPU.MobileNetv2 is the fastest network across all devices. On iPhone (both CPU and neural engine),MobileViT delivers better performance as compared to DeIT and PiT. However, on GPU, DeITand PiT are faster than MobileViT.",
+      "token_count": 154
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0071",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 71,
+      "section": "preamble",
+      "text": "On iPhone (both CPU and neural engine),MobileViT delivers better performance as compared to DeIT and PiT. However, on GPU, DeITand PiT are faster than MobileViT. This is likely because MobileViT models (1) are shallow andnarrow, (2) run at higher spatial resolution (256 \u00d7 256 instead of 224 \u00d7 224), and (2) did not useOSMobileNetv2-1.0MobileViT-XS24007844200294810098166231323237Top-173.374.8Model# Params.wFLOPswTimewTop-1~w(R1) DeIT5.7 M1.3 G10.99 ms72.2(R2) PiT4.9 M0.7 G10.56 ms73.0(R3) MobileViT-XS (Ours; 8,4,2)2.3 M0.7 G5.93 ms73.8(R4) MobileViT-XS (Ours; 2,2,2)2.3 M0.7 G7.28 ms74.8Published as a conference paper at ICLR 2022Model# Params.wFLOPswTimewTop-1~wBackbone# Params.wFLOPswTimewmAP~wMobileNetv23.5 M0.3 G0.92 ms73.3MobileViT-XS (Ours; 8,4,2)2.3 M0.7 G5.93 ms73.8MobileViT-XS (Ours; 2,2,2)2.3 M0.7 G7.28 ms74.8MobileNetv24.3 M0.8 G2.3 ms22.1MobileViT-XS (Ours; 8,4,2)2.7 M1.6 G10.7 ms23.1MobileViT-XS (Ours;2,2,2)2.7 M1.6 G12.6 ms24.8(a) ImageNet-1k classi\ufb01cation(b) Object detection w/ SSDLite.Backbone# Params.wFLOPswTimewmIOU~wMobileNetv24.3 M5.8 G6.5 ms75.7MobileViT-XS (Ours)2.9 M5.7 G25.1 ms75.4MobileViT-XS (Ours)2.9 M5.7 G32.3 ms77.1(c) Semantic segmentation w/ DeepLabv3.Model# ParamswFLOPswTop-1~wInference timewiPhone12 - CPUiPhone12 - Neural EngineNVIDIA V100 GPUMobileNetv23.5 M0.3 G73.37.50 ms0.92 ms0.31 msDeIT5.7 M1.3 G72.228.15 ms10.99 ms0.43 msPiT4.9 M0.7 G73.024.03 ms10.56 ms0.46 msMobileViT (Ours)2.3 M0.7 G74.817.86 ms7.28 ms0.62 ms/0.47 ms\u2020GPU- accelerated operations for folding and unfolding as they are not supported on mobile devices.However, when we replaced our unoptimized fold and unfold operations with PyTorch\u2019s",
+      "token_count": 728
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0072",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 72,
+      "section": "preamble",
+      "text": "We believe that our work will inspire future research inbuilding more ef\ufb01cient networks.FQUALITATIVE RESULTS ON THE TASK OF OBJECT DETECTIONFigures 15, 14, and 16 shows that SSDLite with MobileViT-S can detect different objects underdifferent settings, including changes in illumination and viewpoint, different backgrounds, and non-rigid deformations.Published as a conference paper at ICLR 2022Published as a conference paper at ICLR 2022Published as a conference paper at ICLR 2022Published as a conference paper at ICLR 2022GSEMANTIC SEGMENTATION RESULTS ON AN UNSEEN DATASETTo demonstrate that MobileViT learns good generalizable representations of objects, we evaluatethe DeepLabv3-MobileViT model in Section 4.2.2 on the MS-COCO validation set that contains5k images. Following of\ufb01cial torchvision segmentation models (PyTorch, 2021), object classes inthe MS-COCO dataset are mapped to the object classes in the PASCAL VOC dataset and modelsare evaluated in terms of mIOU.",
+      "token_count": 233
+    },
+    {
+      "chunk_id": "2110.02178_chunk_0073",
+      "arxiv_id": "2110.02178",
+      "chunk_index": 73,
+      "section": "preamble",
+      "text": "Following of\ufb01cial torchvision segmentation models (PyTorch, 2021), object classes inthe MS-COCO dataset are mapped to the object classes in the PASCAL VOC dataset and modelsare evaluated in terms of mIOU. Note that the MS-COCO validation set is an unseen test set forDeepLabv3-MobileViT models because these images are neither part of the training nor the valida-tion set used for training DeepLabv3-MobileViT models.Model# ParamswmIOU~wLR-ASPP w/ MobileNetV3-Large3.2 M57.9FCN w/ MobileNetV3-Large5.1 M57.8DeepLabv3 w/ MobileNetV3-Large11.0 M60.3DeepLabv3 w/ MobileViT-XXS (Ours)1.9 M46.7DeepLabv3 w/ MobileViT-XS (Ours)2.9 M57.4DeepLabv3 w/ MobileViT-S (Ours)6.4 M65.4Published as a conference paper at ICLR 2022Published as a conference paper at ICLR 2022Published as a conference paper at ICLR 20221importt o r c hfromt o r c h . u t i l s . data . samplerimportSampler3importt o r c h . d i s t r i b u t e dasd i s timportmath5importrandomimport numpy as np79c l a s sMultiScaleSamplerDDP ( Sampler ) :defi n i t( s e l f ,base im w :int ,base im h :int ,b a s e b a t c h s i z e :int ,n d a t a s a m p l e s :int ,,\u2192m i n s c a l e m u l t :f l o a t= 0.5 ,max scale mult :f l o a t= 1.5 ,n s c a l e s :i n t= 5 ,i s t r a i n i n g :bool =,\u2192False ) \u2212> None :11# min .and max .s p a t i a ldimensionsmin im w ,max im w =i n t ( base im w *m i n s c a l e m u l t ) ,i n t ( base im w * max scale mult )13min im h ,max im h =i n t ( base im h *m i n s c a l e m u l t ) ,i n t ( base im h * max scale mult )15# Getthe GPU and noder e l a t e di n f o r m a t i o nnum repl icas =d i s t . g e t w o r l d s i z e ( )17rank =d i s t . g e t r a n k ( )19#a d j u s tthet o t a lsamplestoavoidbatch",
+      "token_count": 645
+    }
+  ]
+}

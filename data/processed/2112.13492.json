@@ -1,0 +1,390 @@
+{
+  "arxiv_id": "2112.13492",
+  "title": "Vision Transformer for Small-Size Datasets",
+  "authors": [
+    "Seung Hoon Lee",
+    "Seunghyun Lee",
+    "Byung Cheol Song"
+  ],
+  "year": 2021,
+  "abstract": "Recently, the Vision Transformer (ViT), which applied the transformer structure to the image classification task, has outperformed convolutional neural networks. However, the high performance of the ViT results from pre-training using a large-size dataset such as JFT-300M, and its dependence on a large dataset is interpreted as due to low locality inductive bias. This paper proposes Shifted Patch Tokenization (SPT) and Locality Self-Attention (LSA), which effectively solve the lack of locality inductive bias and enable it to learn from scratch even on small-size datasets. Moreover, SPT and LSA are generic and effective add-on modules that are easily applicable to various ViTs. Experimental results show that when both SPT and LSA were applied to the ViTs, the performance improved by an average of 2.96% in Tiny-ImageNet, which is a representative small-size dataset. Especially, Swin Transformer achieved an overwhelming performance improvement of 4.08% thanks to the proposed SPT and LSA.",
+  "categories": [
+    "cs.CV"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2112.13492v1",
+  "page_count": 11,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 46,
+  "chunks": [
+    {
+      "chunk_id": "2112.13492_chunk_0000",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "Vision Transformer for Small-Size DatasetsSeung Hoon LeeInha UniversityIncheon, South KoreaSeunghyun LeeInha UniversityIncheon, South KoreaByung Cheol SongInha UniversityIncheon, South Koreaaanna0701@gmail.comlsh910703@gmail.combcsong@inha.ac.krAbstractRecently, the Vision Transformer (ViT), which appliedthe transformer structure to the image classi\ufb01cation task,has outperformed convolutional neural networks. However,the high performance of the ViT results from pre-trainingusing a large-size dataset such as JFT-300M, and its depen-dence on a large dataset is interpreted as due to low localityinductive bias. This paper proposes Shifted Patch Tokeniza-tion (SPT) and Locality Self-Attention (LSA), which effec-tively solve the lack of locality inductive bias and enable itto learn from scratch even on small-size datasets. Moreover,SPT and LSA are generic and effective add-on modules thatare easily applicable to various ViTs. Experimental resultsshow that when both SPT and LSA were applied to the ViTs,the performance improved by an average of 2.96% in Tiny-ImageNet, which is a representative small-size dataset. Es-pecially, Swin Transformer achieved an overwhelming per-formance improvement of 4.08% thanks to the proposedSPT and LSA.1.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0001",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "Es-pecially, Swin Transformer achieved an overwhelming per-formance improvement of 4.08% thanks to the proposedSPT and LSA.1. INTRODUCTIONConvolutional neural networks (CNNs), which are ef-fective in learning visual representations of image data,have been the main-stream in the \ufb01eld of computer vision(CV) [10, 14, 18, 30, 32, 37]. Meanwhile, in the \ufb01eld ofNatural Language Processing (NLP), the so-called Trans-former [35] based on self-attention mechanism has achievedtremendous success [5,8,20]. So, in the CV \ufb01eld, there havebeen attempts to combine the self-attention mechanism withCNNs [4,13,28,36,38,44]. These studies have succeeded inproving that the self-attention mechanism also works for theimage domain. Recently, it was reported that Vision Trans-former (ViT) [9], which applied a standard Transformercomposed entirely of self-attention to image data, showedbetter performance than ResNet [10] and Ef\ufb01cientNet [32]in the image classi\ufb01cation task. This made Transformer re-ceive a lot of attention in the CV \ufb01eld.ViT rarely uses convolutional \ufb01lters, i.e., the core ofCNNs.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0002",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "This made Transformer re-ceive a lot of attention in the CV \ufb01eld.ViT rarely uses convolutional \ufb01lters, i.e., the core ofCNNs. Convolutional \ufb01lters were usually used only for theirtokenization. Thus, ViT structurally lacks locality inductivebias than CNNs, and they require a too large amount oftraining data to obtain acceptable visual representation [26].For example, just to learn a small-size dataset, ViT had toprecede pre-training on a large-size dataset such as JFT-300M [29]. In order to alleviate the burden of pre-training,several ViTs which can learn a mid-size dataset such as Ima-geNet from scratch have been proposed. Such data-ef\ufb01cientViTs tried to increase the locality inductive bias in termsof network architecture. For example, some adopted a hi-erarchical structure like CNNs to leverage various recep-tive \ufb01elds [12, 24, 39], and the others tried to modify theself-attention mechanism itself [22,24,34,39,40]. However,learning from scratch on mid-size datasets still requires sig-ni\ufb01cant costs. Moreover, learning small-size datasets fromscratch is very challenging considering the trade-off be-tween dataset capacity and performance.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0003",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "However,learning from scratch on mid-size datasets still requires sig-ni\ufb01cant costs. Moreover, learning small-size datasets fromscratch is very challenging considering the trade-off be-tween dataset capacity and performance. Therefore, weneed to study ViT that can learn small-size datasets by suf-\ufb01ciently increasing the locality inductive bias.Fig. 1 and Table 5).Our experiments show that the proposed method im-proves the performance of various ViTs both qualitativelyand quantitatively. First, Fig. 5 illustrates that when SPTand LSA are applied to the ViTs, object shapes are bet-ter captured. From a quantitative aspect, SPT and LSA im-prove image classi\ufb01cation performance. For example, in theexperiment on Tiny-ImageNet, the classi\ufb01cation accuracyis improved by an average of 2.96%, and a maximum of4.08% (see Table 2). Also, SPT and LSA improve the per-formance of ViTs up to 1.06% in the mid-size dataset suchas ImageNet (see Table 3). The main contribution points ofthis paper are as follows:Through observations, we found two problems that de-crease locality inductive bias and limit the performance ofthe ViT. The \ufb01rst problem is poor tokenization.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0004",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "The main contribution points ofthis paper are as follows:Through observations, we found two problems that de-crease locality inductive bias and limit the performance ofthe ViT. The \ufb01rst problem is poor tokenization. ViT dividesa given image into non-overlapping patches of equal size,and linearly projects each patch to a visual token. Here,the same linear projection is applied to each patch. So, to-kenization of the ViT has the permutation invariant prop-erty, which enables a good embedding of relations betweenpatches [3]. On the other hand, non-overlapping patches al-low visual tokens to have a relatively small receptive \ufb01eld.Usually, tokenization based on non-overlapping patches hasa smaller receptive \ufb01eld than tokenization based on over-lapping patches with the same down-sampling ratio. Smallreceptive \ufb01elds cause ViT to tokenize with too few pixels.As a result, the spatial relationship with adjacent pixels isnot suf\ufb01ciently embedded in each visual token. The sec-ond problem is the poor attention mechanism. The featuredimension of image data is far greater than that of naturallanguage and audio signal, so the number of embedded to-kens is inevitably large. Thus, the distribution of attentionscores of tokens becomes smooth. In other words, we facethe problem that ViTs cannot attend locally to important vi-sual tokens.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0005",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "Thus, the distribution of attentionscores of tokens becomes smooth. In other words, we facethe problem that ViTs cannot attend locally to important vi-sual tokens. The above two main problems cause highly re-dundant attentions that cannot focus on a target class. Thisredundant attention makes it easy for ViT to normally con-centrate on the background and not capture the shape of thetarget class well (see Fig. 5).\u2022 To suf\ufb01ciently embed spatial information betweenneighboring pixels, we propose new tokenizationbased on spatial feature shifting. The proposed tok-enization can give a wider receptive \ufb01eld to visual to-kens. This dramatically improves the performance ofthe ViTs.\u2022 We propose a locality attention mechanism to solveor attenuate the smoothing problem of the attentionscore distribution. This mechanism signi\ufb01cantly im-proves the performance of ViTs with only a small pa-rameter increase and the addition of simple operations.2. RELATED WORKRecently, several data-ef\ufb01cient ViTs have been proposedto alleviate the dependence of ViT on large-size datasets.These ViTs can learn mid-size datasets from scratch. Forexample, DeiT [33] improved the ef\ufb01ciency of ViTs by em-ploying data augmentations and regularizations and realizedknowledge distillation by introducing the distillation tokenconcept.",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0006",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "Forexample, DeiT [33] improved the ef\ufb01ciency of ViTs by em-ploying data augmentations and regularizations and realizedknowledge distillation by introducing the distillation tokenconcept. T2T [41] used a tokenization method that \ufb02attenedoverlapping patches and applied a transformer. This makesit possible to learn local structure information around a to-ken. PiT [12] produced various receptive \ufb01elds through spa-tial dimension reduction based on the pooling structure ofa convolutional layer. CvT [39] replaced both linear pro-jection and multi-layer perceptron with convolutional lay-ers. Also, like PiT, CvT generated various receptive \ufb01eldsonly with a convolutional layer. Swin Transformer [24] pre-sented an ef\ufb01cient hierarchical transformer that graduallyreduces the number of tokens through patch merging whileusing attention calculated in non-overlapping local win-dows. CaiT [34] employed LayerScale, which convergeswell even in training ViTs with a large depth. In addition,the transformer layer of the CaiT is divided into a patch-attention layer and a class-attention layer, which is effectivefor class embedding.However, the ViT for small-size datasets has not been re-ported yet.",
+      "token_count": 271
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0007",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "In addition,the transformer layer of the CaiT is divided into a patch-attention layer and a class-attention layer, which is effectivefor class embedding.However, the ViT for small-size datasets has not been re-ported yet. Therefore, this paper proposes tokenization us-ing more spatial information and also a high-performanceattention mechanism, which allows ViTs to effectively learnThis paper presents two solutions to effectively improvethe locality inductive bias of ViT for learning small-sizedatasets from scratch. First, we propose Shifted Patch To-kenization (SPT) to further utilize spatial relations betweenneighboring pixels in the tokenization process. The idea ofSPT was derived from Temporal Shift Module (TSM) [23].TSM is effective temporal modeling which shifts some tem-poral channels of features. Inspired by this, we propose ef-fective spatial modeling that tokenizes spatially shifted im-ages together with the input image. SPT can give a wider re-ceptive \ufb01eld to ViT than standard tokenization. This has theeffect of increasing the locality inductive bias by embeddingmore spatial information in each visual token. Second, wepropose Locality Self-Attention (LSA), which allows ViTto attend locally.",
+      "token_count": 256
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0008",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "This has theeffect of increasing the locality inductive bias by embeddingmore spatial information in each visual token. Second, wepropose Locality Self-Attention (LSA), which allows ViTto attend locally. LSA mitigates the smoothing phenomenonof attention score distribution by excluding self-tokens andby applying learnable temperature to the softmax function.LSA induces attention to work locally by forcing each tokento focus more on tokens with large relation to itself. Notethat the proposed SPT and LSA can be easily applied tovarious ViTs in the form of add-on modules without struc-tural changes and can effectively improve performance (see(a) Shifted Patch Tokenization(b) Locality Self-Attentionsmall-size datasets from scratch.non-overlapping patches and \ufb02atten the patches to obtaina sequence of vectors. This process is formulated as Eq. 1:3. PROPOSED METHODP(x) = [x1p; x2p; . . . ; xNp ](1)This section speci\ufb01cally describes two key ideas for in-creasing the locality inductive bias of ViTs: SPT and LSA.First, Fig. 2(a) depicts the concept of SPT. SPT spatiallyshifts an input image in several directions and concatenatesthem with the input image. Fig. 2(a) is an example of shift-ing in four diagonal directions.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0009",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "SPT spatiallyshifts an input image in several directions and concatenatesthem with the input image. Fig. 2(a) is an example of shift-ing in four diagonal directions. Next, patch partitioning isapplied like standard ViTs. Then, for embedding into visualtokens, three processes are sequentially performed: patch\ufb02attening, layer normalization [2], and linear projection. Asa result, SPT can embed more spatial information into vi-sual tokens and increase the locality inductive bias of ViTs.Fig. 2(b) explains the second idea, LSA. In general, asoftmax function can control the smoothness of the outputdistribution through temperature scaling [11]. LSA primar-ily sharpens the distribution of attention scores by learningthe temperature parameters of the softmax function. Addi-tionally, the self-token relation is removed by applying theso-called diagonal masking, which forcibly suppresses thediagonal components of the similarity matrix computed byQuery and Key. This masking relatively increases the atten-tion scores between different tokens, making the distribu-tion of attention scores sharper. As a result, LSA increasesthe locality inductive bias by making ViT\u2019s attention locallyfocused.where xip \u2208RP 2\u00b7C represents the i-th \ufb02attened vector.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0010",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "As a result, LSA increasesthe locality inductive bias by making ViT\u2019s attention locallyfocused.where xip \u2208RP 2\u00b7C represents the i-th \ufb02attened vector. Pand N = HW/P 2 stand for the patch size and the numberof patches, respectively.Next, we obtain patch embeddings by linearly projectingeach vector into the space of the hidden dimension of thetransformer encoder. Each patch embedding corresponds toa visual token input to the transformer encoder, so this seriesof processes is called tokenization, i.e., T . This is de\ufb01nedby:T (x) = P(x)Et(2)where Et \u2208R(P 2\u00b7C)\u00d7d is the learnable linear projectionfor tokens, and d is the hidden dimension of the transformerencoder.Note that the receptive \ufb01elds of visual tokens in ViT aredetermined by tokenization. In the transformer encoder run-ning after the tokenization step, the number of visual tokensdoes not change, so the receptive \ufb01eld cannot be adjustedthere. and the tokenization (Eq. 2) of standard ViT is thesame as the operation of the non-overlapping convolutionallayer with the same size of kernel and stride. So, the re-ceptive \ufb01eld size of visual tokens can be calculated by thefollowing equation given in [1]:3.1.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0011",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "So, the re-ceptive \ufb01eld size of visual tokens can be calculated by thefollowing equation given in [1]:3.1. Preliminaryrtoken = rtrans \u00b7 j + (k \u2212j)(3)Before a detailed description of the proposed SPT andLSA, this section brie\ufb02y reviews the tokenization andformulation of the self-attention mechanism of standardViT [9].Let x \u2208RH\u00d7W \u00d7C be an input image. Here, H, W,and C indicate the height, width, and channel of the im-age, respectively. First, ViT divides the input image intowhere rtoken and rtrans stand for the receptive \ufb01eld sizesof tokenization and transformer encoder, respectively. j andk are the stride and kernel size of the convolutional layer,respectively. As mentioned earlier, the receptive \ufb01eld is notadjusted in the transformer encoder, so rtrans = 1. Thus,rtoken is the same as the kernel size. Here, the kernel size isthe patch size of ViT.At this time, let\u2019s investigate whether rtoken is of suf\ufb01-cient size.",
+      "token_count": 240
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0012",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "Thus,rtoken is the same as the kernel size. Here, the kernel size isthe patch size of ViT.At this time, let\u2019s investigate whether rtoken is of suf\ufb01-cient size. For instance, we compare rtoken with the recep-tive \ufb01eld size of the last feature of ResNet50 when trainingon the ImageNet dataset consisting of images of 224 \u00d7 224.The patch size of standard ViT is 16, so rtoken of visual to-kens is also 16. On the other hand, the receptive \ufb01eld sizeof the ResNet50 feature amounts to 483 [1]. As a result, thevisual tokens of ViTs have a receptive \ufb01eld size that is about30 times smaller than that of the ResNet50 feature. We in-terpret this small receptive \ufb01eld of tokenization as a majorfactor in the lack of local inductive bias. Therefore, Sec. 3.2proposes the SPT to leverage rich spatial information by in-creasing the receptive \ufb01eld of tokenization.Meanwhile, the self-attention mechanism of generalViTs operates as follows. First, a learnable linear projec-tion is applied to each token to obtain Query, Key, andValue.",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0013",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "First, a learnable linear projec-tion is applied to each token to obtain Query, Key, andValue. Next, calculate the similarity matrix, that is, R \u2208R(N+1)\u00d7(N+1), indicating the semantic relation betweentokens through the dot product operation of Query andKey. The diagonal components of R represent self-tokenrelations, and the off-diagonal components represent inter-token relations:R(x) = xEq(xEk)\u22ba(4)Here, Eq \u2208Rd\u00d7dq, Ek \u2208Rd\u00d7dk indicate learnable linearprojections for Query and Key, respectively. And, dq and dkare the dimensions of Query and Key, respectively. Next, Ris divided by the square root of the Key dimension, and thenthe softmax function is applied to obtain the attention scorematrix. Finally, calculate the self-attention, de\ufb01ned by thedot product of the attention score matrix and Value, as inEq. 5:SA(x) = softmax(R/pthat the attention scores smoothed due to high temperaturedegrade the performance of ViT. For example, take a lookat Table 1 that shows the top-1 accuracy of standard ViT onthe small-size datasets, i.e., CIFAR100 and Tiny-ImageNet.Here, we can observe the best performance when the tem-perature of softmax is less than \u221adk.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0014",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "Sec. 3.3 proposes theLSA for improving the performance of ViTs by solving thesmoothing problem of the attention score distribution.dk)xEv(5)where Ev \u2208Rd\u00d7dv is a learnable linear projection of Value,and dv is the Value dimension.Eq. 5 was designed so that the attentions of tokens withlarge relations get large. However, due to the followingtwo causes, attentions of standard ViT tend to be similarto each other regardless of relations. The \ufb01rst cause is asfollows: Since Query (xEq) and Key (xEk) is linearly pro-jected from the same input tokens, token vectors belongingto Query and Key tend to have similar sizes. Eq. 4 showsthat R is the dot product of Query and Key. So, self-tokenrelations which are dot products of similar vectors are usu-ally larger than inter-token relations. Therefore, the softmaxfunction of Eq. 5 gives relatively high scores to self-tokenrelations and small scores to inter-token relations. The sec-ond cause is as follows: The reason why R is divided by\u221adk in Eq. 5 is to prevent the softmax function from hav-ing a small gradient. However, \u221adk can rather act as a hightemperature of the softmax function and cause smoothing ofthe attention score distribution [11]. Our experiment proves3.2.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0015",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "However, \u221adk can rather act as a hightemperature of the softmax function and cause smoothing ofthe attention score distribution [11]. Our experiment proves3.2. Shifted Patch TokenizationThis section \ufb01rst describes the overall formulation ofSPT (Sec. 3.2.1) and applies the proposed SPT to the patchembedding layer and the pooling layer, i.e., two main tok-enizations for ViTs (Sec. 3.2.2 and Sec. 3.2.3).3.2.1FormulationFirst, each input image is spatially shifted by half the patchsize in four diagonal directions, that is, left-up, right-up,left-down, and right-down. In this paper, this shifting strat-egy is named S for convenience, and the SPT of all ex-periments follows S. Of course, various shifting strategiesother than S are available, and they are dealt with in thesupplementary. Next, the shifted features are cropped to thesame size as the input image and then concatenated withthe input. Then, the concatenated features are divided intonon-overlapping patches and the patches are \ufb02attened as inEq. 1. Next, visual tokens are obtained through layer nor-malization (LN) and linear projection.",
+      "token_count": 269
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0016",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "Then, the concatenated features are divided intonon-overlapping patches and the patches are \ufb02attened as inEq. 1. Next, visual tokens are obtained through layer nor-malization (LN) and linear projection. The whole process isformulated as Eq. 6:TEMPERATURETOP-1 ACCURACY (%)CIFAR100T-ImageNet14\u221adk73.7057.6212\u221adk74.5457.65\u221adk73.8157.072\u221adk72.7756.984\u221adk71.5556.43S(x) = LN(P([x s1 s2 . . . sNS]))ES(6)Here, si \u2208RH\u00d7W \u00d7C represents the i-th shifted imageaccording to S and ES \u2208R(P 2\u00b7C\u00b7(Ns+1)\u00d7dS) indicates alearnable linear projection. Also, dS represents the hiddendimension of the transformer encoder, and NS representsthe number of images shifted by S.where Ecls \u2208Rd\u00d7d\u2032S is a learnable linear projection. Inaddition, d\u2032S is the hidden dimension of the next stage.",
+      "token_count": 250
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0017",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "Inaddition, d\u2032S is the hidden dimension of the next stage. Asa result, SPT embeds rich spatial information into visualtokens by increasing the receptive \ufb01eld of tokenization asmuch as spatially shifted.3.2.2Patch Embedding LayerThis section describes how to use SPT as a patch embed-ding layer. We concatenate a class token to visual tokensand then add positional embedding. Here the class token isthe token with representation information of the entire im-age, and the positional embedding gives positional informa-tion to the visual tokens. If a class token is not used, onlypositional embedding is added to the output of SPT. How toapply the SPT to the patch embedding layer is formulatedas follows:3.3. Locality Self-Attention MechanismThis section describes the LSA. The core of LSA is thediagonal masking (Sec. 3.3.1) and the learnable temperaturescaling (Sec. 3.3.2).([xcls; S(x)] + Eposif xcls existS(x) + Eposotherwise(7)3.3.1Diagonal MaskingSpe(x) =Diagonal masking plays a role in giving larger scores tointer-token relations by fundamentally excluding self-tokenrelations from the softmax operation.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0018",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "Speci\ufb01cally, diagonalmasking forces \u2212\u221eon diagonal components of R of Eq. 4.This makes ViT\u2019s attention more focused on other tokensrather than attending to its own tokens. The proposed diag-onal masking is de\ufb01ned by:where xcls \u2208RdS is a class token and Epos \u2208R(N+1)\u00d7dSis the learnable positional embedding. Also, N is the num-ber of embedded tokens in Eq. 6.3.2.3Pooling LayerTokenization is the process of embedding 3D-tensor fea-tures into 2D-matrix features. For example, it embeds x \u2208RH\u00d7W \u00d7C into y = T (x) \u2208RN\u00d7d. Since N = HW/P 2,the spatial size of the 3D feature is reduced by P 2 throughthe tokenization process. So, if tokenization is used as apooling layer, the number of visual tokens can be reduced.Therefore, we propose to use SPT as a pooling layer as fol-lows: First, class tokens and visual tokens are separated,and visual tokens in the form of 2D-matrix are reshapedinto 3D-tensor with spatial structure, i.e., R : RN\u00d7d \u2192R(H/P )\u00d7(W/P )\u00d7d.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0019",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "Then, if the SPT of Eq. 6 is applied, newvisual tokens with a reduced number of tokens are embed-ded. Finally, the linearly projected class token is connectedwith the embedded visual tokens. If there is no class token,only R is applied before the output of SPT. The whole pro-cess is formulated as Eq. 8:(Ri,j(x)(i \u0338= j)\u2212\u221e(i = j)(9)RMi,j(x) =where RMi,j indicates each component of the masked simi-larity matrix.3.3.2Learnable Temperature ScalingThe second technique for LSA is the learnable temperaturescaling, which allows ViT to determine the softmax temper-ature by itself during the learning process. Fig. 3 shows theaverage learned temperature according to depth when thesoftmax temperature is used as the learnable parameter inEq. 5. Note that the average learned temperature is lowerthan the constant temperature of standard ViT. In general,the low temperature of softmax sharpens the score distribu-tion. Therefore, the learnable temperature scaling sharpensthe distribution of attention scores.",
+      "token_count": 236
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0020",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "Note that the average learned temperature is lowerthan the constant temperature of standard ViT. In general,the low temperature of softmax sharpens the score distribu-tion. Therefore, the learnable temperature scaling sharpensthe distribution of attention scores. Based on Eq. 5, the LSA([xclsEcls; S(R(y))]if xcls existS(R(y))otherwise(8)Spool(y) =MODELTHROUGHPUTFLOPsPARAMSCIFAR10CIFAR100SVHNT-ImageNet(images/sec)(M)(M)ResNet 564295506.20.995.7076.3697.7358.77ResNet 11021431020.01.796.3779.8697.8562.96Ef\ufb01cientNet B04078123.93.794.6676.0497.2266.79ViT8593189.82.893.5873.8197.8257.07SL-ViT7697199.22.994.5376.9297.7961.07T2T3388643.06.795.3077.0097.9060.57SL-T2T2943671.47.195.5777.3697.9161.83CaiT3138613.89.194.9176.8998.1364.37SL-CaiT2967623.39.295.8180.3298.2867.18PiT7583279.27.194.2474.9997.8360.25SL-PiT w/o Spool6632280.47.194.9677.0897.9460.31SL-PiT w/ Spool5981322.98.795.8879.0097.9362.91Swin6804242.37.194.4676.8797.7260.87SL-Swin w/o Spool6384247.07.195.3078.1397.8862.70SL-Swin w/ Spool5711284.910.295.9379.9997.9264.95with both diagonal masking and learnable temperature scal-ing applied is de\ufb01ned by:4.1.",
+      "token_count": 470
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0021",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "SETTING4.1.1Environment and DatasetL(x) = softmax(RM(x)/\u03c4)xEv(10)The proposed method was implemented in Pytorch [27]. Inthe small-size dataset experiment (Table 2), The details ofthroughput measurement are as follows: The inputs wereTiny-ImageNet, and the batch size was 128, and the GPUwas RTX 2080 Ti.For small-size dataset experiments, CIFAR-10, CIFAR-100 [17], Tiny-ImageNet [21], and SVHN [25] were em-ployed and ImageNet [19] was employed for the mid-sizedataset experiment.where \u03c4 is the learnable temperature.In other words, LSA solves the smoothing problem ofthe attention score distribution. Fig. 4 shows the depth-wiseaverages of total Kullback-Leibler divergence (DtotalKL ) forall heads. Here, T and M mean that only learnable tem-perature scaling and diagonal masking is applied to ViTs,respectively, and L indicates that the entire LSA is appliedto ViTs. The lower the average of DtotalKL , the \ufb02atter the at-tention score distribution.",
+      "token_count": 244
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0022",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "The lower the average of DtotalKL , the \ufb02atter the at-tention score distribution. We can \ufb01nd that when LSA isfully applied, the average of DtotalKLis larger by about 0.5than standard ViT, so LSA attenuates the smoothing phe-nomenon of the attention score distribution.4.1.2Model Con\ufb01gurationsIn the small dataset experiment, in the case of ViT, thedepth was set to 9, the hidden dimension was set to 192,and the number of heads was set to 12. This con\ufb01gurationwas determined experimentally. And in the ImageNet ex-periment, we used the ViT-Tiny suggested by DeiT [33].In the case of PiT, T2T, Swin and CaiT, the con\ufb01gurationsof PiT-XS, T2T-14, Swin-T and CaiT-XXS24 presented inthe corresponding papers were adopted as they were, re-spectively. The performance of ViT improves as the num-ber of tokens increases, but the computational cost increasesquadratically. We were able to experimentally observe thatit was effective when both the number of visual tokens inViT without pooling and the number of tokens in the inter-4.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0023",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "We were able to experimentally observe thatit was effective when both the number of visual tokens inViT without pooling and the number of tokens in the inter-4. EXPERIMENTThis section veri\ufb01es that the proposed method improvesthe performance of various ViTs through several experi-ments. Sec. 4.1 describes the settings of the following ex-periments. Sec. 4.2 quantitatively shows that the proposedmethod effectively improves various ViTs and reduces thegap with CNNs. Finally, Sec. 4.3 demonstrates that theViTs are qualitatively enhanced by visualizing the attentionscores of the \ufb01nal class token.MODELTOP-1 ACCURACY (%)MODELTOP-1 ACCURACY (%)CIFAR100T-ImageNetViT69.95SL-ViT71.55 (+1.60)ViT73.8157.07T-ViT74.3557.95M-ViT74.3458.29L-ViT74.8758.50PiT75.58SL-PiT77.02 (+1.44)Swin79.95SL-Swin81.01 (+1.06)mediate stage of ViT with pooling are 64, considering thistrade-off. Accordingly, we modi\ufb01ed the baseline models.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0024",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "Accordingly, we modi\ufb01ed the baseline models. Insmall-size dataset experiments, the patch size of the patchembedding layer was set to 8 and the patch size of ViTs us-ing pooling layers such as Swin and PiT was set to 16. Inthe ImageNet dataset experiment, the patch size was set tobe the same as that used in each paper. Also, the hidden di-mension of MLP was set to twice that of the transformer inthe small dataset experiment, and the con\ufb01guration used ineach paper was applied in the ImageNet experiment.MODELTOP-1 ACCURACY (%)CIFAR100T-ImageNetViT73.8157.07L-ViT74.8758.50S-ViT76.2960.67SL-ViT76.9261.07the SPT applied to the pooling layer. In most cases, theproposed method effectively improved the performance ofViTs, especially in CIFAR100 and Tiny-ImageNet. For ex-ample, in CIFAR100, the performance of CaiT and PiT im-proved by +3.43% and +4.01% respectively and in Tiny-ImageNet, the performance of ViT and Swin improved upto +4.00% and +4.08% respectively. Also note that theperformance was greatly improved only with the accept-able overhead of inference latency.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0025",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "Also note that theperformance was greatly improved only with the accept-able overhead of inference latency. In other words, the cost-effectiveness of the proposed method is remarkable. For ex-ample, for ViT, T2T, and CaiT, the proposed method causesonly latency overhead of 1.12%, 1.15%, and 1.06% respec-tively. And it can be seen in the case of PiT and Swin thatadditional performance improvement can be obtained by re-placing the pooling layer with Spool. Therefore, we can \ufb01ndthat spatial modeling provided by SPT is effective not onlyfor patch embedding but also for the pooling layer. Also,This table shows that the proposed method effectively re-duces the gap between ViT and CNN on small-size datasets.For example, SL-CaiT achieves the best performance overResNet and Ef\ufb01cientNet on all datasets except CIFAR10.SL-Swin also offers better throughput while providing per-formance comparable to CNNs.Table 3 shows performance when training a mid-sizedataset ImageNet from scratch. In ViT, SPT was appliedonly to patch embeddings, and in PiT and Swin, SPT wasapplied to both patch embedding and pooling layers.",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0026",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "In ViT, SPT was appliedonly to patch embeddings, and in PiT and Swin, SPT wasapplied to both patch embedding and pooling layers. Wecould observe that the proposed method is suf\ufb01ciently ef-4.1.3Training RegimeAccording to DeiT, various techniques are required to ef-fectively train ViTs. Thus, we applied data augmentationssuch as CutMix [42], Mixup [43], Auto Augment [6], Re-peated Augment [7] to all models. In addition, regulariza-tion techniques such as label smoothing [31], stochasticdepth [15], and random erasing [45] were employed. Mean-while, AdamW [16] was used as the optimizer. Weight de-cays were set to 0.05, batch size to 128 (however, 256 forImageNet), and warm-up to 10 (however, 5 for ImageNet).All models were trained for 100 epochs, and cosine learningrate decay was used. In the small-size dataset experiments,the initial learning rate of ViT and CNNs was set to 0.003,and that of the remaining models was set to 0.001. On theother hand, in the ImageNet experiment, the initial learningrate was set to 0.00025 for all models.4.2.",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0027",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "On theother hand, in the ImageNet experiment, the initial learningrate was set to 0.00025 for all models.4.2. QUANTITATIVE RESULT4.2.1Image Classi\ufb01cationThis section presents the experimental results for small-sizedatasets and the ImageNet dataset. In the small-size datasetexperiment, Throughput, FLOPs, and the number of param-eters were measured in Tiny-ImageNet.First, Table 2 shows the performance improvement whenthe proposed method was applied to ViTs. Here, SL indi-cates that both SPT and LSA were applied, and Spool meansfective for ImageNet. For example, the performance wasimproved by the proposed method as much as +1.60% forViT, +1.44% for PiT, and +1.06% for Swin. As a result,we \ufb01nd that the proposed method noticeably improves theViTs even on mid-size datasets.This proves the competitiveness and synergy of the two keyelement technologies.4.3. QUALITATIVE RESULTFig. 5 visualizes the attention scores of the \ufb01nal classtoken when SPT and LSA were applied to various ViTs.When the proposed method was applied, we can observethat the object shape is better captured as the attention,which was dispersed in the background, is concentrated onthe target class.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0028",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "In particular, this phenomenon is evident inthe CaiT of the \ufb01rst row, the T2T of the second row, the ViTof the third row, and the PiT of the last row. Therefore, wecan \ufb01nd that the proposed method effectively increases thelocality inductive bias and induces the attention of the ViTsto improve.4.2.2Ablation StudyThis section describes the ablation study on the proposedmethod. ViT was used for this experiment.Elements of LSALet\u2019s look at the effect of learnabletemperature scaling and diagonal masking, two key ele-ments of LSA, on overall performance. Table 4 shows thatlearnable temperature scaling and diagonal masking ef-fectively resolves the smoothing phenomenon of attentionscore distribution (see Fig. 4). For example, learnable tem-perature scaling and diagonal masking in Tiny-ImageNetimproved performance by +0.88% and +1.22%, respec-tively. Considering that the LSA applied with both tech-niques shows a performance improvement of +1.43%, wecan claim that the contribution of each is suf\ufb01ciently largeand the two techniques produce a synergy.5. CONCLUSIONTo train ViT on small-size datasets, this paper presentstwo novel techniques to increase the locality inductive biasof ViT.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0029",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "CONCLUSIONTo train ViT on small-size datasets, this paper presentstwo novel techniques to increase the locality inductive biasof ViT. First, SPT embeds rich spatial information into vi-sual tokens through speci\ufb01c transformation. Second, LSAinduces ViT to attend locally through softmax with learn-able parameters. The SPT and LSA can achieve signi\ufb01cantperformance improvement independently, and they are ap-plicable to any ViTs. Therefore, this study proves that ViTlearns small-size datasets from scratch and provides an op-portunity for ViT to develop further.SPT and LSATable 5 shows that SPT and LSA candramatically improve performance by increasing the local-ity inductive bias of ViT independently. In particular, inTiny-ImageNet, SPT and LSA improved performance by+1.43% and +3.60%, respectively. When both techniqueswere applied, the performance improvement was +4.00%.Referencestial dimensions of vision transformers. pages 11936\u201311945,October 2021. 1, 2[13] Jie Hu, Li Shen, and Gang Sun. Squeeze-and-excitation net-works.",
+      "token_count": 252
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0030",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "Squeeze-and-excitation net-works. In Proceedings of the IEEE conference on computervision and pattern recognition, pages 7132\u20137141, 2018. 1[14] Gao Huang, Zhuang Liu, Laurens Van Der Maaten, and Kil-ian Q Weinberger.Densely connected convolutional net-works. In Proceedings of the IEEE conference on computervision and pattern recognition, pages 4700\u20134708, 2017. 1[15] Gao Huang, Yu Sun, Zhuang Liu, Daniel Sedra, and Kil-ian Q. Weinberger.Deep networks with stochastic depth.In ECCV, 2016. 7[16] Diederik P. Kingma and Jimmy Ba. Adam: A method forstochastic optimization. CoRR, abs/1412.6980, 2015. 7[17] Alex Krizhevsky, Geoffrey Hinton, et al. Learning multiplelayers of features from tiny images. 2009. 6[18] A. Krizhevsky, Ilya Sutskever, and Geoffrey E. Hinton.",
+      "token_count": 235
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0031",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "Learning multiplelayers of features from tiny images. 2009. 6[18] A. Krizhevsky, Ilya Sutskever, and Geoffrey E. Hinton. Ima-genet classi\ufb01cation with deep convolutional neural networks.Communications of the ACM, 60:84 \u2013 90, 2012. 1[19] Alex Krizhevsky, Ilya Sutskever, and Geoffrey E Hinton.Imagenet classi\ufb01cation with deep convolutional neural net-works. Advances in neural information processing systems,25:1097\u20131105, 2012. 6[20] Zhenzhong Lan, Mingda Chen, Sebastian Goodman, KevinGimpel, Piyush Sharma, and Radu Soricut. Albert: A litebert for self-supervised learning of language representations.ArXiv, abs/1909.11942, 2020. 1[21] Ya Le and Xuan Yang.Tiny imagenet visual recognitionchallenge. CS 231N, 7(7):3, 2015. 6[22] Yawei Li, K. Zhang, Jie Cao, R. Timofte, and L.",
+      "token_count": 258
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0032",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "CS 231N, 7(7):3, 2015. 6[22] Yawei Li, K. Zhang, Jie Cao, R. Timofte, and L. Gool.Localvit: Bringing locality to vision transformers.ArXiv,abs/2104.05707, 2021. 1[23] Ji Lin, Chuang Gan, and Song Han. Tsm: Temporal shiftmodule for ef\ufb01cient video understanding. 2019 IEEE/CVFInternational Conference on Computer Vision (ICCV), pages7082\u20137092, 2019. 2[24] Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei,Zheng Zhang, Stephen Lin, and Baining Guo. Swin trans-former: Hierarchical vision transformer using shifted win-dows. Proceedings of the IEEE/CVF International Confer-ence on Computer Vision (ICCV), pages 10012\u201310022, Oc-tober 2021. 1, 2[25] Yuval Netzer, T. Wang, A. Coates, A. Bissacco, Bo Wu, andA. Ng.",
+      "token_count": 249
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0033",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "Wang, A. Coates, A. Bissacco, Bo Wu, andA. Ng. Reading digits in natural images with unsupervisedfeature learning. 2011. 6[26] Behnam Neyshabur.Towards learning convolutions fromscratch. arXiv preprint arXiv:2007.13657, 2020. 1[27] Adam Paszke, S. Gross, Francisco Massa, Adam Lerer,James Bradbury, Gregory Chanan, Trevor Killeen, ZemingLin, N. Gimelshein, L. Antiga, Alban Desmaison, AndreasK\u00a8opf, E. Yang, Zach DeVito, Martin Raison, Alykhan Te-jani, Sasank Chilamkurthy, Benoit Steiner, Lu Fang, JunjieBai, and Soumith Chintala. Pytorch: An imperative style,high-performance deep learning library. In NeurIPS, 2019.6[28] Aravind Srinivas, Tsung-Yi Lin, Niki Parmar, JonathonShlens, Pieter Abbeel, and Ashish Vaswani.Bottleneck[1] A. Ara\u00b4ujo, W. Norris, and Jack Sim.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0034",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "Ara\u00b4ujo, W. Norris, and Jack Sim. Computing receptive\ufb01elds of convolutional neural networks. 2019. 3, 4[2] Jimmy Ba, J. Kiros, and Geoffrey E. Hinton. Layer normal-ization. ArXiv, abs/1607.06450, 2016. 3[3] Peter W Battaglia, Jessica B Hamrick, Victor Bapst, Al-varo Sanchez-Gonzalez, Vinicius Zambaldi, Mateusz Ma-linowski, Andrea Tacchetti, David Raposo, Adam Santoro,Ryan Faulkner, et al. Relational inductive biases, deep learn-ing, and graph networks. arXiv preprint arXiv:1806.01261,2018. 2[4] Irwan Bello, Barret Zoph, Ashish Vaswani, Jonathon Shlens,and Quoc V. Le.Attention augmented convolutional net-works. 2019 IEEE/CVF International Conference on Com-puter Vision (ICCV), pages 3285\u20133294, 2019. 1[5] Tom B. Brown, Benjamin Mann, Nick Ryder, MelanieSubbiah, J.",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0035",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "Brown, Benjamin Mann, Nick Ryder, MelanieSubbiah, J. Kaplan, Prafulla Dhariwal, Arvind Neelakan-tan, Pranav Shyam, Girish Sastry, Amanda Askell, Sand-hini Agarwal, Ariel Herbert-Voss, Gretchen Krueger, T.Henighan, R. Child, A. Ramesh, Daniel M. Ziegler, Jeff Wu,Clemens Winter, Christopher Hesse, Mark Chen, Eric Sigler,Mateusz Litwin, Scott Gray, Benjamin Chess, Jack Clark,Christopher Berner, Sam McCandlish, Alec Radford, IlyaSutskever, and Dario Amodei. Language models are few-shot learners. ArXiv, abs/2005.14165, 2020. 1[6] Ekin D. Cubuk, Barret Zoph, Dandelion Man\u00b4e, Vijay Va-sudevan, and Quoc V. Le. Autoaugment: Learning augmen-tation strategies from data. In 2019 IEEE/CVF Conferenceon Computer Vision and Pattern Recognition (CVPR), pages113\u2013123, 2019. 7[7] E. D. Cubuk, Barret Zoph, Jonathon Shlens, and Quoc V.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0036",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "D. Cubuk, Barret Zoph, Jonathon Shlens, and Quoc V. Le.Randaugment: Practical automated data augmentation with areduced search space. 2020 IEEE/CVF Conference on Com-puter Vision and Pattern Recognition Workshops (CVPRW),pages 3008\u20133017, 2020. 7[8] J. Devlin, Ming-Wei Chang, Kenton Lee, and KristinaToutanova.Bert: Pre-training of deep bidirectional trans-formers for language understanding. In NAACL-HLT, 2019.1[9] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov,Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner,Mostafa Dehghani, Matthias Minderer, Georg Heigold, Syl-vain Gelly, Jakob Uszkoreit, and Neil Houlsby. An image isworth 16x16 words: Transformers for image recognition atscale. In International Conference on Learning Representa-tions, 2021. 1, 3[10] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.Deep residual learning for image recognition.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0037",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "In International Conference on Learning Representa-tions, 2021. 1, 3[10] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.Deep residual learning for image recognition. In Proceed-ings of the IEEE conference on computer vision and patternrecognition, pages 770\u2013778, 2016. 1[11] Yu-Lin He, Xiaoliang Zhang, W. Ao, and Joshua ZhexueHuang. Determining the optimal temperature parameter forsoftmax function in reinforcement learning. Appl. Soft Com-put., 70:80\u201385, 2018. 3, 4[12] Byeongho Heo, Sangdoo Yun, Dongyoon Han, SanghyukChun, Junsuk Choe, and Seong Joon Oh. Rethinking spa-transformers for visual recognition. In Proceedings of theIEEE/CVF Conference on Computer Vision and PatternRecognition, pages 16519\u201316529, 2021. 1[29] Chen Sun, Abhinav Shrivastava, Saurabh Singh, and A.Gupta. Revisiting unreasonable effectiveness of data in deeplearning era. 2017 IEEE International Conference on Com-puter Vision (ICCV), pages 843\u2013852, 2017. 1[30] Christian Szegedy, W. Liu, Y.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0038",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "Liu, Y. Jia, Pierre Sermanet, Scott E.Reed, Dragomir Anguelov, D. Erhan, V. Vanhoucke, and An-drew Rabinovich. Going deeper with convolutions. 2015IEEE Conference on Computer Vision and Pattern Recogni-tion (CVPR), pages 1\u20139, 2015. 1[31] Christian Szegedy, V. Vanhoucke, S. Ioffe, Jonathon Shlens,and Z. Wojna. Rethinking the inception architecture for com-puter vision. 2016 IEEE Conference on Computer Vision andPattern Recognition (CVPR), pages 2818\u20132826, 2016. 7[32] Mingxing Tan and Quoc V. Le.Ef\ufb01cientnet: Rethinkingmodel scaling for convolutional neural networks.ArXiv,abs/1905.11946, 2019. 1[33] Hugo Touvron, Matthieu Cord, Matthijs Douze, FranciscoMassa, Alexandre Sablayrolles, and Herv\u00b4e J\u00b4egou. Trainingdata-ef\ufb01cient image transformers & distillation through at-tention. pages 10347\u201310357.",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0039",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Trainingdata-ef\ufb01cient image transformers & distillation through at-tention. pages 10347\u201310357. PMLR, 2021. 2, 6[34] Hugo Touvron, Matthieu Cord, Alexandre Sablayrolles,Gabriel Synnaeve, and Herve Jegou. Going deeper with im-age transformers.Proceedings of the IEEE/CVF Interna-tional Conference on Computer Vision (ICCV), pages 32\u201342,October 2021. 1, 2[35] Ashish Vaswani, Noam M. Shazeer, Niki Parmar, JakobUszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser,and Illia Polosukhin.Attention is all you need.ArXiv,abs/1706.03762, 2017. 1[36] Fei Wang, Mengqing Jiang, Chen Qian, S. Yang, Cheng Li,Honggang Zhang, Xiaogang Wang, and Xiaoou Tang. Resid-ual attention network for image classi\ufb01cation. 2017 IEEEConference on Computer Vision and Pattern Recognition(CVPR), pages 6450\u20136458, 2017. 1[37] Jingdong Wang, Ke Sun, Tianheng Cheng, Borui Jiang,Chaorui Deng, Yang Zhao, D.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0040",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "Liu, Yadong Mu, MingkuiTan, Xinggang Wang, Wenyu Liu, and Bin Xiao.Deephigh-resolution representation learning for visual recogni-tion.IEEE transactions on pattern analysis and machineintelligence, 2020. 1[38] X. Wang, Ross B. Girshick, A. Gupta, and Kaiming He.Non-local neural networks.2018 IEEE/CVF Conferenceon Computer Vision and Pattern Recognition, pages 7794\u20137803, 2018. 1[39] Haiping Wu, Bin Xiao, Noel Codella, Mengchen Liu,Xiyang Dai, Lu Yuan, and Lei Zhang.Cvt: Introducingconvolutions to vision transformers.Proceedings of theIEEE/CVF International Conference on Computer Vision(ICCV), pages 22\u201331, October 2021. 1, 2[40] Weijian Xu, Yifan Xu, Tyler Chang, and Zhuowen Tu. Co-scale conv-attentional image transformers. Proceedings ofthe IEEE/CVF International Conference on Computer Vision(ICCV), pages 9981\u20139990, October 2021. 1[41] Li Yuan, Yunpeng Chen, Tao Wang, Weihao Yu, Yujun Shi,Zi-Hang Jiang, Francis E.H. Tay, Jiashi Feng, and ShuichengYan.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0041",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "Tay, Jiashi Feng, and ShuichengYan. Tokens-to-token vit: Training vision transformers fromscratch on imagenet. Proceedings of the IEEE/CVF Interna-tional Conference on Computer Vision (ICCV), pages 558\u2013567, October 2021. 2[42] Sangdoo Yun, Dongyoon Han, Seong Joon Oh, SanghyukChun, Junsuk Choe, and Youngjoon Yoo.Cutmix: Regu-larization strategy to train strong classi\ufb01ers with localizablefeatures. In International Conference on Computer Vision(ICCV), 2019. 7[43] Hongyi Zhang, Moustapha Ciss\u00b4e, Yann N. Dauphin, andDavid Lopez-Paz. mixup: Beyond empirical risk minimiza-tion. In 6th International Conference on Learning Represen-tations, ICLR 2018, Vancouver, BC, Canada, April 30 - May3, 2018, Conference Track Proceedings, 2018. 7[44] Han Zhang, I. Goodfellow, Dimitris N. Metaxas, and Augus-tus Odena. Self-attention generative adversarial networks. InICML, 2019. 1[45] Zhun Zhong, L. Zheng, Guoliang Kang, Shaozi Li, and Y.Yang.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0042",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "Self-attention generative adversarial networks. InICML, 2019. 1[45] Zhun Zhong, L. Zheng, Guoliang Kang, Shaozi Li, and Y.Yang. Random erasing data augmentation. In AAAI, 2020. 7Supplementarywhere P represents the patch size, and rshift represents theshift ratio. Table 2 shows the performance according to shiftratio for CIFAR-100, Tiny-ImageNet, and ImageNet. In thisexperiment, a model with SPT applied to standard ViT wasused, and 4 diagonal directions were adopted. In CIFAR-100 and ImageNet, a ratio of 0.5 was the best, and in Tiny-ImageNet, a ratio of 0.25 was the best. This experimentalresult shows that the optimal shift ratio also depends onthe datasets. Since the relatively most reasonable shift ra-tio is 0.5 according to our experiment, all the experimentsin this paper \ufb01xed the shift ratio to 0.5. Note that more var-ious shifting strategies will be available in addition to themethods considered here. The exploration of optimal shift-ing strategy according to datasets remains as a further work.This section investigates the various shifting strategiesthat SPT can employ.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0043",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "Note that more var-ious shifting strategies will be available in addition to themethods considered here. The exploration of optimal shift-ing strategy according to datasets remains as a further work.This section investigates the various shifting strategiesthat SPT can employ. Speci\ufb01cally, we explored the shift di-rection and shift intensity (shift ratio), which have the mostimpact on performance.We examined the following three shift directions. The\ufb01rst is the 4 cardinal directions consisting of up, down, leftand right directions (Fig. 1(a)). The second is 4 diagonaldirections including up-left, up-right, down-left and down-right (Fig. 1(b)). The last is the 8 cardinal directions includ-ing all the preceding directions (Fig. 1(c)). Table 1 showstop-1 accuracy in small-size datasets such as CIFAR-10,CIFAR-100, SVHN, and Tiny-ImageNet for each shift di-rection. This experiment adopted a model applying SPT tostandard ViT. 4 cardinal directions showed the best per-formance in CIFAR-10 and SVHN. On the other hand, 4diagonal directions and 8 cardinal directions provided thebest performance in CIFAR-100 and Tiny-ImageNet, re-spectively. This shows that the shift direction is somewhatdependent on the characteristics of datasets.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0044",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "On the other hand, 4diagonal directions and 8 cardinal directions provided thebest performance in CIFAR-100 and Tiny-ImageNet, re-spectively. This shows that the shift direction is somewhatdependent on the characteristics of datasets. For example, inCIFAR-10 or CIFAR-100, the target class tends to be in thecenter of the image, whereas other datasets do not. The loca-tion of the target class has some degree of correlation withthe shift direction, and the correlation can affect the per-formance. However, since the performance difference wasexperimentally marginal, in this paper, the shift direction inthe experiment was \ufb01xed to 4 diagonal directions.SHIFTTOP-1 ACCURACY (%)RATIOCIFAR100T-ImageNetImageNet0.125-60.63-0.2576.2461.0170.650.576.2960.7870.830.7575.7360.1870.571.0074.6359.35-DIREC-TOP-1 ACCURACY (%)TIONSCIFAR10 CIFAR100 SVHN T-ImageNet4 Cardinal94.4476.2997.8760.354 Diagonal94.3376.2997.8660.678 Cardinal94.4176.4097.8160.57Next, we look at various shift ratios.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2112.13492_chunk_0045",
+      "arxiv_id": "2112.13492",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "The degree of imageshifting in SPT is de\ufb01ned as follows: SHIFT = P \u00d7rshift,",
+      "token_count": 24
+    }
+  ]
+}

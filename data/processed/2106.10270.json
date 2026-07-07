@@ -1,0 +1,419 @@
+{
+  "arxiv_id": "2106.10270",
+  "title": "How to train your ViT? Data, Augmentation, and Regularization in Vision Transformers",
+  "authors": [
+    "Andreas Steiner",
+    "Alexander Kolesnikov",
+    "Xiaohua Zhai",
+    "Ross Wightman",
+    "Jakob Uszkoreit",
+    "Lucas Beyer"
+  ],
+  "year": 2021,
+  "abstract": "Vision Transformers (ViT) have been shown to attain highly competitive performance for a wide range of vision applications, such as image classification, object detection and semantic image segmentation. In comparison to convolutional neural networks, the Vision Transformer's weaker inductive bias is generally found to cause an increased reliance on model regularization or data augmentation (\"AugReg\" for short) when training on smaller training datasets. We conduct a systematic empirical study in order to better understand the interplay between the amount of training data, AugReg, model size and compute budget. As one result of this study we find that the combination of increased compute and AugReg can yield models with the same performance as models trained on an order of magnitude more training data: we train ViT models of various sizes on the public ImageNet-21k dataset which either match or outperform their counterparts trained on the larger, but not publicly available JFT-300M dataset.",
+  "categories": [
+    "cs.CV",
+    "cs.AI",
+    "cs.LG"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2106.10270v2",
+  "page_count": 16,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 49,
+  "chunks": [
+    {
+      "chunk_id": "2106.10270_chunk_0000",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "Published in Transactions on Machine Learning Research (05/2022)How to train your ViT? Data, Augmentation,and Regularization in Vision TransformersAndreas Steiner\u2217andstein@google.comAlexander Kolesnikov\u2217akolesnikov@google.comXiaohua Zhai\u2217xzhai@google.comRoss Wightman\u2020rwightman@gmail.comJakob Uszkoreitusz@google.comLucas Beyer\u2217lbeyer@google.comGoogle Research, Brain Team, Z\u00fcrich \u2217Equal technical contribution, \u2020 independent researcherReviewed on OpenReview: https: // openreview. net/ forum? id= 4nPswr1KcPAbstractVision Transformers (ViT) have been shown to attain highly competitive performancefor a wide range of vision applications, such as image classi\ufb01cation, object detection andsemantic image segmentation. In comparison to convolutional neural networks, the VisionTransformer\u2019s weaker inductive bias is generally found to cause an increased reliance onmodel regularization or data augmentation (\u201cAugReg\u201d for short) when training on smallertraining datasets.",
+      "token_count": 228
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0001",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "In comparison to convolutional neural networks, the VisionTransformer\u2019s weaker inductive bias is generally found to cause an increased reliance onmodel regularization or data augmentation (\u201cAugReg\u201d for short) when training on smallertraining datasets. We conduct a systematic empirical study in order to better understand theinterplay between the amount of training data, AugReg, model size and compute budget.1As one result of this study we \ufb01nd that the combination of increased compute and AugRegcan yield models with the same performance as models trained on an order of magnitudemore training data: we train ViT models of various sizes on the public ImageNet-21k datasetwhich either match or outperform their counterparts trained on the larger, but not publiclyavailable JFT-300M dataset.1IntroductionThe Vision Transformer (ViT) (13) has recently emerged as a competitive alternative to convolutionalneural networks (CNNs) that are ubiquitous across the \ufb01eld of computer vision. Without the translationalequivariance of CNNs, ViT models are generally found to perform best in settings with large amounts oftraining data (13) or to require strong AugReg schemes to avoid over\ufb01tting (39). However, so far there wasno comprehensive study of the trade-o\ufb00s between model regularization, data augmentation, training data sizeand compute budget in Vision Transformers.In this work, we \ufb01ll this knowledge gap by conducting a thorough empirical study.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0002",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "We pre-train a largecollection of ViT models (di\ufb00erent sizes and hybrids with ResNets (18)) on datasets of di\ufb00erent sizes, whileat the same time performing carefully designed comparisons across di\ufb00erent amounts of regularization and1We release more than 50 000 ViT models trained under diverse settings on various datasets.We believe this to bea treasure trove for model analysis.Available at https://github.com/google-research/vision_transformer and https://github.com/rwightman/pytorch-image-models.The code for full reproduction of model training is available at https://github.com/google-research/big_vision.Published in Transactions on Machine Learning Research (05/2022)90%ImageNet top-1 accuracy after fine-tuning85%80%75%70%ViT-B/32ViT-B/16ViT-L/1665%60%1.28M1.28M+AugReg13M13M+AugReg300MPre-training dataset sizedata augmentation. We then proceed with extensive transfer learning experiments for the resulting models.We focus mainly on gaining insights useful for a practitioner with limited compute and data budgets.The homogeneity of the performed study constitutes one of the key contributions of this paper.",
+      "token_count": 264
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0003",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "We then proceed with extensive transfer learning experiments for the resulting models.We focus mainly on gaining insights useful for a practitioner with limited compute and data budgets.The homogeneity of the performed study constitutes one of the key contributions of this paper. For thevast majority of works involving Vision Transformers it is not practical to retrain all baselines and proposedmethods on equal footing, in particular those trained on larger amounts of data. Furthermore, there arenumerous subtle and implicit design choices that cannot be controlled for e\ufb00ectively, such as the preciseimplementation of complex augmentation schemes, hyper-parameters (e.g. learning rate schedule, weightdecay), test-time preprocessing, dataset splits and so forth. Such inconsistencies can result in signi\ufb01cantamounts of noise added to the results, quite possibly a\ufb00ecting the ability to draw any conclusions. Hence, allmodels on which this work reports have been trained and evaluated in a consistent setup.The insights we draw from our study constitute another important contribution of this paper. In particular,we demonstrate that carefully selected regularization and augmentations roughly correspond (from theperspective of model accuracy) to a 10x increase in training data size. However, regardless of whether themodels are trained with more data or better AugRegs, one has to spend roughly the same amount of computeto get models attaining similar performance.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0004",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "However, regardless of whether themodels are trained with more data or better AugRegs, one has to spend roughly the same amount of computeto get models attaining similar performance. We further evaluate if there is a di\ufb00erence between adding dataor better AugReg when \ufb01ne-tuning the resulting models on datasets of various categories. Other \ufb01ndings, suchas the overall bene\ufb01cial e\ufb00ect of AugRegs for medium-sized datasets, simply con\ufb01rm commonly held beliefs.For those \ufb01ndings, the value of this study lies not in novelty, but rather in con\ufb01rming these assumptions andquantifying their e\ufb00ect in a strictly controlled setting.In addition, we aim to shed light on other aspects of using Vision Transformers in practice such as comparingtransfer learning and training from scratch for mid-sized datasets. Finally, we evaluate various computeversus performance trade-o\ufb00s. We discuss all of the aforementioned insights and more in detail in Section 4.2Scope of the studyWith the ubiquity of modern deep learning (24) in computer vision it has quickly become common practiceto pre-train models on large datasets once and re-use their parameters as initialization or feature extractionpart in models trained on a broad variety of other tasks (32, 45).In this setup, there are multiple ways to characterize computational and sample e\ufb03ciency.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0005",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "When simplyconsidering the overall costs of pre-training and subsequent training or \ufb01ne-tuning procedures together, thecost of pre-training usually dominates, often by orders of magnitude. From the vantage point of a researcheraiming to improve model architectures or pre-training schemes, the pre-training costs might therefore be mostrelevant. Most practitioners, however, rarely, if ever perform pre-training on today\u2019s largest datasets butPublished in Transactions on Machine Learning Research (05/2022)instead use some of the many publicly available parameter sets. For them the costs of \ufb01ne-tuning, adaptationor training a task-speci\ufb01c model from scratch would be of most interest.Yet another valid perspective is that all training costs are e\ufb00ectively negligible since they are amortizedover the course of the deployment of a model in applications requiring a very large number of invocationsof inference.In this setup there are di\ufb00erent viewpoints on computational and data e\ufb03ciency aspects. One approachis to look at the overall computational and sample cost of both pre-training and \ufb01ne-tuning. Normally,\u201cpre-training cost\u201d will dominate overall costs. This interpretation is valid in speci\ufb01c scenarios, especiallywhen pre-training needs to be done repeatedly or reproduced for academic/industrial purposes.",
+      "token_count": 269
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0006",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "Normally,\u201cpre-training cost\u201d will dominate overall costs. This interpretation is valid in speci\ufb01c scenarios, especiallywhen pre-training needs to be done repeatedly or reproduced for academic/industrial purposes. However, inthe majority of cases the pre-trained model can be downloaded or, in the worst case, trained once in a while.Contrary, in these cases, the budget required for adapting this model may become the main bottleneck.Thus, we pay extra attention to the scenario, where the cost of obtaining a pre-trained model is free ore\ufb00ectively amortized by future adaptation runs. Instead, we concentrate on time and compute spent on \ufb01ndinga good adaptation strategy (or on tuning from scratch training setup), which we call \u201cpractitioner\u2019s cost\u201d.A more extreme viewpoint is that the training cost is not crucial, and all that matters is eventual inferencecost of the trained model, \u201cdeployment cost\u201d, which will amortize all other costs. This is especially true forlarge scale deployments, where a visual model is expected to be used a massive number of times. Overall,there are three major viewpoints on what is considered to be the central cost of training a vision model. Inthis study we touch on all three of them, but mostly concentrate on \u201cpractitioner\u201d and \u201cdeployment\u201d costs.3Experimental setupIn this section we describe our uni\ufb01ed experimental setup, which is used throughout the paper.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0007",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "Inthis study we touch on all three of them, but mostly concentrate on \u201cpractitioner\u201d and \u201cdeployment\u201d costs.3Experimental setupIn this section we describe our uni\ufb01ed experimental setup, which is used throughout the paper. We use a singleJAX/Flax (19, 3) codebase for pre-training and transfer learning using TPUs. Inference speed measurements,however, were obtained on V100 GPUs (16G) using the timm PyTorch library (42). All datasets are accessedthrough the TensorFlow Datasets library (15), which helps to ensure consistency and reproducibility. Moredetails of our setup are provided below.3.1Datasets and metricsFor pre-training we use two large-scale image datasets: ILSVRC-2012 (ImageNet-1k) and ImageNet-21k.ImageNet-21k dataset contains approximately 14 million images with about 21 000 distinct object categories (11,22, 30). ImageNet-1k is a subset of ImageNet-21k consisting of about 1.3 million training images and 1000object categories. We make sure to de-duplicate images in ImageNet-21k with respect to the test sets of thedownstream tasks as described in (13, 22).",
+      "token_count": 269
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0008",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "We make sure to de-duplicate images in ImageNet-21k with respect to the test sets of thedownstream tasks as described in (13, 22). Additionally, we used ImageNetV2 (29) for evaluation purposes.For transfer learning evaluation we use 4 popular computer vision datasets from the VTAB benchmark (45):CIFAR-100 (25), Oxford IIIT Pets (28) (or Pets37 for short), Resisc45 (6) and Kitti-distance (14). We selectedthese datasets to cover the standard setting of natural image classi\ufb01cation (CIFAR-100 and Pets37), as wellas classi\ufb01cation of images captured by specialized equipment (Resisc45) and geometric tasks (Kitti-distance).In some cases we also use the full VTAB benchmark (19 datasets) to additionally ensure robustness ofour \ufb01ndings.For all datasets we report top-1 classi\ufb01cation accuracy as our main metric. Hyper-parameters for \ufb01ne-tuningare selected by the result from the validation split, and \ufb01nal numbers are reported from the test split. Notethat for ImageNet-1k we follow common practice of reporting our main results on the validation set. Thus,we set aside 1% of the training data into a minival split that we use for model selection.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0009",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "Notethat for ImageNet-1k we follow common practice of reporting our main results on the validation set. Thus,we set aside 1% of the training data into a minival split that we use for model selection. Similarly, we use aminival split for CIFAR-100 (2% of training split) and Oxford IIIT Pets (10% of training split). For Resisc45,we use only 60% of the training split for training, and another 20% for validation, and 20% for computingtest metrics. Kitti-distance \ufb01nally comes with an o\ufb03cial validation and test split that we use for the intendedpurpose.",
+      "token_count": 141
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0010",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "Kitti-distance \ufb01nally comes with an o\ufb03cial validation and test split that we use for the intendedpurpose. See (45) for details about the VTAB dataset splits.Published in Transactions on Machine Learning Research (05/2022)ModelLayersWidthMLPHeadsParamsModelResblocksPatch-sizeParamsViT-Ti (39)1219276835.8MViT-S (39)123841536622.2MViT-B (13)1276830721286MViT-L (13)241024409616307MR+Ti/16[]86.4MR26+S/32 [2, 2, 2, 2]136.6MR50+L/32 [3, 4, 6, 3]1330.0M3.2ModelsThis study focuses mainly on the Vision Transformer (ViT) (13). We use 4 di\ufb00erent con\ufb01gurations from(13, 39): ViT-Ti, ViT-S, ViT-B and ViT-L, which span a wide range of di\ufb00erent capacities. The details ofeach con\ufb01guration are provided in Table 1. We use patch-size 16 for all models, and additionally patch-size32 for the ViT-S and ViT-B variants.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0011",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "The details ofeach con\ufb01guration are provided in Table 1. We use patch-size 16 for all models, and additionally patch-size32 for the ViT-S and ViT-B variants. The only di\ufb00erence to the original ViT model (13) in our paper isthat we drop the hidden layer in the head, as empirically it does not lead to more accurate models and oftenresults in optimization instabilities: when pre-training on ImageNet-1k we include both models with andwithout hidden layer, when pre-training on ImageNet-21k we always drop the hidden layer.In addition, we train hybrid models that \ufb01rst process images with a ResNet (18) backbone and then feed thespatial output to a ViT as the initial patch embeddings. We use a ResNet stem block (7 \u00d7 7 convolution +batch normalization + ReLU + max pooling) followed by a variable number of bottleneck blocks (18).",
+      "token_count": 198
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0012",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "We use a ResNet stem block (7 \u00d7 7 convolution +batch normalization + ReLU + max pooling) followed by a variable number of bottleneck blocks (18). Weuse the notation Rn+{Ti,S,L}/p where n counts the number of convolutions, and p denotes the patch-size inthe input image - for example R+Ti/16 reduces image dimensions by a factor of two in the ResNet stem andthen forms patches of size 8 as an input to the ViT, which results in an e\ufb00ective patch-size of 16.3.3Regularization and data augmentationsTo regularize our models we use robust regularization techniques widely adopted in the computer visioncommunity. We apply dropout to intermediate activations of ViT as in (13). Moreover, we use the stochasticdepth regularization technique (20) with linearly increasing probability of dropping layers.For data augmentation, we rely on the combination of two recent techniques, namely Mixup (47) andRandAugment (7). For Mixup, we vary its parameter \u03b1, where 0 corresponds to no Mixup. For RandAugment,we vary the magnitude parameter m, and the number of augmentation layers l.",
+      "token_count": 245
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0013",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "For Mixup, we vary its parameter \u03b1, where 0 corresponds to no Mixup. For RandAugment,we vary the magnitude parameter m, and the number of augmentation layers l. Note that we use the originalRandAugment implementation in TensorFlow, which di\ufb00ers from re-implementations found, for example, intimm (42).We also try two values for weight decay (27) which we found to work well, since increasing AugReg may needa decrease in weight decay (2).Overall, our sweep contains 28 con\ufb01gurations, which is a cross-product of the following hyper-parameter choices:\u2022 Either use no dropout and no stochastic depth (e.g. no regularization) or use dropout with probability0.1 and stochastic depth with maximal layer dropping probability of 0.1, thus 2 con\ufb01guration in total.\u2022 7 data augmentation setups for (l, m, \u03b1): none (0, 0, 0), light1 (2, 0, 0), light2 (2, 10, 0.2), medium1(2, 15, 0.2), medium2 (2, 15, 0.5), strong1 (2, 20, 0.5), strong2 (2, 20, 0.8).\u2022 Weight decay: 0.1 or 0.03.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0014",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "The weight decay is decoupled following (27), but multiplied by thelearning-rate which peaks at 0.001.3.4Pre-trainingWe pre-trained the models with Adam (21), using \u03b21 = 0.9 and \u03b22 = 0.999, with a batch size of 4096, and acosine learning rate schedule with a linear warmup (10k steps). To stabilize training, gradients were clippedat global norm 1. The images are pre-processed by Inception-style cropping (36) and random horizontalPublished in Transactions on Machine Learning Research (05/2022)B/32, from scratchB/16, from scratchB/32, transfer+AugRegB/16, transfer+AugRegB/32, transferB/16, transferB/32, from scratchB/16, from scratchB/32, transferB/16, transferPet37 (3312 images)100%Resisc45 (31k images)Pet37 (3312 images)Resisc45 (31k images)100%80%80%Accuracy60%60%Error10 140%40%10 120%20%100102Training time [TPUv2 core-hours]100102Training time [TPUv2 core-hours]100102104Compute budget [TPUv2 core-hours]101103105Compute budget [TPUv2 core-hours]\ufb02ipping.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0015",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "On the smaller ImageNet-1k dataset we trained for 300 epochs, and for 30 and 300 epochs on theImageNet-21k dataset. Since ImageNet-21k is about 10x larger than ImageNet-1k, this allows us to examinethe e\ufb00ects of the increased dataset size also with a roughly constant total compute used for pre-training.3.5Fine-tuningWe \ufb01ne-tune with SGD with a momentum of 0.9 (storing internal state as bfloat16), sweeping over 2-3learning rates and 1-2 training durations per dataset as detailed in Table 4 in the appendix. We used a \ufb01xedbatch size of 512, gradient clipping at global norm 1 and a cosine decay learning rate schedule with linearwarmup. Fine-tuning was done both at the original resolution (224), as well as at a higher resolution (384) asdescribed in (40).4Findings4.1Scaling datasets with AugReg and computeOne major \ufb01nding of our study, which is depicted in Figure 1, is that by judicious use of image augmentationsand model regularization, one can (pre-)train a model to similar accuracy as by increasing the dataset size byabout an order of magnitude.",
+      "token_count": 271
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0016",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "More precisely, our best models trained on AugReg ImageNet-1k (31) performabout equal to the same models pre-trained on the 10x larger plain ImageNet-21k (11) dataset. Similarly, ourbest models trained on AugReg ImageNet-21k, when compute is also increased (e.g. training run longer),match or outperform those from (13) which were trained on the plain JFT-300M (35) dataset with 25xmore images. Thus, it is possible to match these private results with a publicly available dataset, and it isimaginable that training longer and with AugReg on JFT-300M might further increase performance.Of course, these results cannot hold for arbitrarily small datasets.",
+      "token_count": 153
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0017",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "Thus, it is possible to match these private results with a publicly available dataset, and it isimaginable that training longer and with AugReg on JFT-300M might further increase performance.Of course, these results cannot hold for arbitrarily small datasets. For instance, according to Table 5 of (44),training a ResNet50 on only 10% of ImageNet-1k with heavy data augmentation improves results, but doesnot recover training on the full dataset.4.2Transfer is the better optionHere, we investigate whether, for reasonably-sized datasets a practitioner might encounter, it is advisable totry training from scratch with AugReg, or whether time and money is better spent transferring pre-trainedPublished in Transactions on Machine Learning Research (05/2022)Natural datasetsSpecialized datasetsStructured datasetsR26SR50LR26SR50LR26SR50LS/32B/32S/16B/16L/16S/32B/32S/16B/16L/16S/32B/32S/16B/16L/1692%80%90%90%INet21k 300epINet21k 30epINet1k 300ep75%85%10310488%103104103104Inference speed [img/sec]Inference speed [img/sec]Inference speed [img/sec]models that are freely available.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0018",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "The result is that, for most practical purposes, transferring a pre-trainedmodel is both more cost-e\ufb03cient and leads to better results.We perform a thorough search for a good training recipe2 for both the small ViT-B/32 and the largerViT-B/16 models on two datasets of practical size: Pet37 contains only about 3000 training images and isrelatively similar to the ImageNet-1k dataset. Resisc45 contains about 30 000 training images and consists ofa very di\ufb00erent modality of satellite images, which is not well covered by either ImageNet-1k or ImageNet-21k.Figure 2 shows the result of this search.The most striking \ufb01nding is that, no matter how much training time is spent, for the tiny Pet37 dataset, itdoes not seem possible to train ViT models from scratch to reach accuracy anywhere near that of transferredmodels.",
+      "token_count": 193
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0019",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "Furthermore, since pre-trained models are freely available for download, the pre-training cost for apractitioner is e\ufb00ectively zero, only the compute spent on transfer matters, and thus transferring a pre-trainedmodel is simultaneously signi\ufb01cantly cheaper and gives better results.For the larger Resisc45 dataset, this result still holds, although spending two orders of magnitude morecompute and performing a heavy search may come close (but not reach) to the accuracy of pre-trained models.Notably, this does not account for the \u201cexploration cost\u201d, which is di\ufb03cult to quantify. For the pre-trainedmodels, we highlight those which performed best on the pre-training validation set and could be calledrecommended models (see Section 4.5). We can see that using a recommended model has a high likelihoodof leading to good results in just a few attempts, while this is not the case for training from-scratch, asevidenced by the wide vertical spread of points.4.3More data yields more generic modelsWe investigate the impact of pre-training dataset size by transferring pre-trained models to unseen downstreamtasks. We evaluate the pre-trained models on VTAB, including 19 diverse tasks (45).As the compute budget keeps growing, we observe consistent improvements on ImageNet-21k dataset with10x longer schedule. On a few almost solved tasks, e.g. \ufb02owers, the gain is small in absolute numbers.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0020",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "On a few almost solved tasks, e.g. \ufb02owers, the gain is small in absolute numbers. For2Not only do we further increase available AugReg settings, but we also sweep over other generally important traininghyperparameters: learning-rate, weight-decay, and training duration, as described in Appendix A.Published in Transactions on Machine Learning Research (05/2022)No regularizationRegularization 0.1ImageNet-1k, 300epNo regularizationRegularization 0.1ImageNet-21k, 30epNo regularizationRegularization 0.1ImageNet-21k, 300epRTiTi/16697373727069687170676563626136353332313029333128272625243938373635343336343231302928727675757472717172686563636238373534333231343229272625254141403937373638363433323129S/32S/16B/32R26S647176767674747072727171696840393837353534373433323130294343434242414041403938363635717779818280807679807979777744434342414039424039383735354647474746454545454343424140637073757675766974777778777743424342414040424040383836364246484747474645464645444443727678798080807578818282818145454343424141444442414040394648484747464648484646454443B/16L/16R50L707679798180807679818283828246474746464544464545444342414348505150505047494949484848697677787876767478787879777745484949494847484848474645454346494951515146485151515151707576777776767578787879777745474848484747484848474745464246474951505146485151515151nonelight1light2med1med2heavy1heavy2nonelight1light2med1med2heavy1heavy2reg - noregnonelight1light2med1med2heavy1heavy2nonelight1light2med1med2heavy1heavy2reg - noregnonelight1light2med1med2heavy1heavy2nonelight1light2med1med2heavy1heavy2reg - noregthe rest of the tas",
+      "token_count": 506
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0021",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "In this section, we aim to discover generalpatterns for these that can be used as rules of thumb when applying Vision Transformers to a new task. InFigure 4, we show the upstream validation score obtained for each individual setting, i.e. numbers are notcomparable when changing dataset. The colour of a cell encodes its improvement or deterioration in scorewhen compared to the unregularized, unaugmented setting, i.e. the leftmost column. Augmentation strengthincreases from left to right, and model \u201ccapacity\u201d increases from top to bottom.The \ufb01rst observation that becomes visible, is that for the mid-sized ImageNet-1k dataset, any kind of AugReghelps. However, when using the 10x larger ImageNet-21k dataset and keeping compute \ufb01xed, i.e. runningfor 30 epochs, any kind of AugReg hurts performance for all but the largest models. It is only when alsoincreasing the computation budget to 300 epochs that AugReg helps more models, although even then, itcontinues hurting the smaller ones. Generally speaking, there are signi\ufb01cantly more cases where addingaugmentation helps, than where adding regularization helps. More speci\ufb01cally, the thin columns right ofeach map in Figure 4 shows, for any given model, its best regularized score minus its best unregularizedscore.",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0022",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "More speci\ufb01cally, the thin columns right ofeach map in Figure 4 shows, for any given model, its best regularized score minus its best unregularizedscore. This view, which is expanded in Figure 7 in the Appendix, tells us that when using ImageNet-21k,regularization almost always hurts.4.5Choosing which pre-trained model to transferAs we show above, when pre-training ViT models, various regularization and data augmentation settingsresult in models with drastically di\ufb00erent performance. Then, from the practitioner\u2019s point of view, a naturalquestion emerges: how to select a model for further adaption for an end application? One way is to rundownstream adaptation for all available pre-trained models and then select the best performing model,based on the validation score on the downstream task of interest.",
+      "token_count": 173
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0023",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "One way is to rundownstream adaptation for all available pre-trained models and then select the best performing model,based on the validation score on the downstream task of interest. This could be quite expensive in practice.Alternatively, one can select a single pre-trained model based on the upstream validation accuracy and thenonly use this model for adaptation, which is much cheaper.Published in Transactions on Machine Learning Research (05/2022)INet-1k (v2 val)ImageNet-1kCIFAR-100Resisc45KittiL/16 (best 100 runs by validation score)S/16 (best 100 runs by validation score)PetsRTi-0.7+0.4+0.5-1.5+0.1+0.0ImageNet-1k validation accuracy86%86%Ti/16-0.7+0.0+0.6+2.8+0.4+0.084%S/32-1.3+1.3-0.0+2.1-0.4+0.284%S/16+0.1-0.1-0.5+0.3+0.6+1.582%82%B/32+0.2+0.0+0.0+0.0+0.0+6.280%80%R26S+0.0-0.2-0.2+0.8+0.0+0.8B/16+0.2-0.0+0.3-3.6-0.7+3.978%78%L/16-0.3+0.5-0.3+1.3-1.5+1.0+3.780%85%90%95%Minival accuracy65%68%70%72%75%78%ImageNetV2 accuracyR50L-0.3+0.6+0.3+0.6-0.2In this section we analyze the trade-o\ufb00between these two strategies.",
+      "token_count": 439
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0024",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "We compare them for a large collectionof our pre-trained models on 5 di\ufb00erent datasets. Speci\ufb01cally, in Figure 5 (left) we highlight the performancedi\ufb00erence between the cheaper strategy of adapting only the best pre-trained model and the more expensivestrategy of adapting all pre-trained models (and then selecting the best).The results are mixed, but generally re\ufb02ect that the cheaper strategy works equally well as the more expensivestrategy in the majority of scenarios. Nevertheless, there are a few notable outliers, when it is bene\ufb01cial toadapt all models. Thus, we conclude that selecting a single pre-trained model based on the upstream score isa cost-e\ufb00ective practical strategy and also use it throughout our paper. However, we also stress that if extracompute resources are available, then in certain cases one can further improve adaptation performance by\ufb01ne-tuning additional pre-trained models.A note on validation data for the ImageNet-1k dataset. While performing the above analysis, weobserved a subtle, but severe issue with models pre-trained on ImageNet-21k and transferred to ImageNet-1kdataset. The validation score for these models (especially for large models) is not well correlated withobserved test performance, see Figure 5 (right).",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0025",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "The validation score for these models (especially for large models) is not well correlated withobserved test performance, see Figure 5 (right). This is due to the fact that ImageNet-21k data containsImageNet-1k training data and we use a \u201cminival\u201d split from the training data for evaluation (see Section 3.1).As a result, large models on long training schedules memorize the data from the training set, which biasesthe evaluation metric computed in the \u201cminival\u201d evaluation set. To address this issue and enable fairhyper-parameter selection, we instead use the independently collected ImageNetV2 data (29) as the validationsplit for transferring to ImageNet-1k. As shown in Figure 5 (right), this resolves the issue. We did not observesimilar issues for the other datasets. We recommend that researchers transferring ImageNet-21k models toImageNet-1k follow this strategy.4.6Prefer increasing patch-size to shrinking model-sizeOne unexpected outcome of our study is that we trained several models that are roughly equal in terms ofinference throughput, but vary widely in terms of their quality. Speci\ufb01cally, Figure 6 (right) shows that modelscontaining the \u201cTiny\u201d variants perform signi\ufb01cantly worse than the similarly fast larger models with \u201c/32\u201dpatch-size.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0026",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "Speci\ufb01cally, Figure 6 (right) shows that modelscontaining the \u201cTiny\u201d variants perform signi\ufb01cantly worse than the similarly fast larger models with \u201c/32\u201dpatch-size. For a given resolution, the patch-size in\ufb02uences the amount of tokens on which self-attention isPublished in Transactions on Machine Learning Research (05/2022)B/3290.0%S/32B/32i1ki21k_30i21kTi/16Imagenet validation accuracy85.0%S/32R+Ti/16Ti/16ImageNet top-1 accuracy [%]80.0%R+Ti/16ImageNet-21kThroughput [img/sec]75.0%ViT-S,B,L @224ViT-S,B,L @384hybrid @224hybrid @384Ti/16 @224Ti/16 @384B/32S/3270.0%B/32Ti/16R+Ti/16S/32Ti/1665.0%305010030050010003000R+Ti/16ImageNet-1kImages/sec/core100003000100030065Model224px resolution384px resolutionimg/seci1kupi1k300i21k30i21k300img/seci1k300i21k30i21k300i21kv2JFT300ML/1622875.7274.0182.0583.985077.2184.4885.5987.0887.12B/1665979.8478.7380.4283.9613881.6383.4685.4986.1584.15S/16150879.0077.5176.0480.4630080.7080.2283.7383.15-R50+L/32104776.8474.1780.2682.7432776.7183.1985.9986.21-R26+S/32181479.6178.2077.4280.8156081.5581.1183.8583.80-Ti/16309772.5969.5668.8973.7561074.6474.2078.2277.83-B/32359774.4271.3872.2479.1395576.6078.6583.5983.5980.73S/32834272.0769.1968.4973.47215475.6575.7479.5880.01-R+Ti/16937170.1367.3065.6569.69242673.4871.9775.4075.33-Published in Transactions on Machine Learning Research (05/2022)performed and, thus, is a contributor to model capacity which is not re\ufb02ected by parameter count.",
+      "token_count": 606
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0027",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "Parametercount is re\ufb02ective neither of speed, nor of capacity (10).5Related workThe scope of this paper is limited to studying pre-training and transfer learning of Vision Transformer modelsand there already are a number of studies considering similar questions for convolutional neural networks(23, 22). Here we hence focus on related work involving ViT models.As \ufb01rst proposed in (13), ViT achieved competitive performance only when trained on comparatively largeamounts of training data, with state-of-the-art transfer results using the ImageNet-21k and JFT-300M datasets,with roughly 13M and 300M images, respectively. In stark contrast, (39) focused on tackling over\ufb01ttingof ViT when training from scratch on ImageNet-1k by designing strong regularization and augmentationschemes. Yet neither work analyzed the e\ufb00ects of stronger augmentation of regularization and augmentationin the presence of larger amounts of training data.Ever since (22) \ufb01rst showed good results when pre-training BiT on ImageNet-21k, more architecture workshave mentioned using it for select few experiments (13, 38, 37, 8), with (30) arguing more directly for the useof ImageNet-21k.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0028",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "However, none of these works thoroughly investigates the combined use of AugReg andImageNet-21k and provides conclusions, as we do here.An orthogonal line of work introduces cleverly designed inductive biases in ViT variants or retain some of thegeneral architectural parameters of successful convolutional architectures while adding self-attention to them.(33) carefully combines a standard convolutional backbone with bottleneck blocks based on self-attentioninstead of convolutions. In (26, 17, 41, 43) the authors propose hierarchical versions of ViT. (9) suggests avery elegant idea of initializing Vision Transformer, such that it behaves similarly to convolutional neuralnetwork in the beginning of training.Yet another way to address over\ufb01tting and improve transfer performance is to rely on self-supervised learningobjectives. (1) pre-trains ViT to reconstruct perturbed image patches. Alternatively, (4) devises a self-supervised training procedure based on the idea from (16), achieving impressive results. We leave thesystematic comparison of self-supervised and supervised pre-training to future work.6DiscussionSocietal Impact.Our experimental study is relatively thorough and used a lot of compute. This could betaken as encouraging anyone who uses ViTs to perform such large studies.",
+      "token_count": 257
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0029",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "This could betaken as encouraging anyone who uses ViTs to perform such large studies. On the contrary, our aim is toprovide good starting points and o\ufb00-the-shelf checkpoints that remove the need for such extensive search infuture work.Limitations.In order to be thorough, we restrict the study to the default ViT architecture and neitherinclude ResNets, which have been well studied over the course of the past years, nor more recent ViT variants.We anticipate though that many of our \ufb01ndings extend to other ViT-based architectures as well.Published in Transactions on Machine Learning Research (05/2022)7Summary of recommendationsBelow we summarize three main recommendations based on our study:\u2022 We recommend to use checkpoints that were pre-trained on more upstream data, and not relyingonly on ImageNet-1k as a proxy for model quality, since ImageNet-1k validation accuracy is in\ufb02atedwhen pre-training on ImageNet-1k, and more varied upstream data yields more widely applicablemodels (Figure 3 and Section 4.3).\u2022 Judiciously applying data augmentation and model regularization makes it possible to train muchbetter models on a dataset of a given size (Figure 1), and these improvements can be observed bothwith medium sized datasets like ImageNet-1k, and even with large datasets like ImageNet-21k. Butthere are no simple rules which AugReg settings to select.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0030",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "Butthere are no simple rules which AugReg settings to select. The best settings vary a lot depending onmodel capacity and training schedule, and one needs to be careful not to apply AugReg to a modelthat is too small, or when pre-training for too short \u2013 otherwise the model quality may deteriorate(see Figure 4 for an exhaustive quantitative evaluation and Section 4.4 for further comments onregularization vs augmentations).\u2022 How to select the best upstream model for transfer on your own task? Aside from always usingImageNet-21k checkpoints, we recommend to select the model with the best upstream validationperformance (Section 4.5, table with paths in our Github repository3). As we show in Figure 5,this choice is generally optimal for a wide range of tasks. If the user has additional computationalresources available to \ufb01ne-tune all checkpoints, they may get slightly better results in some scenarios,but also need to be careful with respect to ImageNet-1k and ImageNet-21k data overlap when itcomes to model selection (Figure 5, right).8ConclusionWe conduct the \ufb01rst systematic, large scale study of the interplay between regularization, data augmentation,model size, and training data size when pre-training Vision Transformers, including their respective e\ufb00ects onthe compute budget needed to achieve a certain level of performance. We also evaluate pre-trained modelsthrough the lens of transfer learning.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0031",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "We also evaluate pre-trained modelsthrough the lens of transfer learning. As a result, we characterize a quite complex landscape of trainingsettings for pre-training Vision Transformers across di\ufb00erent model sizes. Our experiments yield a numberof surprising insights around the impact of various techniques and the situations when augmentation andregularization are bene\ufb01cial and when not.We also perform an in-depth analysis of the transfer learning setting for Vision Transformers. We concludethat across a wide range of datasets, even if the downstream data of interest appears to only be weaklyrelated to the data used for pre-training, transfer learning remains the best available option. Our analysisalso suggests that among similarly performing pre-trained models, for transfer learning a model with moretraining data should likely be preferred over one with more data augmentation.We hope that our study will help guide future research on Vision Transformers and will be a useful source ofe\ufb00ective training settings for practitioners seeking to optimize their \ufb01nal model performance in the light of agiven computational budget.AcknowledgementsWe thank Alexey Dosovitskiy, Neil Houlsby, and Ting Chen for insightful feedback;the Google Brain team at large for providing a supportive research environment.References[1] Sara Atito, Muhammad Awais, and Josef Kittler.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0032",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "Sit: Self-supervised vision transformer. arXiv:2104.03602, 2021.10[2] Irwan Bello, William Fedus, Xianzhi Du, Ekin D. Cubuk, Aravind Srinivas, Tsung-Yi Lin, Jonathon Shlens, andBarret Zoph. Revisiting resnets: Improved training and scaling strategies. arXiv:2103.07579, 2021. 43https://github.com/google-research/vision_transformerPublished in Transactions on Machine Learning Research (05/2022)[3] James Bradbury, Roy Frostig, Peter Hawkins, Matthew James Johnson, Chris Leary, Dougal Maclaurin, GeorgeNecula, Adam Paszke, Jake VanderPlas, Skye Wanderman-Milne, and Qiao Zhang. JAX: composable transforma-tions of Python+NumPy programs, 2018. 3[4] Mathilde Caron, Hugo Touvron, Ishan Misra, Herv\u00e9 J\u00e9gou, Julien Mairal, Piotr Bojanowski, and Armand Joulin.Emerging properties in self-supervised vision transformers. arXiv:2104.14294, 2021. 10[5] Soravit Changpinyo, Piyush Sharma, Nan Ding, and Radu Soricut.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0033",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "Conceptual 12M: Pushing web-scale image-textpre-training to recognize long-tail visual concepts. In CVPR, 2021. 16[6] Gong Cheng, Junwei Han, and Xiaoqiang Lu. Remote sensing image scene classi\ufb01cation: Benchmark and state ofthe art. Proceedings of the IEEE, 105(10):1865\u20131883, 2017. 3[7] Ekin D. Cubuk, Barret Zoph, Jonathon Shlens, and Quoc V. Le. RandAugment: Practical automated dataaugmentation with a reduced search space. In CVPR Workshops, 2020. 4[8] Zihang Dai, Hanxiao Liu, Quoc V. Le, and Mingxing Tan. Coatnet: Marrying convolution and attention for alldata sizes, 2021. 10[9] St\u00e9phane d\u2019Ascoli, Hugo Touvron, Matthew Leavitt, Ari Morcos, Giulio Biroli, and Levent Sagun. Convit:Improving vision transformers with soft convolutional inductive biases. arXiv:2103.10697, 2021. 10[10] Mostafa Dehghani, Anurag Arnab, Lucas Beyer, Ashish Vaswani, and Yi Tay. The e\ufb03ciency misnomer.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0034",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "The e\ufb03ciency misnomer. CoRR,abs/2110.12894, 2021. 10[11] J. Deng, W. Dong, R. Socher, L. Li, Kai Li, and Li Fei-Fei. Imagenet: A large-scale hierarchical image database.In CVPR, 2009. 3, 5[12] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: pre-training of deep bidirectionaltransformers for language understanding. In NAACL-HLT, 2019. 16[13] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner,Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, and Neil Houlsby. Animage is worth 16x16 words: Transformers for image recognition at scale. arXiv:2010.11929, 2020. 1, 3, 4, 5, 9, 10[14] A Geiger, P Lenz, C Stiller, and R Urtasun. Vision meets robotics: The kitti dataset.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0035",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "Vision meets robotics: The kitti dataset. The International Journalof Robotics Research, 32(11):1231\u20131237, 2013. 3[15] Google. TensorFlow Datasets, a collection of ready-to-use datasets. https://www.tensorflow.org/datasets. 3[16] Jean-Bastien Grill, Florian Strub, Florent Altch\u00e9, Corentin Tallec, Pierre H Richemond, Elena Buchatskaya, CarlDoersch, Bernardo Avila Pires, Zhaohan Daniel Guo, Mohammad Gheshlaghi Azar, et al. Bootstrap your ownlatent: A new approach to self-supervised learning. arXiv:2006.07733, 2020. 10[17] Kai Han, An Xiao, Enhua Wu, Jianyuan Guo, Chunjing Xu, and Yunhe Wang. Transformer in transformer.arXiv:2103.00112, 2021. 10[18] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. InCVPR, 2016. 1, 4[19] Jonathan Heek, Anselm Levskaya, Avital Oliver, Marvin Ritter, Bertrand Rondepierre, Andreas Steiner, andMarc van Zee.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0036",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "Flax: A neural network library and ecosystem for JAX, 2020. 3[20] Gao Huang, Yu Sun, Zhuang Liu, Daniel Sedra, and Kilian Q Weinberger. Deep networks with stochastic depth.In ECCV, 2016. 4[21] Diederik P. Kingma and Jimmy Ba. Adam: A method for stochastic optimization. In ICLR, 2015. 4[22] Alexander Kolesnikov, Lucas Beyer, Xiaohua Zhai, Joan Puigcerver, Jessica Yung, Sylvain Gelly, and Neil Houlsby.Big transfer (BiT): General visual representation learning. In ECCV, 2020. 3, 10[23] Simon Kornblith, Jonathon Shlens, and Quoc V Le. Do better imagenet models transfer better? In CVPR, 2019.10[24] Alex Krizhevsky, Ilya Sutskever, and Geo\ufb00rey E. Hinton. Imagenet classi\ufb01cation with deep convolutional neuralnetworks. In Peter L. Bartlett, Fernando C. N. Pereira, Christopher J. C. Burges, L\u00e9on Bottou, and Kilian Q.Weinberger, editors, Advances in Neural Information Processing Systems 25: 26th Annual Conference on NeuralInformation Processing Systems 2012.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0037",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "C. Burges, L\u00e9on Bottou, and Kilian Q.Weinberger, editors, Advances in Neural Information Processing Systems 25: 26th Annual Conference on NeuralInformation Processing Systems 2012. Proceedings of a meeting held December 3-6, 2012, Lake Tahoe, Nevada,United States, pages 1106\u20131114, 2012. 2[25] Alex Krizhevsky, Ilya Sutskever, and Geo\ufb00rey E Hinton. Imagenet classi\ufb01cation with deep convolutional neuralnetworks. Advances in neural information processing systems, 25, 2012. 3[26] Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and Baining Guo. Swintransformer: Hierarchical vision transformer using shifted windows. arXiv:2103.14030, 2021. 10[27] Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In International Conference onLearning Representations, 2019. 4, 14[28] Omkar M. Parkhi, Andrea Vedaldi, Andrew Zisserman, and C. V. Jawahar. Cats and dogs.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0038",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "In International Conference onLearning Representations, 2019. 4, 14[28] Omkar M. Parkhi, Andrea Vedaldi, Andrew Zisserman, and C. V. Jawahar. Cats and dogs. In CVPR, 2012. 3[29] Benjamin Recht, Rebecca Roelofs, Ludwig Schmidt, and Vaishaal Shankar. Do imagenet classi\ufb01ers generalize toimagenet? In ICML, 2019. 3, 8[30] Tal Ridnik, Emanuel Ben-Baruch, Asaf Noy, and Lihi Zelnik-Manor. Imagenet-21k pretraining for the masses.arXiv:2104.10972, 2021. 3, 10[31] Olga Russakovsky, Jia Deng, Hao Su, Jonathan Krause, Sanjeev Satheesh, Sean Ma, Zhiheng Huang, AndrejKarpathy, Aditya Khosla, Michael Bernstein, et al. Imagenet large scale visual recognition challenge. IIJCV,Published in Transactions on Machine Learning Research (05/2022)2015. 5[32] Ali Sharif Razavian, Hossein Azizpour, Josephine Sullivan, and Stefan Carlsson. Cnn features o\ufb00-the-shelf: Anastounding baseline for recognition.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0039",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Cnn features o\ufb00-the-shelf: Anastounding baseline for recognition. In Proceedings of the IEEE Conference on Computer Vision and PatternRecognition (CVPR) Workshops, June 2014. 2[33] Aravind Srinivas, Tsung-Yi Lin, Niki Parmar, Jonathon Shlens, Pieter Abbeel, and Ashish Vaswani. Bottlenecktransformers for visual recognition. arXiv:2101.11605, 2021. 10[34] Robin Strudel, Ricardo Garcia, Ivan Laptev, and Cordelia Schmid.Segmenter: Transformer for semanticsegmentation. arXiv:2105.05633, 2021. 16[35] Chen Sun, Abhinav Shrivastava, Saurabh Singh, and Abhinav Gupta. Revisiting unreasonable e\ufb00ectiveness ofdata in deep learning era. In Proceedings of the IEEE international conference on computer vision, pages 843\u2013852,2017. 5[36] C. Szegedy, W. Liu, Y. Jia, P. Sermanet, S. Reed, D. Anguelov, D. Erhan, V. Vanhoucke, and A. Rabinovich.Going deeper with convolutions. In CVPR, 2015. 4[37] Mingxing Tan and Quoc V.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0040",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "Anguelov, D. Erhan, V. Vanhoucke, and A. Rabinovich.Going deeper with convolutions. In CVPR, 2015. 4[37] Mingxing Tan and Quoc V. Le. E\ufb03cientnetv2: Smaller models and faster training. CoRR, abs/2104.00298, 2021.10[38] Ilya O. Tolstikhin, Neil Houlsby, Alexander Kolesnikov, Lucas Beyer, Xiaohua Zhai, Thomas Unterthiner, JessicaYung, Andreas Steiner, Daniel Keysers, Jakob Uszkoreit, Mario Lucic, and Alexey Dosovitskiy. Mlp-mixer: Anall-mlp architecture for vision. CoRR, abs/2105.01601, 2021. 10[39] Hugo Touvron, Matthieu Cord, Matthijs Douze, Francisco Massa, Alexandre Sablayrolles, and Herv\u00e9 J\u00e9gou.Training data-e\ufb03cient image transformers & distillation through attention. arXiv:2012.12877, 2020. 1, 4, 10[40] Hugo Touvron, Andrea Vedaldi, Matthijs Douze, and Herve Jegou.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0041",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "Fixing the train-test resolution discrepancy.In NeurIPS, 2019. 5[41] Wenhai Wang, Enze Xie, Xiang Li, Deng-Ping Fan, Kaitao Song, Ding Liang, Tong Lu, Ping Luo, and Ling Shao.Pyramid vision transformer: A versatile backbone for dense prediction without convolutions. arXiv:2102.12122,2021. 10[42] Ross Wightman.Pytorch image models (timm):Vit training details.https://github.com/rwightman/pytorch-image-models/issues/252#issuecomment-713838112, 2013. 3, 4, 9[43] Haiping Wu, Bin Xiao, Noel Codella, Mengchen Liu, Xiyang Dai, Lu Yuan, and Lei Zhang. Cvt: Introducingconvolutions to vision transformers. arXiv:2103.15808, 2021. 10[44] Qizhe Xie, Zihang Dai, Eduard Hovy, Thang Luong, and Quoc Le. Unsupervised data augmentation for consistencytraining. In H. Larochelle, M. Ranzato, R. Hadsell, M. F. Balcan, and H.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0042",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "Unsupervised data augmentation for consistencytraining. In H. Larochelle, M. Ranzato, R. Hadsell, M. F. Balcan, and H. Lin, editors, Advances in NeuralInformation Processing Systems, 2020. 5[45] Xiaohua Zhai, Joan Puigcerver, Alexander Kolesnikov, Pierre Ruyssen, Carlos Riquelme, Mario Lucic, JosipDjolonga, Andre Susano Pinto, Maxim Neumann, Alexey Dosovitskiy, Lucas Beyer, Olivier Bachem, MichaelTschannen, Marcin Michalski, Olivier Bousquet, Sylvain Gelly, and Neil Houlsby.A large-scale study ofrepresentation learning with the visual task adaptation benchmark, 2020. 2, 3, 6, 15[46] Xiaohua Zhai, Xiao Wang, Basil Mustafa, Andreas Steiner, Daniel Keysers, Alexander Kolesnikov, and LucasBeyer. Lit: Zero-shot transfer with locked-image text tuning. CVPR, 2022. 16[47] Hongyi Zhang, Moustapha Cisse, Yann N Dauphin, and David Lopez-Paz. mixup: Beyond empirical riskminimization.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0043",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "CVPR, 2022. 16[47] Hongyi Zhang, Moustapha Cisse, Yann N Dauphin, and David Lopez-Paz. mixup: Beyond empirical riskminimization. In ICLR, 2018. 4Published in Transactions on Machine Learning Research (05/2022)AFrom-scratch training detailsWe present from-scratch training details for B/32 and B/16 models, on both Resisc45 and Pets37 datasets.We perform a grid search over the following parameters:\u2022 B/32 on Pets37\u2013 Epochs: {1k, 3k, 10k, 30k, 300k}\u2013 Learning rates: {1e\u22124, 3e\u22124, 1e\u22123, 3e\u22123}\u2013 Weight decays4: {1e\u22125, 3e\u22125, 1e\u22124, 3e\u22124}\u2022 B/16 on Pets37\u2013 Epochs: {1k, 3k, 10k}\u2013 Learning rates: {3e\u22124, 1e\u22123}\u2013 Weight decays: {3e\u22125, 1e\u22124}\u2022 B/32 on Resisc45\u2013 Epochs: {75, 250, 750, 2.5k, 7.5k, 25k}\u2013 Learning rates: {1e\u22124, 3e\u22124, 1e\u22123, 3e\u22123}\u2013 Weight decays: {1e\u22125, 3e\u22125, 1e\u22124, 3e\u22124}\u2022 B/16 on Resisc45\u2013 Epochs: {75, 250, 750, 2.5k, 7.5k}\u2013 Learning rates: {1e\u22123}\u2013 Weight decays: {1e\u22124, 3e\u22124}Allthesefrom-scratchrunssweepoverdropoutrateandstochasticdepthinrange{(0.0, 0.0), (0.1, 0.1), (0.2, 0.2)}, and data augmentation (l, m, \u03b1) in range { (0, 0, 0), (2, 10, 0.2), (2, 15, 0.2),(2, 15, 0.5), (2, 20, 0.5), (2, 20, 0.8), (4, 15, 0.5), (4, 20, 0.8) }.For the de\ufb01nition of (l, m, \u03b1) refer to Section 3.3BFinetune detailsIn Table 4, we show the hyperparameter sweep range for \ufb01netune jobs.",
+      "token_count": 604
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0044",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "We use the same \ufb01netune sweep forall the pre-trained models in this paper.DatasetLearning rateTotal, warmup stepsImageNet-1k{0.01, 0.03}{(20k, 500)}Pets37{1e-3, 3e-3, 0.01}{(500, 100), (2.5k, 200)}Kitti-distance{1e-3, 3e-3, 0.01}{(500, 100), (2.5k, 200)}CIFAR-100{1e-3, 3e-3, 0.01}{(2.5k, 200), (10k, 500)}Resisc45{1e-3, 3e-3, 0.01}{(2.5k, 200), (10k, 500)}4 As opposed to 3.3 where we specify weight decay values as typically de\ufb01ned in common frameworks, here the values are\u201cdecoupled\u201d following (27) that is better suited for sweeps; multiplying weight decay by the base learning-rate recovers the\u201ccoupled\u201d value as used elsewhere.Published in Transactions on Machine Learning Research (05/2022)natural,specialized,structured groups, following (45).RetinopathyClevr-CountsNORB-AzimsNORB-ElevCaltech101CIFAR-100Flowers102CamelyonClevr-DistKITTI-DistSun397EuroSATResisc45DMLabdSpr-LocdSpr-OriDTDPetsSVHNMeanMeanMeanR+Ti/1691.681.968.094.091.970.695.684.885.298.494.880.489.796.1 89.867.499.9 86.981.925.146.374.2S/3292.786.470.793.691.272.995.886.283.698.695.579.689.394.2 88.465.899.9 86.180.724.968.276.0B/3292.687.672.794.492.273.895.887.082.798.694.979.889.094.0 89.666.199.8 84.780.324.762.475.2Ti/1692.784.068.993.892.572.096.185.783.798.795.681.689.998.0 91.968.599.7 83.282.026.565.977.0R26+S/3290.286.274.095.594.374.595.687.284.598.696.083.490.699.7 91.673.310084.884.528.251.376.7S/1693.186.972.895.793.874.396.287.584.198.795.982.790.398.7 91.569.810084.379.627.358.076.1R50+L/32 90.788.1",
+      "token_count": 666
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0045",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "We report VTABscore only for the best pre-trained models, selected by their upstream validation accuracy (\u201crecommendedcheckpoints\u201d, see Section 4.5). For VTAB tasks, we sweep over 8 hyper parameters, include four learningrates {0.001, 0.003, 0.01, 0.03} and two schedules {500, 2500} steps.",
+      "token_count": 80
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0046",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "For VTAB tasks, we sweep over 8 hyper parameters, include four learningrates {0.001, 0.003, 0.01, 0.03} and two schedules {500, 2500} steps. The best run was selected on VTABvalidation split.Published in Transactions on Machine Learning Research (05/2022)ImageNet-1k, 300epImageNet-21k, 30epImageNet-21k, 300epR+Ti/161-3-6-6-7-7-7-3-4-4-5-4-5-5-3-4-5-5-5-5-5Ti/16-1-4-7-10 -11-9-9-4-5-6-6-6-7-6-4-4-6-6-6-6-7S/32S/16B/32R26+S/3261-4-5-5-5-6-3-5-4-5-5-5-5-2-4-5-5-5-5-5631-2-3-3-3-2-3-3-4-4-5-5-1-2-4-4-4-4-46442221-1-2-3-4-4-4-33-0-2-2-3-3-34233211-1-1-1-2-2-2-21-0-2-2-2-2-2B/16L/16R50+L/326323222-0-1-2-3-3-3-341-1-1-2-2-3531101130-1-2-3-2-23322-0-1-1631121131-0-1-1-2-13232-010nonelight1light2medium1medium2heavy1heavy2nonelight1light2medium1medium2heavy1heavy2nonelight1light2medium1medium2heavy1heavy2DThe bene\ufb01t and harm of regularizationIn Figure 7, we show the gain (green, positive numbers) or loss (red, negative numbers) in accuracy whenadding regularization to the model by means of dropout and stochastic depth.",
+      "token_count": 498
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0047",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "We did verify in earlierexperiments that combining both with (peak) drop probability 0.1 is indeed the best setting. What thisshows, is that model regularization mainly helps larger models, and only when trained for long. Speci\ufb01cally,for ImageNet-21 pre-training, it hurts all but the largest of models across the board.EUsing recommended checkpoints for other computer vision tasksOne limitation of our study is that it focuses mainly on the classi\ufb01cation task. However, computer vision is amuch broader \ufb01eld, and backbones need to excel at many tasks. While expanding the full study to manymore tasks such as detection, segmentation, tracking, and others would be prohibitive, here we take a peek atone further task: multi-modal image-text retrieval.A detailed analysis of this question is beyond the scope of this study, but we evaluated our recommended(see Section 4.5) B/32 checkpoint pre-trained on ImageNet-21k in a contrastive training setup with a lockedimage tower (46). We initialize the text tower with a BERT-Base (12) checkpoint and train for 20 epochs onCC12M (5). The results in Table 6 indicate that the upstream validation accuracy is a good predictor forzero-shot classi\ufb01cation.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2106.10270_chunk_0048",
+      "arxiv_id": "2106.10270",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "The results in Table 6 indicate that the upstream validation accuracy is a good predictor forzero-shot classi\ufb01cation. Moreover, the representations produced by such a model yield similarly better resultsfor image-text retrieval, when compared to models that do not have the ideal amount of AugReg applied. Wehope the community will adopt our backbones for other tasks, as already done by (34).AugRegI21k ValI1k 0shotCoco I2TCoco T2IFlickr I2TFlickr T2Inone/0.041.654.933.420.158.139.9heavy2/0.143.557.339.124.462.144.6Recommended47.760.641.125.565.946.9",
+      "token_count": 157
+    }
+  ]
+}

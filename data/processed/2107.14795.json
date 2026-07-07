@@ -1,0 +1,862 @@
+{
+  "arxiv_id": "2107.14795",
+  "title": "Perceiver IO: A General Architecture for Structured Inputs & Outputs",
+  "authors": [
+    "Andrew Jaegle",
+    "Sebastian Borgeaud",
+    "Jean-Baptiste Alayrac",
+    "Carl Doersch",
+    "Catalin Ionescu",
+    "David Ding",
+    "Skanda Koppula",
+    "Daniel Zoran",
+    "Andrew Brock",
+    "Evan Shelhamer",
+    "Olivier H\u00e9naff",
+    "Matthew M. Botvinick",
+    "Andrew Zisserman",
+    "Oriol Vinyals",
+    "Jo\u0101o Carreira"
+  ],
+  "year": 2021,
+  "abstract": "A central goal of machine learning is the development of systems that can solve many problems in as many data domains as possible. Current architectures, however, cannot be applied beyond a small set of stereotyped settings, as they bake in domain & task assumptions or scale poorly to large inputs or outputs. In this work, we propose Perceiver IO, a general-purpose architecture that handles data from arbitrary settings while scaling linearly with the size of inputs and outputs. Our model augments the Perceiver with a flexible querying mechanism that enables outputs of various sizes and semantics, doing away with the need for task-specific architecture engineering. The same architecture achieves strong results on tasks spanning natural language and visual understanding, multi-task and multi-modal reasoning, and StarCraft II. As highlights, Perceiver IO outperforms a Transformer-based BERT baseline on the GLUE language benchmark despite removing input tokenization and achieves state-of-the-art performance on Sintel optical flow estimation with no explicit mechanisms for multiscale correspondence.",
+  "categories": [
+    "cs.LG",
+    "cs.CL",
+    "cs.CV",
+    "cs.SD",
+    "eess.AS"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2107.14795v3",
+  "page_count": 29,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 103,
+  "chunks": [
+    {
+      "chunk_id": "2107.14795_chunk_0000",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "Published as a conference paper at ICLR 2022PERCEIVER IO: A GENERAL ARCHITECTUREFOR STRUCTURED INPUTS & OUTPUTSAndrew Jaegle, Sebastian Borgeaud, Jean-Baptiste Alayrac, Carl Doersch, Catalin Ionescu,David Ding, Skanda Koppula, Daniel Zoran, Andrew Brock, Evan Shelhamer, Olivier H\u00e9naff,Matthew M. Botvinick, Andrew Zisserman, Oriol Vinyals, Jo\u00e3o CarreiraDeepMindABSTRACTA central goal of machine learning is the development of systems that can solvemany problems in as many data domains as possible. Current architectures, how-ever, cannot be applied beyond a small set of stereotyped settings, as they bake indomain & task assumptions or scale poorly to large inputs or outputs. In this work,we propose Perceiver IO, a general-purpose architecture that handles data from arbi-trary settings while scaling linearly with the size of inputs and outputs. Our modelaugments the Perceiver with a \ufb02exible querying mechanism that enables outputs ofvarious sizes and semantics, doing away with the need for task-speci\ufb01c architectureengineering. The same architecture achieves strong results on tasks spanning natu-ral language and visual understanding, multi-task and multi-modal reasoning, andStarCraft II.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0001",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "The same architecture achieves strong results on tasks spanning natu-ral language and visual understanding, multi-task and multi-modal reasoning, andStarCraft II. As highlights, Perceiver IO outperforms a Transformer-based BERTbaseline on the GLUE language benchmark despite removing input tokenizationand achieves state-of-the-art performance on Sintel optical \ufb02ow estimation with noexplicit mechanisms for multiscale correspondence.1INTRODUCTIONHumans have a remarkable ability to take in data from many sources, integrate it seamlessly, anddeploy it in the service of a range of goals. Most machine learning research focuses on buildingbespoke systems to handle the stereotyped inputs and outputs associated with a single task. This istrue even for models that handle multiple modalities. A typical approach independently processeseach input with a modality speci\ufb01c architecture (for example using a 2D ResNet (He et al., 2016) forvision and a Transformer (Vaswani et al., 2017) for language), integrates them afterwards using athird fusion network, and reads out the result in a task-speci\ufb01c manner. The complexity of systemslike this can grow dramatically as the inputs or outputs grow more diverse (e.g.",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0002",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "The complexity of systemslike this can grow dramatically as the inputs or outputs grow more diverse (e.g. Abramson et al. 2020;Vinyals et al. 2019; Ramesh et al. 2021), and the structure of a task\u2019s inputs and outputs may placestrong constraints on how data is processed, making adaptation to new settings dif\ufb01cult.Is the development of problem-speci\ufb01c models for each new set of inputs and outputs unavoidable?Life would be drastically simpler if a single neural network architecture could handle a wide varietyof both input modalities and output tasks. In this work, we propose such an architecture, with theultimate goal of building a network that can easily integrate and transform arbitrary informationfor arbitrary tasks. Our starting point is the Perceiver (Jaegle et al., 2021), an architecture whichhas demonstrated a remarkable ability to handle data from many modalities with no changes to thenetwork architecture. The Perceiver uses attention to map inputs of a wide range of modalities to a\ufb01xed-size latent space that is further processed by a deep, fully attentional network. This processdecouples the bulk of the network\u2019s processing from the size and modality-speci\ufb01c details of theinput, allowing it to scale to large and multimodal data.But the Perceiver can only handle simple output spaces like classi\ufb01cation.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0003",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "Much of the complexityof real-world tasks comes from the variety, size, and structure of their outputs, and in this regardPublished as a conference paper at ICLR 2022\u00e8\u00e8\u00e8#\u010e\u00b1g\u00c5\u010eg\u010e\u00b1\u00bb\u009b\u00b1{\u00b7\u010e\u0089\u009b\u010eF\u00bb{\u00ad|\u00b7g\u00ad\u00a0\u010e\u00b7\u0088g\u00b7\u010e\u00b1{{\u009a{w\u010e \u00b7\u00a0\u010e \u00ad{\u00d0{s\u00b7\u010e \u00b7\u0088{\u010e s\u00a0\u0094\u00a0\u00bb\u00ad\u010e \u00a0\u0084\u010e g\u010e\u00ad\u00a0\u00b1{\u010e \u0089\u009b\u010e {\u009b\u0085g\u0094\u00eb\u010e #\u010e \u00b1g\u00c5\u010e \u009a\u00c7\u010e {\u009a\u00aa\u00b7\u00c7\u010er{w\u00ad\u00a0\u00a0\u009a\u00eb\u010e #\u010e \u00b1g\u00c5\u010e \u0089\u009b\u010e g\u010e s\u0094\u00a0\u00b1{\u00b7\u010e \u0089\u009b\u010e\u0094\u0092\u009agg\u00ad\u010eg\u010e\u00b7{\u00ad\u00ad{\u00b1\u00b7\u00ad\u0089g\u0094\u010e\u0085\u0094\u00a0r{\u010er{\u00b7\u00c5{{\u009b\u010e\u00b7\u00c5\u00a0\u010e\u009a\u0089\u00ad\u00ad\u00a0\u00ad\u00b1\u010e\u00b7\u0088g\u00b7\u010e\u009a\u00bb\u0094\u00b7\u0089\u00aa\u0094\u0089{w\u010e \u0089\u00b7\u010e {\u009bw\u0094{\u00b1\u00b1\u0094\u00c7\u00eb\u010e #\u010e \u00b1g\u00c5\u010e\u0088\u00a0\u00ad\u00b1{\u00b1\u010e \u00c5\u0089\u00b7\u0088\u010e \u00d0\u00a0\u00c5\u0089\u009b\u0085\u010e \u009ag\u009b{\u00b1\u010e \u00a0\u009b\u010e g\u010e\u00b1\u0088\u00a0\u00ad{\u010e\u00a0\u0084\u010e\u00b7\u0088{\u010eg\u00b1\u00aa\u0089g\u009b\u010eK{g\u010eg\u00b7\u010ewg\u00c5\u009b\u00eb\u010e#\u010e\u00b1g\u00c5\u010e\u00b7\u0088{\u010ew{\u0094\u0089sg\u00b7{\u010er\u00a0\u009b{\u010e\u00b1\u00b7\u00ad\u00bbs\u00b7\u00bb\u00ad{\u010e\u00a0\u0084\u010eg\u010e\u0088g\u009bw\u00e8\u00e8\u00e8\u0109\u0109\u0109Ly\u00c8y\u00c5\u00a0\u00c8y\u00cc\u008f\u0110\u00b5\u00d2y\u00a1\u00ae\u00b4\u008f\u00b5\u00d2\u01105y\u0085\u008f\u00ae\u010b\u012f\u00c8\u00d6\u00b4\u00b4\u00a1\u00b5\u009cS\u008f\u00b5\u00d2\u00a1\u00b4\u008f\u00b5\u00d2\u0110#\u00c8y\u00b4\u00b4y\u00d2\u00a1\u0086y\u00ae\u0110the original Perceiver can\u2019t be considered general purpose.",
+      "token_count": 581
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0004",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "In this work, we develop a mechanismfor decoding structured outputs \u2013 language, optical \ufb02ow \ufb01elds, audiovisual sequences, symbolicunordered sets, etc. \u2013 directly from the Perceiver latent space, which allows the model to handle ahost of new domains without sacri\ufb01cing the bene\ufb01ts of deep, domain-agnostic processing. To dothis, we produce each output by attending to the latent array using an output query that speci\ufb01es thesemantics of that particular output. For example if we wanted the model to predict optical \ufb02ow onone particular pixel we could compose a query from the pixel\u2019s xy coordinates plus an optical \ufb02owtask embedding: the model would then attend using the query and produce a single \ufb02ow vector. As aresult, our architecture can produce many outputs, each with arbitrary shape and structure, and yetthe latent features in our architecture remain agnostic to the shape and structure of the outputs.Perceiver IO does this using a fully attentional read-process-write architecture: inputs are encoded(read) to a latent space, the latent representation is re\ufb01ned (process) via many layers of processing,and the latent space is decoded (write) to produce outputs. This approach inherits the best features ofboth Transformers \u2013 which leverage domain agnostic primitives for nonlocal processing of inputs \u2013and the encoder-decoder architectures (e.g.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0005",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "This approach inherits the best features ofboth Transformers \u2013 which leverage domain agnostic primitives for nonlocal processing of inputs \u2013and the encoder-decoder architectures (e.g. Ronneberger et al. 2015; Newell et al. 2016) that are inwidespread use in high-bandwidth domains such as computer vision or multimodal processing. Thisapproach allows us to decouple the size of elements used for the bulk of the computation (the latent)from the size of the input and output spaces, while making minimal assumptions about the spatial orlocality structure of the input and output.Perceiver IO\u2019s decoding procedure uses an attention mechanism to map from latents to arbitrarilysized and structured outputs using a querying system that can \ufb02exibly specify the semantics neededfor outputs on a wide range of domains, including dense and multitask settings. This decoder allowsPerceiver IO to serve as a drop-in replacement for a wide range of specialist networks currently inuse on a set of challenging domains, while improving performance on tasks like classi\ufb01cation thatcould be handled by the Perceiver.The proposed architecture can be applied with unprecedented levels of generality. Perceiver IOcan replace the Transformers used in BERT (Devlin et al., 2019) and AlphaStar (Vinyals et al.,2019).",
+      "token_count": 273
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0006",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "Perceiver IOcan replace the Transformers used in BERT (Devlin et al., 2019) and AlphaStar (Vinyals et al.,2019). At the same time, Perceiver IO produces state-of-the-art results on the Sintel optical \ufb02owbenchmark (Butler et al., 2012) and good results on ImageNet image classi\ufb01cation (Deng et al., 2009).Perceiver IO produces compelling results even when handling highly diverse multimodal data, suchas on joint {video, audio, label} autoencoding in Kinetics (Smaira et al., 2020) and joint audio-videoclassi\ufb01cation on AudioSet (Gemmeke et al., 2017). Perceiver IO allows us to simplify pipelines andremove domain-speci\ufb01c assumptions: we process language without tokenizers without a performanceor speed hit, \ufb01ne-tune on multiple classi\ufb01cation tasks simultaneously and without the need for[CLS] tokens (Sec. 4.1), estimate optical \ufb02ow without relying on explicit architectural features formultiscale correspondence (Sec. 4.2), learn joint representations of video, audio, and labels withoutseparate network trunks (Sec. 4.3), and perform image classi\ufb01cation with no information about the2D structure of images (Sec.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0007",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "A).2RELATED WORKNeural network research has long sought architectures that can handle large, arbitrarily structuredinputs and outputs. Autoencoding (Hinton & Zemel, 1994) was among the \ufb01rst attempts to buildPublished as a conference paper at ICLR 2022representation which could encode and reproduce high-dimensional inputs like images. As hardwaregrew more powerful, neural nets led to breakthroughs in image understanding (Krizhevsky et al., 2012;Zeiler & Fergus, 2014; Szegedy et al., 2015) and interest intensi\ufb01ed: autoregressive models that couldprocess and complete samples of handwriting were developed (Graves, 2013), and new convolutionalnetwork designs led to good results in structured output spaces like semantic segmentation (Farabetet al., 2012; Long et al., 2015; Ronneberger et al., 2015), pose estimation (Toshev & Szegedy, 2014),detection (Sermanet et al., 2014), captioning (You et al., 2016), and optical \ufb02ow (Fischer et al.,2015).",
+      "token_count": 247
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0008",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "At the same time, natural language applications research has made extensive progressive incapturing the structured nature of language, typically via autoregressive models (Collobert et al.,2011; Sutskever et al., 2014; Vaswani et al., 2017; Radford et al., 2019; Brown et al., 2020) or contextprediction (Mikolov et al., 2013; Pennington et al., 2014; Devlin et al., 2019).Similar to our work, several groups have proposed to solve tasks in multiple domains (e.g. Kaiseret al. 2017; Alayrac et al. 2020; Akbari et al. 2021), but typically across a \ufb01xed and prede\ufb01ned set ofmodalities by means of domain-speci\ufb01c networks. Although single-task specialist networks remaindominant in vision, multi-task learning has become popular (Misra et al., 2016; Doersch & Zisserman,2017; Kokkinos, 2017; Zamir et al., 2018) and individual models achieve generality in a restricteddomain: e.g. Mask-RCNN (He et al., 2017) handles object detection, segmentation, and poseestimation.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0009",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "Mask-RCNN (He et al., 2017) handles object detection, segmentation, and poseestimation. In language, training or evaluation on multiple tasks has also become common (Collobert& Weston, 2008; Luong et al., 2016; Devlin et al., 2019; Liu et al., 2019; Raffel et al., 2020). Severalgroups have demonstrated that Transformers (originally designed for language) can be used oradapted to non-language tasks (e.g. Chen et al. 2020; Lu et al. 2021), but the limited scalability ofTransformers limits their usefulness as general-purpose architectures.Several groups have proposed to use attention to manipulate the size of arrays or to introducebottlenecks in processing. Set Transformers and related work (Lee et al., 2019; Goyal et al., 2022) usea learned query (\u201cinducing points\u201d) to induce local bottlenecks by mapping a set back and forth froma set with fewer elements and learned decoder queries (\u201cseed vectors\u201d) to map to outputs (\u201cpoolingby multiheaded attention\u201d).",
+      "token_count": 237
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0010",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "Each layer of these networks has complexity linear in the input size,while Perceivers use a deep latent network with complexity independent of the input and output.Our work uses attention over inputs and outputs of different sizes in part to produce an ef\ufb01cientattention architecture, and several other ef\ufb01cient attention architectures have been proposed, largelyfor language or small-scale problems (e.g. Xiong et al. 2021; Wang et al. 2020; Tay et al. 2021a;Beltagy et al. 2020 and see Tay et al. 2021b).",
+      "token_count": 124
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0011",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "Xiong et al. 2021; Wang et al. 2020; Tay et al. 2021a;Beltagy et al. 2020 and see Tay et al. 2021b). The focus of our work is developing an architecturethat is ef\ufb01cient and also performs well in many settings with a wide range of inputs and outputs.Several works use attention to process latent spaces that interface with input/output data using task-or domain-speci\ufb01c architectures (Carion et al., 2020; Locatello et al., 2020; Wang et al., 2021),and cross-attention itself is widely used to produce outputs in of a different size or structure frominputs (Dai et al., 2019; Desai & Johnson, 2021; Miech et al., 2021; Vaswani et al., 2017; Raffel et al.,2020; Santoro et al., 2018; Hudson & Zitnick, 2021; Ma et al., 2021).",
+      "token_count": 226
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0012",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "Perceiver IO builds on thisbody of work to produce a general purpose architecture that can be easily and widely applied.3THE PERCEIVER IO ARCHITECTUREThe Perceiver IO architecture builds on the Perceiver (Jaegle et al., 2021), which achieved its cross-domain generality by assuming that its input is a simple 2D byte array: a set of elements (whichmight be pixels or patches in vision, characters or words in language, or some form of embedding,learned or otherwise), each described by a feature vector. The model then encodes information aboutthe input array using a smaller number of latent feature vectors, using Transformer-style attention,followed by iterative processing and a \ufb01nal aggregation down to a category label.Rather than output a single category, Perceiver IO aims to have the same level of generality withrespect to its outputs as the Perceiver has with respect to its inputs: that is, it should produce arbitraryoutput arrays. We can predict each element of the output array using another attention module byquerying the latent array using a query feature vector unique to the desired output element. In otherwords, we de\ufb01ne a query array with the same number of elements as the desired output. The queriesmay be hand-designed, learned embeddings, or a simple function of the input.",
+      "token_count": 271
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0013",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "In otherwords, we de\ufb01ne a query array with the same number of elements as the desired output. The queriesmay be hand-designed, learned embeddings, or a simple function of the input. They attend to thelatents to yield an output array of the desired shape.iiiPublished as a conference paper at ICLR 2022InputarrayProcessx LKVAttentionAttentionQKVAttentionscoresLatent arrayOutputarrayAttentionOutputquery arrayEncodeOODecode3.1ENCODING, PROCESSING, AND DECODINGFig. 2 illustrates the Perceiver IO. We \ufb01rst encode by applying an attention module that maps inputarrays x \u2208RM\u00d7C to arrays in a latent space z \u2208RN\u00d7D. We next process the latents z by applying aseries of modules that take in and return arrays in this latent space. Finally, we decode by applying anattention module that maps latent arrays to output arrays y \u2208RO\u00d7E. M, C, O, and E are propertiesof the task data and can be very large (Tab. 5), while N and D are hyperparameters and can be chosento make model computation tractable. Following the design of the Perceiver, we implement each ofthe architecture\u2019s components using Transformer-style attention modules.Each of these modules applies a global query-key-value (QKV) attention operation followed bya multi-layer perceptron (MLP).",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0014",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "Following the design of the Perceiver, we implement each ofthe architecture\u2019s components using Transformer-style attention modules.Each of these modules applies a global query-key-value (QKV) attention operation followed bya multi-layer perceptron (MLP). As usual in Transformer-style architectures, we apply the MLPindependently to each element of the index dimension. Both encoder and decoder take in two inputarrays, the \ufb01rst used as input to the module\u2019s key and value networks, and the second used as input tothe module\u2019s query network. The module\u2019s output has the same index dimension (the same numberof elements) as the query input.The Perceiver IO architecture builds on primitives similar to those in Transformers. Why aren\u2019tTransformers all you need? Transformers scale very poorly in both compute and memory (Tay et al.,2020). Because Transformers deploy attention modules homogeneously throughout its architecture,using its full input to generate queries and keys at every layer. This means each layer scalesquadratically in compute and memory, which makes it impossible to apply Transformers on high-dimensional data like images without some form of preprocessing. Even on domains like languagewhere Transformers shine, preprocessing (e.g. tokenization) is often needed to scale beyond shortinput sequences. Perceiver IO uses attention non-homogeneously by mapping inputs to a latentspace, processing in that latent space, and decoding to an output space.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0015",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "Perceiver IO uses attention non-homogeneously by mapping inputs to a latentspace, processing in that latent space, and decoding to an output space. Perceiver IO has no quadraticdependence on the input or output size: encoder and decoder attention modules depend linearly onthe input and output size (respectively), while latent attention is independent of both input and outputsizes (Sec. E.2). Because of the corresponding reduction in compute and memory requirements,Perceiver IO scales to much larger inputs and outputs. While Transformers are typically used insettings with data preprocessed to contain at most a few thousand dimensions (Brown et al., 2020;Raffel et al., 2020), we show good results on domains with hundreds of thousands of dimensions.This architecture can be applied to inputs of any shape or spatial layout including inputs or outputswith different spatial structure (e.g. sound and video). In contrast to latent spaces typically usedin vision (e.g. Ronneberger et al. 2015) the latent does not explicitly share the structure (spatial orotherwise) of the inputs.",
+      "token_count": 224
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0016",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "In contrast to latent spaces typically usedin vision (e.g. Ronneberger et al. 2015) the latent does not explicitly share the structure (spatial orotherwise) of the inputs. To decode this information, we query for it using cross-attention.Published as a conference paper at ICLR 20224g\u00b1\u0092{w\u0094g\u009b\u0085\u00bbg\u0085{\u009a\u00a0w{\u0094\u0089\u009b4\u00bb\u0094\u00b7\u0089\u009a\u00a0wg\u0094g\u00bb\u00b7\u00a0{\u009bs\u00a0w\u0089\u009b\u0094g\u00b1\u00b1\u0089\u00cfsg\u00b7\u0089\u00a0\u009bh\u00a1\u008b\u008f\u00ba\u012f\u00c7\u00d6\u008f\u00c8\u00a1\u008f\u00cc\u00c5\u00ba\u00cc\u00a1\u00d2\u00a1\u00ba\u00b5\u00d2y\u00cc\u00ac\u0122\u00a1\u008b\u00e7\u00e8\u00a1\u00cc\u0122\u00e1\u00a1\u008b\u008f\u00ba:\u00aa\u00b7\u0089sg\u0094\u010e\u00d0\u00a0\u00c5 \u0157\u00ff\u00f7\u00f9\u010a\u00ff\u00f8\u00fd\u012f\u00c5\u00ba\u00cc\u00a1\u00d2\u00a1\u00ba\u00b5\u00cc \u0157\u00f9\u010a\u00f7\u00fb\u00ff\u012f\u00c5\u00ba\u00cc\u00a1\u00d2\u00a1\u00ba\u00b5\u00cc\u00a1\u00b5\u00c5\u00d6\u00d2\u012f\u009b\u008fy\u00d2\u00d6\u00c8\u008f\u00cc\u00e7\u00e8\u00d6\u008b\u00a1\u00ba\u012f\u00c7\u00d6\u008f\u00c8\u00a1\u008f\u00cc4\u00bb\u0094\u00b7\u0089\u00fd\u00b7g\u00b1\u0092s\u0094g\u00b1\u00b1\u0089\u00cfsg\u00b7\u0089\u00a0\u009b\u00d2\u00a1\u00cc\u0122y\u00d6\u008b\u00a1\u00baK\u00b7g\u00ad\u00adg\u0084\u00b7\u010e## \u0157\u00f8\u00f8\u010a\u00fb\u00f7\u00ff\u012f\u00c5\u00ba\u00cc\u00a1\u00d2\u00a1\u00ba\u00b5\u00cc\u008f\u00b4\u0085\u008f\u008b\u008b\u00a1\u00b5\u009c\u00d2y\u00cc\u00ac\u0122\u00a1\u008b5y\u0085\u008f\u00ae\u012f\u00c7\u00d6\u008f\u00c8\u00e8 \u0157\u00f8\u010a\u0100\u00f9\u00f7\u012f\u00c5\u00ba\u00cc\u00a1\u00d2\u00a1\u00ba\u00b5\u00cc\u00a1\u00cc\u0122\u00aey\u0085\u008f\u00ae \u0157\u00fc\u00f8\u00f9\u012f \u0157\u00ff\u012f\u008f\u00b5\u00d2\u00a1\u00d2\u00a1\u008f\u00cc\u00d2y\u00cc\u00ac\u00cc3.2DECODING THE LATENT REPRESENTATION WITH A QUERY ARRAYOur goal is to produce a \ufb01nal output array of size O \u00d7 E, given a latent representation of size N \u00d7 D.We produce an output of this size by querying the decoder with an array of index dimension O.",
+      "token_count": 556
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0017",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "Tocapture the structure of the output space, we use queries containing the appropriate information foreach output point, e.g. its spatial position or its modality.We construct queries by combining (concatenating or adding) a set of vectors into a query vectorcontaining all of the information relevant for one of the O desired outputs. This process is analogousto the way that positional information is used to query implicit functions like NeRF (Mildenhall et al.,2020). We illustrate the query structure for the tasks we consider here in Fig. 3. For tasks with simpleoutputs, such as classi\ufb01cation, these queries can be reused for every example and can be learnedfrom scratch. For outputs with a spatial or sequence structure, we include a position encoding (e.g. alearned positional encoding or a Fourier feature) representing the position to be decoded in the output.For outputs with a multi-task or multimodal structure, we learn a single query for each task or foreach modality: this information allows the network to distinguish one task or modality query fromthe others, much as positional encodings allow attention to distnguish one position from another.",
+      "token_count": 237
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0018",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "Forother tasks, the output should re\ufb02ect the content of the input at the query location: for instance, for\ufb02ow we \ufb01nd it helpful to include the input feature at the point being queried, and for StarCraft II weuse the unit information to associate the model\u2019s output with the corresponding unit. We \ufb01nd thateven very simple query features can produce good results, suggesting that the latent attention processis able to learn to organize the relevant information in a way that\u2019s easy to query.Each output point depends only on its query and the latent array, allowing us to decode outputs inparallel. This property allows us to amortize model training on datasets of very large output size. Forexample, Kinetics consists of labels, video voxels, and audio samples which together come to over800,000 points (Tab. 5), which is prohibitively expensive to decode at once, even with linear scaling.Instead, we subsample the output array at training time and compute the loss on an affordable subsetof points.",
+      "token_count": 214
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0019",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "At test time, we generate outputs in batches to produce the full output array.4EXPERIMENTSTo probe the generality of Perceiver IO, we evaluate it on several domains including language under-standing (Wikipedia+C4 masked language modeling), visual understanding (Sintel/KITTI optical\ufb02ow and ImageNet classi\ufb01cation), multi-modal (Kinetics autoencoding and AudioSet classi\ufb01ca-tion) & multi-task settings (multi-task GLUE), and symbolic representations for games (StarCraftII).",
+      "token_count": 110
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0020",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "All experiments were conducted using JAX (Bradbury et al., 2018) and the DeepMind JAXecosystem (Babuschkin et al., 2020).Published as a conference paper at ICLR 2022ModelTokenizationMNDepthParamsFLOPsSPSAvg.BERT Base (test)SentencePiece51251212110M109B-81.0BERT Base (ours)SentencePiece51251212110M109B7.381.1Perceiver IO BaseSentencePiece51225626223M119B7.481.2BERT (matching FLOPs)UTF-8 bytes20482048620M130B2.971.5Perceiver IOUTF-8 bytes204825626201M113B7.681.0Perceiver IO++UTF-8 bytes204825640425M241B4.281.84.1LANGUAGEWe \ufb01rst compare Perceiver IO to standard Transformers for language. Although Transformers wereoriginally developed for language, their quadratic complexity makes them dif\ufb01cult to use on languageinputs without tokenization, which typically shortens the length of input sequences by a factor of\u223c4. But unlike Transformer-based models such as BERT (Devlin et al., 2019) or XLNet (Yanget al., 2019), Perceiver IO scales linearly with input length.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0021",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "But unlike Transformer-based models such as BERT (Devlin et al., 2019) or XLNet (Yanget al., 2019), Perceiver IO scales linearly with input length. Our experiments focus on showing thatPerceiver IO performs as well as or better than Transformers for masked language modeling (MLM)while removing tokenization (which is hard to maintain, introduces engineering overhead, and addsneedless complexity to language models (Bostrom & Durrett, 2020; Clark et al., 2022)).We compare results for a given FLOPs budget rather than a given parameter budget as the former growsquadratically with sequence length but the latter is independent (except for positional encodings).From a practioner\u2019s perspective, FLOPs matter more than parameters since FLOPs directly relate totraining time. We evaluate the quality of the learned representation on the GLUE benchmark (Wanget al., 2019) and report our results in Tab. 1. We \ufb01nd that at a given FLOPs budget, Perceiver IOtrained without tokenization matches the performance of a strong Transformer-based model trainedwith SentencePiece tokenization (Sennrich et al., 2016; Kudo & Richardson, 2018).Pretraining.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0022",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "We pretrain on the Masked Language Modeling (MLM) task proposed in Devlin et al.(2019) using a large text corpus obtained by combining English Wikipedia and C4 (Raffel et al.,2020). For both the SentencePiece and the byte-level models, we mask 15% of the words, wherea word is de\ufb01ned as a space-delimited sequence of characters. As a token contains many bytes onaverage, we need to increase the sequence length to input a similar amount of text: we use inputsequence lengths of 512 SentencePiece tokens or 2048 UTF-8 bytes. For the SentencePiece modelswe use a vocabulary size of 32, 000 following Devlin et al. (2019). For the byte-level models, thevocabulary size is much smaller: 256 bytes and 4 special tokens ([PAD], [MASK], [CLS], [SEP]).Perceiver IO produces one output vector per masked input by using learnable position-dependentvectors to query the output of the \ufb01nal latent processing layer. We then apply a position-wise linearlayer on top of these output vectors and train the model using a softmax cross-entropy loss to predictthe original non-masked input as target. The full details of the architecture are given in Sec. F.2. SeeAppendix Fig. 7 for analysis and visualization of the learnt features.Finetuning.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0023",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "The full details of the architecture are given in Sec. F.2. SeeAppendix Fig. 7 for analysis and visualization of the learnt features.Finetuning. We \ufb01netune Perceiver IO on the GLUE Benchmark Wang et al. (2019), reporting thebest performance on the dev set for a \ufb01xed size sweep of \ufb01netuning hyperparameters. Individual taskresults and hyperparameters are given in Sec. F.4.Perceiver IO on SentencePiece tokens. We \ufb01rst observe that Perceiver IO applied on SentencePiecetokenized input sequences slightly outperforms a strong BERT baseline applied on the same inputs(81.2 vs 81.1). As a result of the reduced latent size of 256 we can train a much deeper network with26 processing layers compared to BERT Base (12 layers) while maintaining a similar FLOPs budget.Perceiver IO on UTF-8 bytes. Next, we show that we can leverage Perceiver IO to run on muchlonger sequences than a regular Transformer. Rather than using a \ufb01xed, handcrafted vocabulary, ourmodel works directly with the raw byte inputs: we simply feed in and predict the UTF-8 bytes of theinput string.",
+      "token_count": 252
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0024",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "Rather than using a \ufb01xed, handcrafted vocabulary, ourmodel works directly with the raw byte inputs: we simply feed in and predict the UTF-8 bytes of theinput string. Perceiver IO signi\ufb01cantly outperforms a byte-level BERT baseline at the same FLOPsPublished as a conference paper at ICLR 2022budget, demonstrating the real advantage of Perceiver IO architecture for language.1 Remarkably, thebytes Perceiver IO is on par with BERT running on SentencePiece tokens, showing that Perceiver IOis also competitive against strong baselines relying on handcrafted tokenizers. The performance ofPerceiver IO on bytes scales well with more FLOPs where we obtain 81.8 on the GLUE benchmark.The byte-level Perceiver IO shares some similarities with the concurrent CANINE work (Clarket al., 2022). While Clark et al. (2022) rely on a relatively sophisticated pipeline that maps Unicodecodepoints to hash embeddings (Svenstrup et al., 2017), we embed raw UTF-8 bytes directly. Clarket al. (2022) also uses a bottleneck architecture to scale to longer text inputs, but their upsamplingstrategy differs from ours: they concatenate raw inputs with their aligned downsampled latentrepresentation, apply a 1D convolution and then run a shallow transformer stack on the resultingupsampled sequence.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0025",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "Their approach scales quadratically with respect to the original input lengthwhile Perceiver IO\u2019s decoder scales linearly with respect to the target output size. Our work scales tobyte-level inputs without making any assumptions about the structure of the input, which allows it tobe used beyond language as shown in the following sections.MultitaskPerceiverIO.WeusemultitaskqueriesasdescribedinSec.3.2to \ufb01netune on all 8 GLUE tasks simultaneously using the UTF-8 byte model (results in Tab. 2). We compare to results fromthe single task regime where the model is trained independentlyon each task. We also compare to an approach analogous toBERT\u2019s [CLS] token that prepends a special token to theinput and uses the position corresponding to this token to querythe task logits. We do this either by sharing a single tokenamong tasks (Shared input token) or using task-speci\ufb01c tokens(Task-speci\ufb01c input token). In both cases, we use a 2-layertask-speci\ufb01c MLP head to generate output logits for each task.We observe that our multitask approach outperforms single-taskapproaches and matches the approach that uses 8 task-speci\ufb01cinput tokens. Our approach is more generic as it decouples theoutput array from the input array by not relying on[CLS] tokens.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0026",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "Our approach is more generic as it decouples theoutput array from the input array by not relying on[CLS] tokens. This is especially appealing whenthe tasks are many or inhomogeneous, as we show in Sec. 4.3.MethodAvg.Single-task query81.0MultitaskShared input token81.5Task-speci\ufb01c input tokens81.8Multitask query81.84.2OPTICAL FLOWOptical \ufb02ow is a decades-old open problem in computer vision (Lucas & Kanade, 1981; Horn &Schunck, 1981). Given two images of the same scene (e.g. two consecutive frames of a video), thetask is to estimate the 2D displacement for each pixel in the \ufb01rst image. This has many broaderapplications, such as navigation and visual odometry in robots (Campbell et al., 2004), estimationof 3D geometry (Ranftl et al., 2020), and even to aid transfer of more complex, learned inferencesuch as 3D human pose estimation from synthetic to real images (Doersch & Zisserman, 2019).Optical \ufb02ow is challenging for neural networks for two reasons.",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0027",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "First, optical \ufb02ow relies on \ufb01ndingcorrespondence: a single frame provides no information about \ufb02ow, and images with extremelydifferent appearance can produce the same \ufb02ow. Second, \ufb02ow is extremely dif\ufb01cult to annotate, andthe few datasets with realistic images and high-quality ground truth are small and biased. While it isstraightforward to generate large synthetic datasets as training data, e.g. AutoFlow (Sun et al., 2021),there is still a large domain gap.Algorithms for optical \ufb02ow thus must learn to accomplish several steps in a way that transfers fromsynthetic to real data. First, the algorithm must \ufb01nd correspondence between points. Then it mustcompute their relative offsets. Finally it must propagate \ufb02ow across large regions of space, includingto parts of the image which have no texture for correspondence. To generalize to real data, the learnedprocedure needs to work for objects and textures that weren\u2019t seen in the training data.These dif\ufb01culties have led \ufb02ow researchers to develop some of the most involved architectures inthe computer vision literature. State of the art algorithms, such as PWCNet (Sun et al., 2018),RAFT (Teed & Deng, 2020) or GMA (Jiang et al., 2021), use explicit machinery to ensure eachof these steps is performed correctly even on out-of-domain data.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0028",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "Expensive global correlation1Despite its greater depth, Perceiver IO is also faster than the Transformer-based BERT baselines in realwall-clock terms \u2013 by over a factor of 2 for the byte-based models \u2013 as shown in Tab. 1.viiPublished as a conference paper at ICLR 2022volumes explicitly compare features within a spatiotemporal neighborhood across images to \ufb01ndcorrespondences. Flows are computed iteratively and hierarchically in 2D space using explicit lookupoperators to verify correctness, leading to slow performance on TPUs (Jouppi et al., 2017).Perceiver IO on FlowIn contrast, we apply Perceiver IO to \ufb02ow in a straightforward manner. Weconcatenate the frames along the channel dimension and extract a 3 \u00d7 3 patch around each pixel(leading to 3\u00d73\u00d73\u00d72 = 54 values for each pixel). We concatenate a \ufb01xed position encoding to thesefeatures and then apply Perceiver IO. To decode, we query the latent representation using the inputencoding. See Sec. H for training details and results with various forms of pre- and post-processing,which typically perform similarly. We also test a version with convolutional downsampling andRAFT-style upsampling, which performs only slightly worse while improving computation time.It may seem counter-intuitive to append the images along the channel dimension, as large motionsmight result in pixels on entirely different objects being concatenated.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0029",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "However, this kind of operationisn\u2019t unprecedented: one of the earliest optical \ufb02ow algorithms, Lucas-Kanade (Lucas & Kanade,1981), makes explicit use of the temporal image gradient, which is approximated by the differencein intensities at a given pixel across two frames. The algorithm uses the fact that the temporalgradient of the image approximates the spatial gradient times the spatial velocity, if lighting effectsare ignored. The approximation is even better for image regions with very little texture. Such regionsare challenging for algorithms that attempt to \ufb01nd explicit correspondence in feature space, especiallyif feature encoding involves any normalization operations, which may destroy intensity information.ResultsTab. 3 shows our results, follow-ing the standard protocol for training onAutoFlow (Sun et al., 2021). We compareto PWCNet and RAFT baselines trained bythe AutoFlow authors. On Sintel (Butleret al., 2012), our results are slightly betterthan RAFT on Sintel and outperform PWC-Net on KITTI (Menze & Geiger, 2015). Asfar as we are aware, this result is state of theart on Sintel.\ufb01nal (GMA Jiang et al. (2021)produces slightly better numbers on the somewhat easier Sintel.clean evaluation set using differenttraining data).",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0030",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "This is surprising considering how different our architecture is from PWCNet andRAFT and how little tuning for \ufb02ow Perceiver IO required. We use no cost volumes or explicitwarping, our model is not explicitly hierarchical, and the latent representation doesn\u2019t even maintainthe 2D layout of the inputs. Also note that we reuse RAFT\u2019s AutoFlow augmentation parameters,which were tuned speci\ufb01cally for RAFT using population-based training (Sun et al., 2021). As shownin Appendix Fig. 8, qualitatively Perceiver IO is good at following object boundaries, and can easilypropagate motion across image regions with little texture.NetworkSintel.cleanSintel.\ufb01nalKITTIPWCNet (Sun et al., 2018)2.172.915.76RAFT (Teed & Deng, 2020)1.952.574.23Perceiver IO1.812.424.984.3MULTIMODAL AUTOENCODINGWe explore using Perceiver IO for audio-video-label multimodal autoencoding on the Kinetics-700-2020 dataset (Smaira et al., 2020). The goal of multimodal autoencoding is to learn a modelthat can accurately reconstruct multimodal inputs in the the presence of a bottleneck induced byan architecture.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0031",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "The goal of multimodal autoencoding is to learn a modelthat can accurately reconstruct multimodal inputs in the the presence of a bottleneck induced byan architecture. This problem has been previously studied using techniques such as RestrictedBoltzmann Machines (Ngiam et al., 2011), but on much more stereotyped and smaller scale data.Kinetics-700-2020 has video, audio, and class labels. We wish to train a model to reconstruct allmodalities simultaneously. With traditional autoencoding models like convolutional encoder-decoders,it is not obvious how to combine these modalities, because each uses data of different dimensions \u20133D (video), 1D (raw audio), and 0D (class labels) \u2013 and with wildly different numbers of elements.With Perceiver IO, we pad the inputs with modality-speci\ufb01c embeddings, serialize them into a single2D input array and query outputs using queries containing position encodings (for video and audio)and modality embeddings.We train on 16 frames at 224 \u00d7 224 resolution, preprocessed into 50k 4x4 patches as well as 30k rawaudio samples, producing a total of 1920 16-d vectors and one 700-d one-hot class label. We decodedirectly into pixels, raw audio, and the one-hot label without any post-processing.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0032",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "We decodedirectly into pixels, raw audio, and the one-hot label without any post-processing. To prevent theviiiPublished as a conference paper at ICLR 2022model from encoding the label directly into one of the latent variables, we mask the class label 50%of the time in training. Due to the scale of inputs and outputs in this task we subsample decodingin training, while fully decoding in testing: we sampled 512 audio samples and 512 pixels and theclass label for every training example. This allows us to directly decode to a video-sized array, whichwould otherwise be infeasible given memory constraints. We used a latent array with 512 channelsand 784, 392, and 196 latents, resulting in compression ratios of 88x, 176x, and 352x respectively.We show results in Tab. 4 and reconstructions inFig. 4. By masking the classi\ufb01cation label duringevaluation, our autoencoding model becomes a Kinet-ics 700 classi\ufb01er. Latent variables are shared acrossmodalities, so the quality of reconstructions for eachmodality is sensitive to the weight of its loss termand other training hyperparameters.",
+      "token_count": 250
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0033",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "Latent variables are shared acrossmodalities, so the quality of reconstructions for eachmodality is sensitive to the weight of its loss termand other training hyperparameters. Tab. 4 showsone tradeoff, where we emphasized video and au-dio PSNR at the expense of classi\ufb01cation accuracy.By putting stronger weight on the class loss, we canreach 45% top-1 accuracy while maintaining 20.7 PSNR for video (Sec. I). This strongly suggeststhat Perceiver IO can jointly represent modalities with very different properties.CompressionAudioVideoTop-1RatioPSNRPSNRAccuracy88x26.9724.3710.2%176x25.3324.278.6%352x14.1523.2111.5%4.4IMAGENET, STARCRAFT II, AND AUDIOSETPlease read the Appendix for results on ImageNet (Sec. A), StarCraft II (Sec. B), and AudioSet(Sec. C). We have omitted these results from the main paper to make the exposition as clear as possiblewithin 9 pages (the ICLR camera ready page limit).",
+      "token_count": 241
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0034",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "A), StarCraft II (Sec. B), and AudioSet(Sec. C). We have omitted these results from the main paper to make the exposition as clear as possiblewithin 9 pages (the ICLR camera ready page limit). As highlights of these experiments: (1) onImageNet, Perceiver IO surpasses 80% top-1 accuracy (84.5% top-1) without using 2D convolutionsafter pretraining on JFT. (2) When used to replace AlphaStar\u2019s entity Transformer, Perceiver IOobtains a \u223c3.5\u00d7 reduction in FLOPs while preserving StarCraft II 87 % win rate and parametercount, after only 3 experimental runs. (3) On AudioSet, Perceiver IO consistently outperforms theoriginal Perceiver when using the same training protocol on multimodal video + audio classi\ufb01cation.The Appendix includes additional details of the experimental domains included in the main paper.5CONCLUSIONIn this work we introduce Perceiver IO, an architecture capable of handling general purpose inputsand outputs while scaling linearly in both input and output sizes. As we show, this architectureachieves good results in a wide variety of settings, making it a promising candidate for a generalpurpose neural network architecture. Perceiver IO leverages the expressive power of latent attentionand uses learned queries to expose a simple and uni\ufb01ed interface that can handle multimodal andmultitask settings.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0035",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "Perceiver IO leverages the expressive power of latent attentionand uses learned queries to expose a simple and uni\ufb01ed interface that can handle multimodal andmultitask settings. Overall, Perceiver IO offers a promising way to simplify the construction ofsophisticated neural pipelines and facilitate progress on multimodal and multiask problems.ACKNOWLEDGMENTSWe are grateful to Ankush Gupta and Adri\u00e0 Recasens Continente for reviewing drafts of this paperand to Deqing Sun for sharing code and helpful advice on the optical \ufb02ow experiments.Published as a conference paper at ICLR 2022REFERENCESJosh Abramson, Arun Ahuja, Arthur Brussee, Federico Carnevale, Mary Cassin, Stephen Clark,Andrew Dudzik, Petko Georgiev, Aurelia Guy, Tim Harley, Felix Hill, Alden Hung, ZacharyKenton, Jessica Landon, Timothy Lillicrap, Kory Mathewson, Alistair Muldal, Adam Santoro,Nikolay Savinov, Vikrant Varma, Greg Wayne, Nathaniel Wong, Chen Yan, and Rui Zhu. Imitatinginteractive intelligence. arXiv preprint arXiv:2012.05672, 2020.Hassan Akbari, Linagzhe Yuan, Rui Qian, Wei-Hong Chuang, Shih-Fu Chang, Yin Cui, and BoqingGong.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0036",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "VATT: Transformers for multimodal self-supervised learning from raw video, audio andtext. In Proceedings of Neural Information Processing Systems (NeurIPS), 2021.Jean-Baptiste Alayrac, Adri\u00e0 Recasens, Rosalia Schneider, Relja Arandjelovi\u00b4c, Jason Ramapuram,Jeffrey De Fauw, Lucas Smaira, Sander Dieleman, and Andrew Zisserman. Self-supervised multi-modal versatile networks. In Proceedings of Neural Information Processing Systems (NeurIPS),2020.Igor Babuschkin, Kate Baumli, Alison Bell, Surya Bhupatiraju, Jake Bruce, Peter Buchlovsky, DavidBudden, Trevor Cai, Aidan Clark, Ivo Danihelka, Claudio Fantacci, Jonathan Godwin, Chris Jones,Tom Hennigan, Matteo Hessel, Steven Kapturowski, Thomas Keck, Iurii Kemaev, Michael King,Lena Martens, Vladimir Mikulik, Tamara Norman, John Quan, George Papamakarios, Roman Ring,Francisco Ruiz, Alvaro Sanchez, Rosalia Schneider, Eren Sezener, Stephen Spencer, SrivatsanSrinivasan, Wojciech Stokowiec, and Fabio Viola. The DeepMind JAX Ecosystem, 2020.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0037",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "The DeepMind JAX Ecosystem, 2020. URLhttp://github.com/deepmind.Iz Beltagy, Matthew E. Peters, and Arman Cohan. Longformer: The long-document Transformer.arXiv preprint arXiv:2004.05150, 2020.Kaj Bostrom and Greg Durrett. Byte pair encoding is suboptimal for language model pretraining. InProceedings of the Annual Conference on Empirical Methods in Natural Language Processing(EMNLP), 2020.James Bradbury, Roy Frostig, Peter Hawkins, Matthew James Johnson, Chris Leary, DougalMaclaurin, George Necula, Adam Paszke, Jake VanderPlas, Skye Wanderman-Milne, andQiao Zhang.JAX: composable transformations of Python+NumPy programs, 2018.URLhttp://github.com/google/jax.Andrew Brock, Soham De, Samuel L Smith, and Karen Simonyan. High-performance large-scaleimage recognition without normalization.",
+      "token_count": 212
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0038",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "High-performance large-scaleimage recognition without normalization. In Proceedings of International Conference on MachineLearning (ICML), 2021.Tom B Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan, Prafulla Dhariwal,Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, Sandhini Agarwal, ArielHerbert-Voss, Gretchen Krueger, Tom Henighan, Rewon Child, Aditya Ramesh, Daniel M. Ziegler,Jeffrey Wu, Clemens Winter, Christopher Hesse, Mark Chen, Eric Sigler, Mateusz Litwin, ScottGray, Benjamin Chess, Jack Clark, Christopher Berner, Sam McCandlish, Alec Radford, IlyaSutskever, and Dario Amodei. Language models are few-shot learners. In Proceedings of NeuralInformation Processing Systems (NeurIPS), 2020.Daniel J. Butler, Jonas Wulff, Garrett B. Stanley, and Michael J. Black. A naturalistic open sourcemovie for optical \ufb02ow evaluation. In Proceedings of European Conference on Computer Vision(ECCV), 2012.J. Campbell, R. Sukthankar, and I. Nourbakhsh. Techniques for evaluating optical \ufb02ow for visualodometry in extreme terrain.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0039",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Campbell, R. Sukthankar, and I. Nourbakhsh. Techniques for evaluating optical \ufb02ow for visualodometry in extreme terrain. In Proceedings of IEEE/RSJ International Conference on IntelligentRobots and Systems (IROS), 2004.Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Kirillov, andSergey Zagoruyko. End-to-end object detection with Transformers. In Proceedings of EuropeanConference on Computer Vision (ECCV), 2020.Mark Chen, Alec Radford, Rewon Child, Jeffrey Wu, Heewoo Jun, David Luan, and Ilya Sutskever.Generative pretraining from pixels. In Proceedings of International Conference on MachineLearning (ICML), 2020.Published as a conference paper at ICLR 2022Jonathan H. Clark, Dan Garrette, Iulia Turc, and John Wieting. CANINE: pre-training an ef\ufb01-cient tokenization-free encoder for language representation. Transactions of the Association forComputational Linguistics, 10:73\u201391, 2022.Ronan Collobert and Jason Weston. A uni\ufb01ed architecture for natural language processing: Deepneural networks with multitask learning.",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0040",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "Transactions of the Association forComputational Linguistics, 10:73\u201391, 2022.Ronan Collobert and Jason Weston. A uni\ufb01ed architecture for natural language processing: Deepneural networks with multitask learning. In Proceedings of International Conference on MachineLearning (ICML), 2008.Ronan Collobert, Jason Weston, L\u00e9on Bottou, Michael Karlen, Koray Kavukcuoglu, and Pavel Kuksa.Natural language processing (almost) from scratch. Journal of Machine Learning Research, 2011.Ekin D. Cubuk, Barret Zoph, Jonathon Shlens, and Quoc V. Le. RandAugment: Practical automateddata augmentation with a reduced search space. In Proceedings of IEEE Conference on ComputerVision and Pattern Recognition Workshops (CVPRW), 2020.Zihang Dai, Zhilin Yang, Yiming Yang, Jaime Carbonell, Quoc V. Le, and Ruslan Salakhutdinov.Transformer-XL: Attentive language models beyond a \ufb01xed-length context. In Proceedings of theAnnual Meetings of the Association for Computational Linguistics (ACL), 2019.Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li, and Li Fei-Fei. ImageNet: A large-scalehierarchical image database.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0041",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "ImageNet: A large-scalehierarchical image database. In Proceedings of IEEE Conference on Computer Vision and PatternRecognition (CVPR), 2009.Karan Desai and Justin Johnson. VirTex: Learning Visual Representations from Textual Annotations.In Proceedings of IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2021.Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deepbidirectional Transformers for language understanding. In Proceedings of the Annual Conferenceof the North American Chapter of the Association for Computational Linguistics (NAACL-HLT),2019.Carl Doersch and Andrew Zisserman. Multi-task self-supervised visual learning. In Proceedings ofIEEE International Conference on Computer Vision (ICCV), 2017.Carl Doersch and Andrew Zisserman. Sim2real transfer learning for 3D human pose estimation:motion to the rescue. Proceedings of Neural Information Processing Systems (NeurIPS), 2019.Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, ThomasUnterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, et al. An imageis worth 16x16 words: Transformers for image recognition at scale.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0042",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "An imageis worth 16x16 words: Transformers for image recognition at scale. In Proceedings of InternationalConference on Learning Representations (ICLR), 2021.Clement Farabet, Camille Couprie, Laurent Najman, and Yann LeCun. Learning hierarchical featuresfor scene labeling. IEEE Transactions on Pattern Analysis and Machine Intelligence, 2012.Philipp Fischer, Alexey Dosovitskiy, Eddy Ilg, Philip H\u00e4usser, Caner Haz\u0131rba\u00b8s, Vladimir Golkov,Patrick van der Smagt, Daniel Cremers, and Thomas Brox. FlowNet: Learning optical \ufb02ow withconvolutional networks. In Proceedings of IEEE International Conference on Computer Vision(ICCV), 2015.Jort F Gemmeke, Daniel PW Ellis, Dylan Freedman, Aren Jansen, Wade Lawrence, R ChanningMoore, Manoj Plakal, and Marvin Ritter. Audio Set: An ontology and human-labeled datasetfor audio events. In IEEE International Conference on Acoustics, Speech and Signal Processing(ICASSP), 2017.Anirudh Goyal, Aniket Didolkar, Alex Lamb, Kartikeya Badola, Nan Rosemary Ke, Nasim Rahaman,Jonathan Binas, Charles Blundell, Michael Mozer, and Yoshua Bengio. Coordination amongneural modules through a shared global workspace.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0043",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "Coordination amongneural modules through a shared global workspace. In Proceedings of International Conference onLearning Representations (ICLR), 2022.Alex Graves. Generating sequences with recurrent neural networks. arXiv preprint arXiv:1308.0850,2013.Published as a conference paper at ICLR 2022Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for imagerecognition. In Proceedings of IEEE Conference on Computer Vision and Pattern Recognition(CVPR), 2016.Kaiming He, Georgia Gkioxari, Piotr Doll\u00e1r, and Ross Girshick. Mask R-CNN. In Proceedings ofIEEE International Conference on Computer Vision (ICCV), 2017.Dan Hendrycks and Kevin Gimpel.Gaussian error linear units (GELUs).arXiv preprintarXiv:1606.08415, 2016.Geoffrey E Hinton and Richard S Zemel. Autoencoders, minimum description length, and Helmholtzfree energy. In Proceedings of Neural Information Processing Systems (NeurIPS), 1994.Berthold KP Horn and Brian G Schunck. Determining optical \ufb02ow. Arti\ufb01cial Intelligence, 1981.Drew A. Hudson and C. Lawrence Zitnick. Generative adversarial Transformers.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0044",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "Determining optical \ufb02ow. Arti\ufb01cial Intelligence, 1981.Drew A. Hudson and C. Lawrence Zitnick. Generative adversarial Transformers. In Proceedings ofInternational Conference on Machine Learning (ICML), 2021.Andrew Jaegle, Felix Gimeno, Andrew Brock, Andrew Zisserman, Oriol Vinyals, and Jo\u00e3o Carreira.Perceiver: General perception with iterative attention. In Proceedings of International Conferenceon Machine Learning (ICML), 2021.Shihao Jiang, Dylan Campbell, Yao Lu, Hongdong Li, and Richard Hartley. Learning to estimatehidden motions with global motion aggregation. In Proceedings of IEEE International Conferenceon Computer Vision (ICCV), 2021.Norman P Jouppi, Cliff Young, Nishant Patil, David Patterson, Gaurav Agrawal, Raminder Bajwa,Sarah Bates, Suresh Bhatia, Nan Boden, Al Borchers, et al. In-datacenter performance analysis of aTensor Processing Unit. In Proceedings of the 44th Annual International Symposium on ComputerArchitecture, 2017.Lukasz Kaiser, Aidan N Gomez, Noam Shazeer, Ashish Vaswani, Niki Parmar, Llion Jones, andJakob Uszkoreit.",
+      "token_count": 273
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0045",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "One model to learn them all. arXiv preprint arXiv:1706.05137, 2017.Jared Kaplan, Sam McCandlish, Tom Henighan, Tom B. Brown, Benjamin Chess, Rewon Child,Scott Gray, Alec Radford, Jeffrey Wu, and Dario Amodei. Scaling laws for neural language models.arXiv preprint arXiv:2001.08361, 2020.Iasonas Kokkinos. Ubernet: Training a universal convolutional neural network for low-, mid-, andhigh-level vision using diverse datasets and limited memory. In Proceedings of IEEE Conferenceon Computer Vision and Pattern Recognition (CVPR), 2017.Alex Krizhevsky, Ilya Sutskever, and Geoffrey E Hinton. ImageNet classi\ufb01cation with deep con-volutional neural networks. Proceedings of Neural Information Processing Systems (NeurIPS),2012.Taku Kudo and John Richardson. SentencePiece: A simple and language independent subwordtokenizer and detokenizer for neural text processing. In Proceedings of the Annual Meetings of theAssociation for Computational Linguistics (ACL), 2018.Juho Lee, Yoonho Lee, Jungtaek Kim, Adam Kosiorek, Seungjin Choi, and Yee Whye Teh. Set Trans-former: A framework for attention-based permutation-invariant neural networks.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0046",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "Set Trans-former: A framework for attention-based permutation-invariant neural networks. In Proceedingsof International Conference on Machine Learning (ICML), 2019.Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer Levy, Mike Lewis,Luke Zettlemoyer, and Veselin Stoyanov. RoBERTa: A robustly optimized BERT pretrainingapproach. arXiv preprint arXiv:1907.11692, 2019.Francesco Locatello, Dirk Weissenborn, Thomas Unterthiner, Aravindh Mahendran, Georg Heigold,Jakob Uszkoreit, Alexey Dosovitskiy, and Thomas Kipf. Object-centric learning with slot attention.In Proceedings of Neural Information Processing Systems (NeurIPS), 2020.Jonathan Long, Evan Shelhamer, and Trevor Darrell. Fully convolutional networks for semanticsegmentation. In Proceedings of IEEE Conference on Computer Vision and Pattern Recognition(CVPR), 2015.xiiPublished as a conference paper at ICLR 2022Ilya Loshchilov and Frank Hutter. SGDR: Stochastic gradient descent with warm restarts.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0047",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "SGDR: Stochastic gradient descent with warm restarts. InProceedings of International Conference on Learning Representations (ICLR), 2017.Kevin Lu, Aditya Grover, Pieter Abbeel, and Igor Mordatch. Pretrained Transformers as universalcomputation engines. arXiv preprint arXiv:2103.05247, 2021.Bruce D Lucas and Takeo Kanade. An iterative image registration technique with an application tostereo vision. In Proceedings of International Joint Conference on Arti\ufb01cial Intelligence (IJCAI),1981.Minh-Thang Luong, Quoc V Le, Ilya Sutskever, Oriol Vinyals, and Lukasz Kaiser. Multi-tasksequence to sequence learning. In Proceedings of International Conference on Learning Represen-tations (ICLR), 2016.Xuezhe Ma, Xiang Kong, Sinong Wang, Chunting Zhou, Jonathan May, Hao Ma, and Luke Zettle-moyer. LUNA: Linear uni\ufb01ed nested attention. In Proceedings of Neural Information ProcessingSystems (NeurIPS), 2021.Moritz Menze and Andreas Geiger. Object scene \ufb02ow for autonomous vehicles.",
+      "token_count": 255
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0048",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "LUNA: Linear uni\ufb01ed nested attention. In Proceedings of Neural Information ProcessingSystems (NeurIPS), 2021.Moritz Menze and Andreas Geiger. Object scene \ufb02ow for autonomous vehicles. In Proceedings ofIEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2015.Antoine Miech, Jean-Baptiste Alayrac, Ivan Laptev, Josef Sivic, and Andrew Zisserman. Thinking fastand slow: Ef\ufb01cient text-to-visual retrieval with Transformers. In Proceedings of IEEE Conferenceon Computer Vision and Pattern Recognition (CVPR), 2021.Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg Corrado, and Jeffrey Dean. Distributed represen-tations of words and phrases and their compositionality. In Proceedings of Neural InformationProcessing Systems (NeurIPS), 2013.Ben Mildenhall, Pratul P. Srinivasan, Matthew Tancik, Jonathan T. Barron, Ravi Ramamoorth, andRen Ng. NeRF: Representing scenes as neural radiance \ufb01elds for view synthesis. In Proceedingsof European Conference on Computer Vision (ECCV), 2020.Ishan Misra, Abhinav Shrivastava, Abhinav Gupta, and Martial Hebert. Cross-stitch networksfor multi-task learning.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0049",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "In Proceedingsof European Conference on Computer Vision (ECCV), 2020.Ishan Misra, Abhinav Shrivastava, Abhinav Gupta, and Martial Hebert. Cross-stitch networksfor multi-task learning. In Proceedings of IEEE Conference on Computer Vision and PatternRecognition (CVPR), 2016.Alejandro Newell, Kaiyu Yang, and Jia Deng. Stacked hourglass networks for human pose estimation.In Proceedings of European Conference on Computer Vision (ECCV), 2016.Jiquan Ngiam, Aditya Khosla, Mingyu Kim, Juhan Nam, Honglak Lee, and Andrew Y Ng. Multi-modal deep learning. In Proceedings of International Conference on Machine Learning (ICML),2011.Jeffrey Pennington, Richard Socher, and Christopher D Manning. GloVe: Global Vectors for wordrepresentation. In Proceedings of the Annual Conference on Empirical Methods in NaturalLanguage Processing (EMNLP), 2014.Hieu Pham, Zihang Dai, Qizhe Xie, Minh-Thang Luong, and Quoc V. Le. Meta pseudo labels. InProceedings of IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2021.Dean A. Pomerleau. ALVINN: An autonomous land vehicle in a neural network.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0050",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "Le. Meta pseudo labels. InProceedings of IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2021.Dean A. Pomerleau. ALVINN: An autonomous land vehicle in a neural network. In Proceedings ofNeural Information Processing Systems (NeurIPS), 1989.Alec Radford, Jeff Wu, Rewon Child, David Luan, Dario Amodei, and Ilya Sutskever. Languagemodels are unsupervised multitask learners. Technical report, OpenAI, 2019.Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, YanqiZhou, Wei Li, and Peter J. Liu. Exploring the limits of transfer learning with a uni\ufb01ed text-to-textTransformer. Journal of Machine Learning Research, 2020.Aditya Ramesh, Mikhail Pavlov, Gabriel Goh, Scott Gray, Chelsea Voss, Alec Radford, Mark Chen,and Ilya Sutskever. Zero-shot text-to-image generation. In Proceedings of International Conferenceon Machine Learning (ICML), 2021.xiiiPublished as a conference paper at ICLR 2022Rene Ranftl, Katrin Lasinger, David Hafner, Konrad Schindler, and Vladlen Koltun.",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0051",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 51,
+      "section": "preamble",
+      "text": "Towardsrobust monocular depth estimation: Mixing datasets for zero-shot cross-dataset transfer. IEEETransactions on Pattern Analysis and Machine Intelligence, 2020.Olaf Ronneberger, Philipp Fischer, and Thomas Brox. U-Net: Convolutional networks for biomedicalimage segmentation. In International Conference on Medical Image Computing and ComputerAssisted Intervention (MICCAI), 2015.Adam Santoro, Ryan Faulkner, David Raposo, Jack Rae, Mike Chrzanowski, Theophane Weber,Daan Wierstra, Oriol Vinyals, Razvan Pascanu, and Timothy Lillicrap. Relational recurrent neuralnetworks. In Proceedings of Neural Information Processing Systems (NeurIPS), 2018.Rico Sennrich, Barry Haddow, and Alexandra Birch. Neural machine translation of rare wordswith subword units. In Proceedings of the Annual Meetings of the Association for ComputationalLinguistics (ACL), 2016.Pierre Sermanet, David Eigen, Xiang Zhang, Michael Mathieu, Rob Fergus, and Yann LeCun.Overfeat: Integrated recognition, localization and detection using convolutional networks. InProceedings of International Conference on Learning Representations (ICLR), 2014.Lucas Smaira, Jo\u00e3o Carreira, Eric Noland, Ellen Clancy, Amy Wu, and Andrew Zisserman.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0052",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 52,
+      "section": "preamble",
+      "text": "InProceedings of International Conference on Learning Representations (ICLR), 2014.Lucas Smaira, Jo\u00e3o Carreira, Eric Noland, Ellen Clancy, Amy Wu, and Andrew Zisserman. A shortnote on the Kinetics-700-2020 human action dataset. arXiv preprint arXiv:2010.10864, 2020.Kenneth O. Stanley. Compositional pattern producing networks: A novel abstraction of development.Genetic programming and evolvable machines, 8(20):131 \u2013 162, 2007.Chen Sun, Abhinav Shrivastava, Saurabh Singh, and Abhinav Gupta. Revisiting unreasonableeffectiveness of data in deep learning era. In Proceedings of IEEE International Conference onComputer Vision (ICCV), 2017.Deqing Sun, Xiaodong Yang, Ming-Yu Liu, and Jan Kautz. PWC-Net: CNNs for optical \ufb02ow usingpyramid, warping, and cost volume. In Proceedings of IEEE Conference on Computer Vision andPattern Recognition (CVPR), 2018.Deqing Sun, Charles Herrmann, Varun Jampani, Michael Krainin, Forrester Cole, Austin Stone,Rico Jonschkowski, Ramin Zabih, William T Freeman, and Ce Liu. TF-RAFT: A tensor\ufb02owimplementation of RAFT.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0053",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 53,
+      "section": "preamble",
+      "text": "TF-RAFT: A tensor\ufb02owimplementation of RAFT. In ECCV Robust Vision Challenge Workshop, 2020.Deqing Sun, Daniel Vlasic, Charles Herrmann, Varun Jampani, Michael Krainin, Huiwen Chang,Ramin Zabih, William T Freeman, and Ce Liu. AutoFlow: Learning a better training set for optical\ufb02ow. In Proceedings of IEEE Conference on Computer Vision and Pattern Recognition (CVPR),2021.Ilya Sutskever, Oriol Vinyals, and Quoc V Le. Sequence to sequence learning with neural networks.In Proceedings of Neural Information Processing Systems (NeurIPS), 2014.Dan Svenstrup, Jonas Meinertz Hansen, and Ole Winther. Hash embeddings for ef\ufb01cient wordrepresentations. In Proceedings of Neural Information Processing Systems (NeurIPS), 2017.Christian Szegedy, Wei Liu, Yangqing Jia, Pierre Sermanet, Scott Reed, Dragomir Anguelov, Du-mitru Erhan, Vincent Vanhoucke, and Andrew Rabinovich. Going deeper with convolutions. InProceedings of IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2015.Matthew Tancik, Pratul P.",
+      "token_count": 269
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0054",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 54,
+      "section": "preamble",
+      "text": "Going deeper with convolutions. InProceedings of IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2015.Matthew Tancik, Pratul P. Srinivasan, Ben Mildenhall, Sara Fridovich-Keil, Nithin Raghavan, UtkarshSinghal, Ravi Ramamoorthi, Jonathan T. Barron, and Ren Ng. Fourier features let networks learnhigh frequency functions in low dimensional domains. In Proceedings of Neural InformationProcessing Systems (NeurIPS), 2020.Yi Tay, Mostafa Dehghani, Dara Bahri, and Donald Metzler. Ef\ufb01cient Transformers: A survey. arXivpreprint arXiv:2009.06732, 2020.Yi Tay, Dara Bahri, Donald Metzler, Da-Cheng Juan, and Che Zheng Zhe Zhao. Synthesizer:Rethinking self-attention in Transformer models. In Proceedings of International Conference onMachine Learning (ICML), 2021a.xivPublished as a conference paper at ICLR 2022Yi Tay, Mostafa Dehghani, Samira Abnar, Yikang Shen, Dara Bahri, Philip Pham, Jinfeng Rao,Liu Yang, Sebastian Ruder, and Donald Metzler. Long range arena: A benchmark for ef\ufb01cientTransformers.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0055",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 55,
+      "section": "preamble",
+      "text": "Long range arena: A benchmark for ef\ufb01cientTransformers. In Proceedings of International Conference on Learning Representations (ICLR),2021b.Yi Tay, Vinh Q Tran, Sebastian Ruder, Jai Gupta, Hyung Won Chung, Dara Bahri, Zhen Qin,Simon Baumgartner, Cong Yu, and Donald Metzler. Charformer: Fast character Transformers viagradient-based subword tokenization. In Proceedings of International Conference on LearningRepresentations (ICLR), 2022.Zachary Teed and Jia Deng. RAFT: Recurrent All-pairs Field Transforms for optical \ufb02ow. InProceedings of European Conference on Computer Vision (ECCV), 2020.Alexander Toshev and Christian Szegedy. DeepPose: Human pose estimation via deep neuralnetworks. In Proceedings of IEEE Conference on Computer Vision and Pattern Recognition(CVPR), 2014.Hugo Touvron, Matthieu Cord, Matthijs Douze, Francisco Massa, Alexandre Sablayrolles, and Herv\u00e9J\u00e9gou. Training data-ef\ufb01cient image Transformers & distillation through attention. In Proceedingsof International Conference on Machine Learning (ICML), 2021a.Hugo Touvron, Matthieu Cord, Alexandre Sablayrolles, Gabriel Synnaeve, and Herv\u00e9 J\u00e9gou. Goingdeeper with image Transformers.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0056",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 56,
+      "section": "preamble",
+      "text": "Goingdeeper with image Transformers. In Proceedings of IEEE International Conference on ComputerVision (ICCV), 2021b.Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, LukaszKaiser, and Illia Polosukhin. Attention is all you need. In Proceedings of Neural InformationProcessing Systems (NeurIPS), 2017.Oriol Vinyals, Meire Fortunato, and Navdeep Jaitly. Pointer networks. In Proceedings of NeuralInformation Processing Systems (NeurIPS), 2015.Oriol Vinyals, Igor Babuschkin, Wojciech M Czarnecki, Micha\u00ebl Mathieu, Andrew Dudzik, JunyoungChung, David H Choi, Richard Powell, Timo Ewalds, Petko Georgiev, Junhyuk Oh, Dan Horgan,Manuel Kroiss, Ivo Danihelka, Aja Huang, Laurent Sifre, Trevor Cai, John P. Agapiou, MaxJaderberg, Alexander S. Vezhnevets, R\u00e9mi Leblond, Tobias Pohlen, Valentin Dalibard, DavidBudden, Yury Sulsky, James Molloy, Tom L.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0057",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 57,
+      "section": "preamble",
+      "text": "Vezhnevets, R\u00e9mi Leblond, Tobias Pohlen, Valentin Dalibard, DavidBudden, Yury Sulsky, James Molloy, Tom L. Paine, Caglar Gulcehre, Ziyu Wang, Tobias Pfaff,Yuhuai Wu, Roman Ring, Dario Yogatama, Dani W\u00fcnsch, Katrina McKinney, Oliver Smith, TomSchaul, Timothy Lillicrap, Koray Kavukcuoglu, Demis Hassabis, Apps Chris, and David Silver.Grandmaster level in StarCraft II using multi-agent reinforcement learning. Nature, 575(7782):350\u2013354, 2019.Alex Wang, Amanpreet Singh, Julian Michael, Felix Hill, Omer Levy, and Samuel R. Bowman.GLUE: A multi-task benchmark and analysis platform for natural language understanding. InProceedings of International Conference on Learning Representations (ICLR), 2019.Huiyu Wang, Yukun Zhu, Hartwig Adam, Alan Yuille, and Liang-Chieh Chen. Max-deeplab: End-to-end panoptic segmentation with mask Transformers. In Proceedings of IEEE Conference onComputer Vision and Pattern Recognition (CVPR), 2021.Sinong Wang, Belinda Z. Li, Madian Khabsa, Han Fang, and Hao Ma.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0058",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 58,
+      "section": "preamble",
+      "text": "In Proceedings of IEEE Conference onComputer Vision and Pattern Recognition (CVPR), 2021.Sinong Wang, Belinda Z. Li, Madian Khabsa, Han Fang, and Hao Ma. Linformer: Self-attentionwith linear complexity. arXiv preprint arXiv:2006.04768, 2020.Yunyang Xiong, Zhanpeng Zeng, Rudrasis Chakraborty, Mingxing Tan, Glenn Fung, Yin Li, andVikas Singh. Nystr\u00f6mformer: A Nystr\u00f6m-based algorithm for approximating self-attention. InProceedings of AAAI Conference on Arti\ufb01cial Intelligence, 2021.Linting Xue, Aditya Barua, Noah Constant, Rami Al-Rfou, Sharan Narang, Mihir Kale, AdamRoberts, and Colin Raffel. Byt5: Towards a token-free future with pre-trained byte-to-byte models.Transactions of the Association for Computational Linguistics, 2022.Zhilin Yang, Zihang Dai, Yiming Yang, Jaime Carbonell, Russ R Salakhutdinov, and Quoc V Le.XLNet: Generalized autoregressive pretraining for language understanding.",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0059",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 59,
+      "section": "preamble",
+      "text": "In Proceedings ofNeural Information Processing Systems (NeurIPS), 2019.Published as a conference paper at ICLR 2022Quanzeng You, Hailin Jin, Zhaowen Wang, Chen Fang, and Jiebo Luo. Image captioning with se-mantic attention. In Proceedings of IEEE Conference on Computer Vision and Pattern Recognition(CVPR), 2016.Yang You, Jing Li, Sashank Reddi, Jonathan Hseu, Sanjiv Kumar, Srinadh Bhojanapalli, XiaodanSong, James Demmel, Kurt Keutzer, and Cho-Jui Hsieh. Large batch optimization for deeplearning: Training BERT in 76 minutes. In Proceedings of International Conference on LearningRepresentations (ICLR), 2021.Sangdoo Yun, Dongyoon Han, Seong Joon Oh, Junsuk Choe Sanghyuk Chun, and Youngjoon Yoo.Cutmix: Regularization strategy to train strong classi\ufb01ers with localizable features. In Proceedingsof IEEE International Conference on Computer Vision (ICCV), 2019.Amir R Zamir, Alexander Sax, William Shen, Leonidas J Guibas, Jitendra Malik, and Silvio Savarese.Taskonomy: Disentangling task transfer learning. In Proceedings of IEEE Conference on ComputerVision and Pattern Recognition (CVPR), 2018.Matthew D.",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0060",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 60,
+      "section": "preamble",
+      "text": "In Proceedings of IEEE Conference on ComputerVision and Pattern Recognition (CVPR), 2018.Matthew D. Zeiler and Rob Fergus. Visualizing and understanding convolutional networks. Proceed-ings of European Conference on Computer Vision (ECCV), 2014.Hongyi Zhang, Moustapha Cisse, Yann N. Dauphin, and David Lopez-Paz. mixup: Beyond empiricalrisk minimization.",
+      "token_count": 90
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0061",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 61,
+      "section": "preamble",
+      "text": "Dauphin, and David Lopez-Paz. mixup: Beyond empiricalrisk minimization. In Proceedings of International Conference on Learning Representations(ICLR), 2018.xviPublished as a conference paper at ICLR 2022APPENDIXModalitiesTasksPreprocessingPostprocessing# Inputs# OutputsTextToken-level pred.Tokenization + Embed.Linear projection512 \u00d7 768512 \u00d7 768TextByte-level pred.Embed.None2, 048 \u00d7 7682, 048 \u00d7 768TextMulti-task (8 tasks)Embed.None2, 048 \u00d7 7688 \u00d7 768VideoFlow predictionNoneNone365, 056 \u00d7 64182, 528 \u00d7 64VideoFlow predictionConcatNone182, 528 \u00d7 64182, 528 \u00d7 64VideoFlow predictionConv+maxpoolRAFT upsampling22, 816 \u00d7 6411, 408 \u00d7 64VideoFlow predictionConv+maxpool+concatRAFT upsampling11, 408 \u00d7 6411, 408 \u00d7 64Video+Audio+LabelAutoencodingPatch: 1x4x4 Vid, 16 AudNone50, 657 \u00d7 704803, 297 \u00d7 512ImageClassi\ufb01cationNoneNone50, 176 \u00d7 31 \u00d7 1, 000ImageClassi\ufb01cationLinear projectionNone50, 176 \u00d7 2561 \u00d7 1, 000ImageClassi\ufb01cationConv+maxpoolNone3, 136 \u00d7 641 \u00d7 1, 000StarCraft Unit SetEncoding and Classi\ufb01cationTokenizationPointer network512 \u00d7 256512 \u00d7 128Video+AudioClassi\ufb01cationPatch: 2 \u00d7 8 \u00d7 8 Vid, 128 AudNone13, 024 \u00d7 4871 \u00d7 527Video+AudioClassi\ufb01cationPatch: 2 \u00d7 8 \u00d7 8 Vid.",
+      "token_count": 388
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0062",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 62,
+      "section": "preamble",
+      "text": "Aud \u2192mel-spectrogramNone17, 344 \u00d7 4871 \u00d7 527In the following sections, we describe experiments on three additional domains (ImageNet, StarCraftII, and AudioSet) and provide additional details for the methods and experiments described in thepaper. For ease of reference and comparison across domains, we describe the input and output sizeand processing used in all experiments in Tab. 5 and provide details of input key/value, positionencoding, and output queries used in all experiments in Tab. 6.On all domains but StarCraft II, we include experiments with several input con\ufb01gurations, rangingfrom no domain adaptation (e.g. tokenizer-free language, \ufb02ow from raw pixels, ImageNet withno convolutional or patch-based preprocessing and fully learned position encodings) to moderatedomain adaptation (e.g. SentencePiece language understanding, \ufb02ow from conv+maxpool-processedimages and with RAFT upsampling, ImageNet with conv+maxpool-preprocessing and 2D Fourierfeatures).",
+      "token_count": 212
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0063",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 63,
+      "section": "preamble",
+      "text": "SentencePiece language understanding, \ufb02ow from conv+maxpool-processedimages and with RAFT upsampling, ImageNet with conv+maxpool-preprocessing and 2D Fourierfeatures). These results demonstrate the unprecedented generality of Perceiver IO, the simplicitythat this architecture unlocks in handling a range of tasks, and its \ufb02exibility to work as part of adomain-adapted system.Language (MLM)Textbyte/token encoding + learned pos768learned pos1280DomainInput ModalityEncoder KV inputEncoder KV channelsDecoder query inputDecoder query channelsLanguage(Perceiver IO++ MLM)Textbyte/token encoding + learned pos768learned pos1536Language (GLUE)Textbyte/token encoding + learned pos768Class query (per-task)1280Language(Perceiver IO++ GLUE)Textbyte/token encoding + learned pos768Class query (per-task)1536Optical FlowVideo (concat. frames)[conv or Linear(concat RGB), 2D FFs]322[Linear(RGB), 2D FFs]322Optical FlowVideo[conv or Linear(RGB), 3D FFs]451[conv features, 3D FFs]451KineticsVideo,[patched RGB, 3D FFs, learned modality feat.]704[3D FFs, learned modality feat.]1026Audio,[patched sound pressure, 1D FF, learned modality feat.]704[1D FF, learned modality feat.]1026Label[one-hot label, learned modality feat.]704[learned modality feat.]1026ImageNet (2D FFs)Image[RGB, 2D FFs]261Class query (single)1024ImageNet (learned pos)Image[Linear(RGB), learned pos]512Class query (single)1024ImageNet (conv)Image[Conv features, 2D FFs]322Class query (single)1024StarCraft IISC2 entitiesEntity features128Entity features128AudioSetVideo,[patched RGB, 3D FFs, learned modality feature]487Class query (single)1024Audio[patched sound pressure, 1D FFs, learned modality feature]4",
+      "token_count": 463
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0064",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 64,
+      "section": "preamble",
+      "text": "E.3 and Fig. 6 for a diagram illustrating the difference between the two forms of decoder). Wenow evaluate the effect of this more general decoder. See Sec.",
+      "token_count": 35
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0065",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 65,
+      "section": "preamble",
+      "text": "E.3 and Fig. 6 for a diagram illustrating the difference between the two forms of decoder). Wenow evaluate the effect of this more general decoder. See Sec. C for similar validation on AudioSet.xviiPublished as a conference paper at ICLR 2022ModelPretrained?AccuracyFLOPsParamsConvNet baselinesResNet-50 (He et al., 2016)N78.64.1B26MNFNet-F6+SAM (Brock et al., 2021)N86.5377.3B438.4MMeta Pseudo Labels (Pham et al., 2021)Y90.2-480MViT baselinesViT-B/16 (Dosovitskiy et al., 2021)N77.955.4B86MViT-H/14 (Dosovitskiy et al., 2021)Y88.6-632MDeiT 1000 epochs (Touvron et al., 2021a)N85.2-87MCaiT-M48 448 (Touvron et al., 2021b)N86.5329.6B356Mw/ 2D Fourier featuresPerceiverN78.6404B42.1MPerceiver IO, con\ufb01g AN79.0407B48.4MPerceiver IO, con\ufb01g B (pretrained)Y84.5213B212Mw/ learned position featuresPerceiver (learned pos)N67.6404B55.9MPerceiver IO, con\ufb01g A (learned pos)N72.7407B62.3Mw/ 2D conv + maxpool preprocessingPerceiver (conv)N77.4367B42.1MPerceiver IO, con\ufb01g A (conv)N82.1369B48.6MPerceiver IO, con\ufb01g B (conv) (pretrained)Y86.4176B212MResultsTab. 7 shows our results alongside representative numbers from the literature.",
+      "token_count": 439
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0066",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 66,
+      "section": "preamble",
+      "text": "Perceiver andPerceiver IO differ in their decoder, and neither model uses convolutional preprocessing by default.Perceiver IO consistently outperforms the original architecture. After pretraining on JFT (Sun et al.,2017), Perceiver IO performs in the ballpark of models designed primarily for image classi\ufb01cation.Perceiver IO is competitive with members of the Vision Transformer (ViT) (Dosovitskiy et al., 2021)family even without relying on 2D convolutions. Perceiver IO is also compatible with convolutionalpreprocessing: adding a 2D conv+maxpool preprocessing stage leads to a moderate increase inef\ufb01ciency and bump in performance.While neither the Perceiver and Perceiver IO incorporate any 2D spatial structure architecturally, theyuse positional features that inject 2D spatial information (Sec. 3.2 and Appendix sec. D of Jaegleet al. 2021). By replacing these 2D position features with a fully learned position encoding as usedon language, we can learn an image classi\ufb01cation model that is given no privileged informationabout the structure of images. This positional encoding is an array of shape 50,176 \u00d7 256, whichis randomly initialized using a truncated Gaussian distribution with scale 0.02. ImageNet networksthat use this positional encoding are given no information about 2D image structure.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0067",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 67,
+      "section": "preamble",
+      "text": "ImageNet networksthat use this positional encoding are given no information about 2D image structure. For theseexperiments, we additionally use a 1D convolutional network to project the RGB at each point to 256before concatenating it with the learned positional encoding. The results of this experiment are shownin Tab. 7 (w/ learned position features). To our knowledge, this is the best result by any model onImageNet without 2D architectural or feature information.A.1DETAILS OF IMAGENET TRAININGFor ImageNet experiments, we use CutMix (Yun et al., 2019) and MixUp (Zhang et al., 2018)regularization, in addition to RandAugment (Cubuk et al., 2020) as used in Jaegle et al. (2021). Weobserved only marginal improvements in performance from this change, but it brings the augmentationstrategy more in line with the strategy used elsewhere in the literature (Brock et al., 2021; Touvronet al., 2021a).",
+      "token_count": 223
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0068",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 68,
+      "section": "preamble",
+      "text": "Weobserved only marginal improvements in performance from this change, but it brings the augmentationstrategy more in line with the strategy used elsewhere in the literature (Brock et al., 2021; Touvronet al., 2021a). In all experiments, we use RandAugment with 4 layers at magnitude 5 (as in JaeglexviiiPublished as a conference paper at ICLR 2022ModelTrain steps/secPerceiver (2D FF)4.73Perceiver IO (2D FF)4.85Perceiver (learned pos)4.16Perceiver IO (learned pos)4.14Perceiver (conv)4.73Perceiver IO (conv)5.58Perceiver IO (pretrained)6.41et al. 2021) and CutMix with a ratio of 0.2. In early experiments, we found that higher weight decayand moderate gradient clipping contributed to better generalization: we use a weight decay of 0.1and clip to a maximum global gradient norm of 10. We use no dropout.",
+      "token_count": 224
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0069",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 69,
+      "section": "preamble",
+      "text": "In early experiments, we found that higher weight decayand moderate gradient clipping contributed to better generalization: we use a weight decay of 0.1and clip to a maximum global gradient norm of 10. We use no dropout. We use an architecture withweight sharing in depth: the latent (processing) component of the architecture includes 8 blocks of 6attention modules each, and weights are shared between the corresponding modules in each block.We omit the repeated encoder cross-attends used in Jaegle et al. (2021) as we found these to lead torelatively small performance improvements but to signi\ufb01cantly slow down training: using 8 encodercross-attention instead of 1 adds an additional 303 billion FLOPs. The FLOPs for all ImageNetmodels presented here are given in Tab. 7 and the model training step time on 64 TPUv3 are given inTab. 8.For all ImageNet experiments, we train for 110 epochs, using a batch size of 1024 and 64 TPUs. Weuse LAMB with a simple learning rate schedule consisting of a \ufb02at learning rate of 2 \u00d7 10\u22123 for 55epochs, after which the learning rate is decayed to 0 over the \ufb01nal 55 epochs following a cosine decayschedule (Loshchilov & Hutter, 2017).",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0070",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 70,
+      "section": "preamble",
+      "text": "We found a cosine learning rate decay schedule simpler totune than the step decay schedule used in Jaegle et al. (2021) and that beginning the decay processhalfway through training generally led to good performance without introducing instability. We foundit important to omit an initial learning rate warm-up period, as this often prevented models fromtraining when using LAMB.A.2LARGE-SCALE PRETRAININGAs reported in Jaegle et al. (2021), Perceiver models are able to easily over\ufb01t ImageNet-scale datasetswithout regularization. For this reason, we explored pretraining a model on JFT, a large-scale,multi-labeled internal dataset with 300 million images spanning approximately 18,000 classes (Sunet al., 2017). We pretrain on this dataset at the same resolution used on ImageNet (224 \u00d7 224) usinga base learning rate of 3 \u00d7 10\u22124 and a cosine decay schedule, decaying to 0 over 14 epochs. We omitall augmentation except basic cropping, resizing, and left-right \ufb02ipping. We use a weight decay of0.1. We use a larger batch size of 8192 and train on 256 TPUs. Images in this dataset come with avariable number of labels, so we use a cross-entropy loss with a multi-one-hot representation of thetargets.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0071",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 71,
+      "section": "preamble",
+      "text": "We use a larger batch size of 8192 and train on 256 TPUs. Images in this dataset come with avariable number of labels, so we use a cross-entropy loss with a multi-one-hot representation of thetargets. Unlike in the other ImageNet experiments, we do not share weights in the latent self-attentionprocess modules, but use a 16-layer latent network with no weight sharing in depth. Unlike theother ImageNet experiments, the process-module MLPs use a hidden layer with 4\u00d7 the number ofchannels (rather than 1\u00d7 as on other ImageNet experiments). When pretraining the 2D FF model, weuse a 1D convolutional network to project input RGB at each point to 256 before concatenating itwith the positional encoding (a 2D Fourier frequency positional encoding). When pretraining theconv+maxpool model, we instead use the initial convolutional preprocessing described in Sec. A.3below.To evaluate transfer, we \ufb01ne-tune our pre-trained model on ImageNet. We replace only the \ufb01nal linearlayer of the decoder to produce the required 18,000 classes.",
+      "token_count": 235
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0072",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 72,
+      "section": "preamble",
+      "text": "A.3below.To evaluate transfer, we \ufb01ne-tune our pre-trained model on ImageNet. We replace only the \ufb01nal linearlayer of the decoder to produce the required 18,000 classes. For 2D FF \ufb01ne-tuning, we used similaroptimizer and augmentation settings as with our from-scratch ImageNet training: 1024 batch size on64 TPUs, 131K steps with LAMB using a \ufb02at base LR of 0.002 for the \ufb01rst 70K steps and a cosinexixPublished as a conference paper at ICLR 2022Entity encoderWin rateParams (M)FLOPsTrain steps/secTransformer (Vinyals et al., 2019)0.871443.3B2.9Perceiver IO0.871400.93B2.9learning rate decay for the last 61K steps. We use identical settings for conv+maxpool \ufb01ne-tuningwith the exception of the base learning rate, which we set to 0.0002, as training with the higher 0.002rate was unstable.A.32D CONVOLUTIONAL PREPROCESSING ON IMAGENETIn other image settings discussed here, we optionally use simple pre- and post-processing stepsto reduce the size of very large inputs and outputs.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0073",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 73,
+      "section": "preamble",
+      "text": "Because ImageNet data points are relativelysmall (Tab. 5), we are able to process full images without convolutional pre- and post-processing.Consequently, we can use this dataset to probe the sensitivity of the model to convolutional pre-processing. Incorporating a single convolution + max pooling leads to a moderate improvement inthe performance of the architecture: this is perhaps unsurprising, as convolutional pre-processinginjects information about the 2D structure of images into the architecture. By comparison ViT \ufb01rstprocesses images by applying a 2D convolution with matched kernel and stride to downsample itsinputs (referred to as a \u201clinear projection of \ufb02attened patches\u201d in that work and throughout the ViTliterature). As in other experiments, we \ufb01nd that incorporating an attention-based decoder (PerceiverIO) leads to better results than averaging and pooling the output (Perceiver). Using convolutionalpreprocessing leads to a moderate reduction in the number of FLOPs used by the model (Tab. 7) andtraining speed in some con\ufb01gurations (Tab. 8). The input to the network after preprocessing is 56 \u00d756 instead of 224 \u00d7 224 as in the experiments directly on pixels.BSTARCRAFT IITo further demonstrate Perceiver IO\u2019s capabilities on discrete modalities and as a drop-in replacementfor Transformers, we plug in Perceiver IO in place of AlphaStar\u2019s Transformer.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0074",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 74,
+      "section": "preamble",
+      "text": "AlphaStar (Vinyalset al., 2019) is the state-of-the-art system for the challenging real-time strategy game of StarCraft II.At its core, AlphaStar represents the units in the game as a discrete, unordered set of symbols (the\u201cunits\u201d). These units are represented by a vector of properties including unit type, position, and health.At each timestep, the architecture encodes units with an entity encoder, which in the original modelwas parameterized using a vanilla Transformer.The entity encoder takes as input a set of 512 entities (referred to as embedded_entity in Vinyalset al. (2019)) and produces as output an embedding for each entity (entity_embeddings)and a 1D embedding reduced over entities (embedded_entity).These 512 entities repre-sent the units and other entities that are present in the game: unused entity slots are masked.entity_embeddings is produced by passing the outputs of the entity encoder through a ReLUand a 1D convolution with 256 channels. embedded_entity is produced by averaging the(unmasked) entity encoder outputs and passing it through a linear layer with 256 units and a ReLU.In the original AlphaStar system, the entity encoder consisted of a Transformer with 3 attentionlayers, each of which used 2 heads and a feature dimension of 128.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0075",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 75,
+      "section": "preamble",
+      "text": "The output of each attention layeris projected to 256 and followed by an 2-layer MLP with hidden size 1024 and output size 256. Thisarchitecture was arrived by an extensive tuning process as reported in Vinyals et al. (2019).The representation produced by the entity encoder is used both as a summary of the state (after pooling)and as a rich representation of the units. This representation is used by a pointer network (Vinyalset al., 2015) to assign a probability to each possible unit selection, in the process parameterizingthe agent\u2019s unit selection policy. For this reason, we view AlphaStar as an important test case forPerceiver IO\u2019s ability to function as a general-purpose tool for processing symbolic or set-valuedPublished as a conference paper at ICLR 2022ModelInputmAPLatent channels (D)Params (M)FLOPsTrain steps/secPerceiverRaw audio + video42.451221.052.3B3.8Perceiver IORaw audio + video43.351225.052.9B3.8Perceivermel-spectrogram + video43.651221.060.7B3.8Perceiver IOmel-spectrogram + video44.9102488.2129.5B3.8data.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0076",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 76,
+      "section": "preamble",
+      "text": "If the question is \u201ccan Perceiver IO serve as a replacement for a well-tuned Transformer as asymbolic processing engine?\u201d then the answer is yes:We obtained StarCraft II results by using Perceiver IO instead of a Transformer for the AlphaStarentity encoder. We replaced the Transformer with a Perceiver IO with a latent of index dimension 32,keeping the input and output size of 512 units. We performed no tuning beyond sweeping the size ofthe latent index dimension (we tried values of 32 and 64): Perceiver IO works out of the box. Weobserved that the resulting agent reached the same level of performance as the original AlphaStaragent, reaching an 87% win-rate versus the Elite bot after behavioral cloning (Pomerleau, 1989) onhuman data, while also leading to a 3\u00d7 decrease in FLOPs (Tab. 9).We replaced this Transformer with a 3-layer Perceiver IO with a latent of index dimension 32. Wetuned only the size of the index dimension (sweeping values of 32 and 64), but otherwise used thesame hyperparameters as ImageNet.CAUDIOSETWe seek to con\ufb01rm that the the attention-based decoder helps even on classi\ufb01cation, where theoriginal Perceiver\u2019s decoder could be used.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0077",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 77,
+      "section": "preamble",
+      "text": "We show that the trend identi\ufb01ed on ImageNet holds moregenerally, by revisiting the multimodal AudioSet classi\ufb01cation domain. AudioSet is a large-scaleevent classi\ufb01cation dataset containing 1.7 million training examples, each consisting of 10s longvideo and audio. Each example is labeled with several labels drawn from 527 classes.We perform experiments using the protocol described in Jaegle et al. (2021), training models for100 epochs using 32-frame clips at train time and 16 overlapping 32-frame clips at test time. Asin the ImageNet experiments, We compare the performance of Perceiver and Perceiver IO usingmodels that are matched except for the decoder (we use an average + project decoder for Perceiverand a query-based attention decoder for Perceiver IO, see Sec. E.3 and Fig. 6). All models use anarchitecture with 12 processor modules and a latent index dimension N of 512 (we omit the repeatedcross-attends used in Jaegle et al. (2021)). We compare models taking video and either raw audio ormel-spectrogram (pre-processed audio) as input. For all four model settings, we swept the number oflatent channels (using D \u2208{512, 1024}) and report the best value for each setting. We performed noadditional tuning.Results of this experiment are shown in Tab. 10.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0078",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 78,
+      "section": "preamble",
+      "text": "For all four model settings, we swept the number oflatent channels (using D \u2208{512, 1024}) and report the best value for each setting. We performed noadditional tuning.Results of this experiment are shown in Tab. 10. We \ufb01nd that as in the ImageNet experiments,using the attention-based decoder leads to small but consistent improvements over the less generallyapplicable average + project decoder. Because Perceiver IO introduces no domain assumptions notpresent in the original Perceiver, this is evidence that Perceiver IO is a strictly more general model.DFLOPS CALCULATIONIn all cases, we report theoretical FLOPs with multiplies and accumulates counted as separateoperations. This is the strategy used in Kaplan et al. (2020) and elsewhere in the literature. We usethis strategy consistently here to allow comparisons between the models we propose and develop(including our BERT reimplementation).",
+      "token_count": 185
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0079",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 79,
+      "section": "preamble",
+      "text": "This is the strategy used in Kaplan et al. (2020) and elsewhere in the literature. We usethis strategy consistently here to allow comparisons between the models we propose and develop(including our BERT reimplementation). Note that some papers in the literature report FLOPs usingfused multiply-accumulates: using this strategy will cut the \ufb01gures reported here in half.xxiPublished as a conference paper at ICLR 2022EncodeInputarrayLatentarrayLatent arrayQAttentionscoresProcessKLatent arrayLatent arrayQAttentionscoresDecodeLatent arrayOutput query arrayOutput arrayQOOAttentionscoresEARCHITECTURAL DETAILSPerceiver IO is constructed from GPT-2-style (Radford et al., 2019) Transformer attention modules,which consist of QKV attention followed by an MLP, along with linear projection layers to ensureinputs to and outputs from the QKV attention and MLP take on desired sizes. Using the array sizes ofthe encoder attention, the QKV attention takes in two two-dimensional arrays, a key-value input arrayXKV \u2208RM\u00d7C and a query input array XQ \u2208RN\u00d7D, and maps them to an array XQKV \u2208RN\u00d7D,sharing the shape of the query input (after projection).",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0080",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 80,
+      "section": "preamble",
+      "text": "XQKV is used as input to an MLP, which isapplied independently to each element of the index dimension (i.e. convolving the MLP with its inputalong the \ufb01rst dimension), producing a \ufb01nal array XMLP \u2208RN\u00d7D.While we describe attention as taking two inputs, in standard Transformers it is typically describedas mapping one input to an output of the same size. This is because all modules of a standardTransformer use self-attention, where the same input is used for both key-value inputs and queryinputs. The view of attention that we describe encompasses both cross-attention and self-attention,both of which are speci\ufb01c ways of using QKV-attention. Perceiver IO uses cross-attention for encoderand decoder attention modules and uses self-attention for the latent processing modules. Thesemodules differ primarily in terms of what shape data they ingest and produce (Fig. 5).We now describe the structure of QKV attention and the MLP in more detail.xxiiPublished as a conference paper at ICLR 2022E.1ATTENTION MODULE INTERNALSQKV attention takes in two two-dimensional arrays, a query input XQ \u2208RN\u00d7D and a key-valueinput XKV \u2208RM\u00d7C.",
+      "token_count": 257
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0081",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 81,
+      "section": "preamble",
+      "text": "The output of QKV attention is an array with the same index (\ufb01rst) dimensionas the query input and a channel (second) dimension determined by an output projection:Q = fQ(XQ); K = fK(XKV ); V = fV (XKV )(1)XQK = softmax(QKT /\u221aF)(2)Attn(XQ, XKV ) = XQKV = fO(XQKV ),(3)where XQK is an array of attention maps \u2208RN\u00d7M, and XQKV is an array \u2208RN\u00d7D. The functionsf{Q,K,V } are linear layers mapping each input to a shared feature dimension F and fO is a linearlayer projecting the output to a target channel dimension, which is often the same size as XQ\u2019s.All linear layers are applied convolutionally over the index dimension (the \ufb01rst dimension of theirinputs). We have omitted batch and head dimensions (in the case of multi-headed attention) forreadability. QKV attention is followed by a two-layer MLP with a GELU (Hendrycks & Gimpel,2016) nonlinearity following the \ufb01rst layer.",
+      "token_count": 248
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0082",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 82,
+      "section": "preamble",
+      "text": "QKV attention is followed by a two-layer MLP with a GELU (Hendrycks & Gimpel,2016) nonlinearity following the \ufb01rst layer. The full module has the following structure:XQKV = Attn(layerNorm(XQ), layerNorm(XKV ))(4)XQKV = XQKV + XQ(5)XQKV = XQKV + MLP(layerNorm(XQKV )),(6)slightly abusing notation for simplicity and to emphasize the residual structure. \u201cAttn\u201d refers to QKVas described above.In the context of decoder attention, we sometimes \ufb01nd it helpful to omit the second step (XQKV =XQKV + XQ), as it involves adding the model output with a query. Queries sometimes includefeatures inherited from the input space (Tab. 6), and this residual connection may make learningunnecessarily dif\ufb01cult. For example, for optical \ufb02ow, including this residual connection forces thenetwork to produce optical \ufb02ow output by adding RGB and Fourier features to the model\u2019s output.E.2COMPUTATIONAL COMPLEXITYThe computational complexity of each attention module is dominated by the two matrix multiplica-tions in QKV attention.",
+      "token_count": 260
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0083",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 83,
+      "section": "preamble",
+      "text": "Still using the shapes of the encoder attention, these two matrix multipliesinvolve matrices of shape M \u00d7F and N \u00d7F and M \u00d7N and N \u00d7F, giving overall time and memorycomplexity of O(MNF). Let M, N, and O be the index dimensions for the input, latent, and outputarrays, and to simplify the analysis let F be the feature size for all layers. The KV and Q sizes for theencoder, latent transformer, and decoder will then be M \u00d7 F and N \u00d7 F (for the encoder), N \u00d7 Fand N \u00d7 F (for the latent transformer), and N \u00d7 F and O \u00d7 F (for the decoder). A model with Llatent attention blocks has complexity O([M + O + LN]NF). In other words, Perceiver IO hascomplexity linear in the size of the input and output arrays and it decouples the depth of the latenttransformer from the input and output sizes. Both of these properties contribute to Perceiver IO\u2019sef\ufb01ciency: while many proposals for ef\ufb01cient attention modules or architectures include linear orsub-quadratic scaling with input/output size, Perceiver IO is unusual in also decoupling depth frominput/output size (without requiring domain-speci\ufb01c strategies like 2D convolution). For furtherdiscussion of these points, see Sec. 2 and Sec.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0084",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 84,
+      "section": "preamble",
+      "text": "For furtherdiscussion of these points, see Sec. 2 and Sec. A of Jaegle et al. (2021).E.3USING THE DECODER FOR CLASSIFICATION / REGRESSIONAs we show in ImageNet and AudioSet experiments, the attentional decoder used here can be usedin settings where standard average + project decoders are applicable. We \ufb01nd that the attentionaldecoder typically produces somewhat better results than the standard decoder. This likely occursbecause attentional decoding is more expressive than average + project decoding. To make this clear,we illustrate the two pooling schemes in Fig. 6. Both decoders can be viewed as \ufb01rst averaging thexxiiiPublished as a conference paper at ICLR 2022LatentsLatentsAttentionDecoderAvg+projDecoderOutputOutputprojMLPQueryPooling weights(attention scores)Pooling weights(1/N)latents and then projecting them to a target shape, but decoder attention uses more expressive modulesfor each of these operations. Instead of uniformly weighting each input in the averaging operation,decoder attention uses the attention scores as data-dependent weights for each input point. Instead ofprojecting the raw averaged input to a target dimensionality, decoder attention \ufb01rst projects inputs viaa value layer and then processes them with an MLP.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0085",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 85,
+      "section": "preamble",
+      "text": "Instead ofprojecting the raw averaged input to a target dimensionality, decoder attention \ufb01rst projects inputs viaa value layer and then processes them with an MLP. In addition to its greater expressivity, decoderattention has the advantage of being easily generalizable to dense outputs (by increasing the numberof queries) and of reusing the same architectural pattern used for the encoder and processor modules.FLANGUAGE: ADDITIONAL DETAILSF.1OTHER TOKENIZER-FREE MODELSOne application of Perceiver IO is byte-level language processing, which has concurrently beenaddressed by several other groups. Clark et al. (2022) trains models on Unicode code points andshows results competitive with subword-based models on a multilingual question answering dataset.Tay et al. (2022) trains on UTF-8 bytes directly by introducing a hand-designed module that istrained end-to-end to perform subword tokenization and produces results on-par with and sometimesbetter than subword-based models.",
+      "token_count": 197
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0086",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 86,
+      "section": "preamble",
+      "text": "Xue et al. (2022) trains encoder-decoder T5 models on UTF-8bytes directly and shows that making the encoder 3x deeper than the decoder leads to comparableperformance with subword baselines.F.2ARCHITECTURE DETAILSThe architecture hyperparameters and the training speed for the Perceiver IO used in the languageexperiments are given in Tab. 11.ModelBERT BaseBERT matching FLOPsPerceiver IO BasePerceiver IOPerceiver IO++TokenizerSentencePieceUTF-8 bytesSentencePieceUTF-8 bytesUTF-8 bytesNumber of inputs (M)512204851220482048Input embedding size (C)768768768768768Number of Process layers126262640Number of latents (N)--256256256Latent size (D)--128012801536FFW hidden dimension for latents--128012801536Number of output queries during pretraining (O)--51220482048Dimension of learned queries (E)--768768768FFW hidden dimension for outputs--768768768Training steps/second7.32.97.47.64.2xxivPublished as a conference paper at ICLR 2022F.3MLM PRETRAININGWe pretrain all models on a mixture of the C4 dataset (Raffel et al., 2020) and English Wikipedia,where 70% of the training tokens are sampled from the C4 dataset and the remaining 30% fromWikipedia.",
+      "token_count": 302
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0087",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 87,
+      "section": "preamble",
+      "text": "We concatenate 10 documents before splitting into crops to reduce wasteful computationon padding tokens. We use the same masking strategy for SentencePiece and byte-level experiments:each word is masked independently with probability 15% where word boundaries are de\ufb01ned usingwhite-space boundaries.The pretraining hyperparameters are given in Tab. 12. For the BERT (matching FLOPs) model trainedon bytes, we reduce the model width from 768 to 512, the feed-forward hidden size from 3072 to2048, the number of layers from 12 to 6 and the number of attention heads from 12 to 8. Given thelonger sequence length of 2048 bytes, this model has about the same number of inference FLOPs asa BERT Base model on a sequence length of 512 tokens.In order to decode, we use learned queries of the same dimension of the input array (Tab. 11). Wehave as many output queries as inputs to be able to predict the masked token at all positions in thesentence (M=O).To get an insight into the learnt queries we visualize the attention weights in the \ufb01rst cross attentionlayer on a small paragraph (Fig. 7). We discover that the model has learnt both position and contentbased look-ups. The position-based look-ups can be either very sparse and precise or more distributedand periodic.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0088",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 88,
+      "section": "preamble",
+      "text": "We discover that the model has learnt both position and contentbased look-ups. The position-based look-ups can be either very sparse and precise or more distributedand periodic. This second mode appears somewhat less often and is more ef\ufb01cient because more datais being attended to at the same time, but also more distributed, since the values are subsequentlyaveraged: this acts as a learned pooling. The content based retrievals focus mostly on syntacticelements like capital letters and punctuation (colon, exclamation marks, quotation marks, etc). This isprobably because these are good word delimiters and can help the model reduce prediction uncertainty.Training steps500,000Batch size2048Masking strategyWordsOptimizerLAMB (You et al., 2021)Learning rate0.00125Linear warmup steps1,000Cosine cycle decay500,000Weight decay0.01F.4GLUE FINETUNINGFollowing Devlin et al. (2019), we specify a \ufb01xed-size hyperparameter grid and select the best devperformance across that grid for each task independently (Tab. 12). The full GLUE results are shownin Tab. 14. Following Devlin et al. (2019) we exclude the WNLI task.",
+      "token_count": 254
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0089",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 89,
+      "section": "preamble",
+      "text": "The full GLUE results are shownin Tab. 14. Following Devlin et al. (2019) we exclude the WNLI task. We use accuracy for all tasksexpect STS-B and CoLA where we use Pearson correlation and Matthews correlation respectively.The average is computed by \ufb01rst averaging the results of MNLI-matched and MNLI-mismatched,which is then counted as a single task in the overall average.For single-task experiments, we do not require a [CLS] token as we use a single decoding queryvector. In both single-task and multi-task experiments an extra 2-layer MLP with a hidden size ofE and a tanh activation is used to map the the Perceiver IO outputs to the class logits (or regressiontarget for STS-B).F.5ABLATION ON THE NUMBER OF LATENTSFor a given FLOPs budget, there is a trade off between the number of latents N and the width D ofthe latents. We ablate this in Tab. 15 by varying the number of latents between 128, 256 (best), and512.",
+      "token_count": 227
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0090",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 90,
+      "section": "preamble",
+      "text": "We ablate this in Tab. 15 by varying the number of latents between 128, 256 (best), and512. We adapt the latent dimension accordingly to match the FLOPs budget.xxvPublished as a conference paper at ICLR 2022(a) Very sharp location based attention.(b) A more ef\ufb01cient and more distributed \u201cperiodic\u201d location based attention.(c) Content based attention for syntactic elements like punctuation and capital letters.Training epochs10Batch size{16, 32, 64}OptimizerLAMBLearning rate{1\u00d710\u22124, 5\u00d710\u22125, 2\u00d710\u22125, 1\u00d710\u22125 }Linear warmup steps200Weight decay0.01GPOSITIONAL ENCODINGS FOR IMAGE AND AUDIO EXPERIMENTSFor all image experiments (with the exception of the ImageNet experiment that uses learned positions,Sec. A.1), we use a 2D Fourier feature positional encoding (Vaswani et al., 2017; Stanley, 2007;Mildenhall et al., 2020; Tancik et al., 2020) using a sine and cosine bands with frequencies spacedlinearly from a minimum frequency to a maximum frequency. We use 64 sine/cosine bands perdimension in all settings.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0091",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 91,
+      "section": "preamble",
+      "text": "We use 64 sine/cosine bands perdimension in all settings. The minimum frequency is always set to the minimum frequency of theinput signal, corresponding to a single full oscillation over the input dimension. The maximumfrequency is typically set to the input\u2019s Nyquist frequency (e.g. 112 cycles for an image with 224pixels per dimension). The input position used to construct the Fourier frequencies is scaled to [-1, 1]for each input dimension. For example, the upper left corner of an image is at position [-1, -1] whilethe bottom right corner is at position [1, 1]. We follow the same strategy using 1D and 3D Fourierfeature positional encoding for audio\u2019s time and video\u2019s spatiotemporal inputs, respectively.HOPTICAL FLOW: ADDITIONAL DETAILS AND RESULTSPre- and post-processing can provide non-trivial inductive biases when processing image data andalso change computation time. In this section, we ablate these choices. The network in the mainpaper concatenates the two frames frames before extracting 3D patches around each pixel, each ofsize 3\u00d73\u00d72.",
+      "token_count": 237
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0092",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 92,
+      "section": "preamble",
+      "text": "In this section, we ablate these choices. The network in the mainpaper concatenates the two frames frames before extracting 3D patches around each pixel, each ofsize 3\u00d73\u00d72. Tab. 16 shows a few alternative designs for patch extraction. 1\u00d71 means that onlya single pixel (or pair of pixels) is used for each input element. \u2018Separate frames\u2019 means that theframes are not concatenated, but rather, input array elements are extracted independently from thexxviPublished as a conference paper at ICLR 2022ModelTokenizerMulti-taskCoLAMNLI-m/mmMRPCQNLIQQPRTESST-2STS-BAverageBert Base (test) (Devlin et al., 2019)SentencePieceNo52.1084.60/83.4084.8090.5089.2066.4093.5087.1080.95Bert Base (ours)SentencePieceNo50.2885.56/85.6885.7592.6791.0561.7293.9888.0481.14Perceiver IO BaseSentencePieceNo47.1184.53/85.0387.2592.1290.2265.2394.3888.1881.16BERT (matching FLOPs)UTF-8 BytesNo20.0674.11/75.5577.0085.7588.2353.9189.0082.8471.45Perceiver IOUTF-8 BytesNo50.1983.22/83.8987.2491.7190.1264.8493.1786.8180.95Perceiver IO++UTF-8 BytesNo52.5484.13/84.9186.0392.0690.4666.5493.9887.9381.76Perceiver IO (Shared input token)UTF-8 BytesYes47.4382.03/82.6589.5890.1889.2082.0393.1777.9581.49Perceiver IO (Task speci\ufb01c input token)UTF-8 BytesYes49.0682.14/82.6489.8490.5389.4079.6993.1780.0281.76Perceiver IO (Multitask query)UTF-8 BytesYes47.8882.05/82.7790.3690.3789.4980.0893.7579.9581.79Number of latents (N)Latent width (D)FLOPsAverage GLUE score1281920120B75.842561280113B80.95512896125B80.92two frames (thereby doubling the number of input elements).",
+      "token_count": 584
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0093",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 93,
+      "section": "preamble",
+      "text": "In the case of separate frames, 1\u00d71means essentially no preprocessing: each pixel becomes its own element with no spatio-temporalcontext whatsoever.We also performed experiments with a less expensive input model which uses a 7\u00d77 convolution to64 channels, followed by a max pool, similar to the one used in our ImageNet experiments. Afterfeeding this through the Perceiver IO architecture (including querying with the same convolutionalfeatures used as input), we have an output a feature grid with stride 4 and 64 channels, on top ofwhich we apply a RAFT upsampling layer. This involves a linear projection from 64 dimensionsto 2, which is the coarse-resolution optical \ufb02ow estimate. We then upsample this \ufb02ow for a givenpixel in the high-resolution \ufb02ow map by applying attention over a neighboring 3x3 block of thelow-resolution \ufb02ow map, following the uppsampling approach in RAFT (Teed & Deng, 2020).We found that concatenating frames led to a non-trivial performance improvement across the moredif\ufb01cult Sintel.\ufb01nal and KITTI Flow 2015 (Menze & Geiger, 2015) datasets. Spatial context helps,and the impact of frame concatenation is larger when more context is available, suggesting that thealgorithm is comparing spatial and temporal gradients.",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0094",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 94,
+      "section": "preamble",
+      "text": "Spatial context helps,and the impact of frame concatenation is larger when more context is available, suggesting that thealgorithm is comparing spatial and temporal gradients. Convolutional downsampling and RAFTupsampling provide even more spatial context for both the input features and the queries, but thisdoesn\u2019t make up for the loss of resolution and overall performs slightly worse than using the fullresolution.Perceiver IO is somewhat slower on traditional GPUs than our baseline RAFT model, but we \ufb01ndthat the trend reverses on TPUs, which is the target architecture for our work. For ease of comparison,we report inference speed on 1088 \u00d7 436 images, using a tiled inference setup. Our most expensivemodel achieves approximately 0.8 frames/sec on a 2017 TITAN Xp, and our lightweight model (withconv downsampling and RAFT-style upsampling) achieves 3.3 frames/sec, which is not far fromthe 10 frames per second reported for RAFT (Teed & Deng, 2020). On the publicly-available TPUv3, however, our most expensive model achieves 4.4 frames/sec on a single TPU core, and 17.8frames/sec for the lightweight model. An ef\ufb01cient Tensor\ufb02ow implementation of RAFT (Sun et al.,2020) (received courtesy of the authors) achieves only 1.6 frames/sec on the same hardware.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0095",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 95,
+      "section": "preamble",
+      "text": "An ef\ufb01cient Tensor\ufb02ow implementation of RAFT (Sun et al.,2020) (received courtesy of the authors) achieves only 1.6 frames/sec on the same hardware. Wesuspect that the difference is due to the gather operations required for RAFT but not for Perceivers,which are slow on TPU due to their poor memory locality properties.Fig. 8 shows some results on example image pairs from the Sintel.\ufb01nal dataset. We see that thealgorithm is capable of dealing with heavy occlusion, and can propagate optical \ufb02ow across largeregions with very little texture. The network can also deal with very large motions and very smallobjects.Finally, to verify that Perceiver IO performs well on real-world data despite being trained onlyon synthetic imagery, we applied it to a small number (roughly 10) real videos taken from Gettyimages (www.gettyimages.com).",
+      "token_count": 195
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0096",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 96,
+      "section": "preamble",
+      "text": "Perceiver IO typically performs very well out-of-domain,xxviiPublished as a conference paper at ICLR 2022MethodPatch sizeConcat. framesDownsampleDepthLatentsSintel.cleanSintel.\ufb01nalKITTIPWCNet (Sun et al., 2018)-----2.172.915.76RAFT (Teed & Deng, 2020)-----1.952.574.23Perceiver IO3\u00d73YesNo2420481.812.424.98Perceiver IO3\u00d73NoNo2420481.782.706.19Perceiver IO1\u00d71YesNo2420481.912.565.39Perceiver IO1\u00d71NoNo2420481.722.635.93Perceiver ION/AYesYes2420481.842.524.83Perceiver ION/ANoYes2420481.902.536.66Perceiver ION/AYesYes1610242.062.676.12although some failure cases remain: for instance, shadows tend to be interpreted as objects (Auto\ufb02owcontains no shadows), and large regions with compression artifacts but no other texture may result inhallucinated \ufb02ow (Auto\ufb02ow contains no video compression artifacts).",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0097",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 97,
+      "section": "preamble",
+      "text": "We include three challengingexamples in the supplementary zip \ufb01le, each of which depict complex motion and small objects.Perceiver IO can pick up on remarkably small objects such as the water droplets thrown by the girl\u2019sshoe in pigeon.mp4 or the confetti in thai_dance.mp4.Implementation details:Our experiments with pixels and patches use a sine and cosine positionencoding with 64 bands for both X and Y , plus the raw X and Y values resulting in 258 extrafeatures concatenated to the pixel or patch values. For experiments without concatenated frames, wehave an additional time dimension which must be encoded with positional encoding, and for thiswe also use 64 sine and cosine bands (which are highly redundant, as there\u2019s only two frames). Forthis version, only the elements associated with the \ufb01rst frame are included as queries for the decoder.For both input and query, we project these concatenated features to 64 dimensions before inputtingthem into the transformer. We use a latent array with 2048 elements and 512 channels and 24 self-attention modules, each with 16 self-attention heads, unless otherwise noted.",
+      "token_count": 231
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0098",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 98,
+      "section": "preamble",
+      "text": "We use a latent array with 2048 elements and 512 channels and 24 self-attention modules, each with 16 self-attention heads, unless otherwise noted. Our experiments withconvolutional downsampling and RAFT upsampling use settings that are mostly similar, althoughwe use no additional projection as the output of the convolutional network is already 64 channels.For these experiments, the output of the perceiver decoder\u2019s cross attend is 64 channels, which is fedinto a RAFT-style upsampling operation. For the pixel- and patch-based models, total computationalcomplexity for a forward pass on a 368 \u00d7 496 image is roughly 987 billion FLOPs, and there areroughly 27.9 million parameters.In all cases, we train on the AutoFlow dataset (Sun et al., 2021), which consists of 400, 000 imagepairs, for 480 epochs using a cosine learning rate schedule which starts at a learning rate of 4e-4.We use a batch size of 512. We use the LAMB (You et al., 2021) optimizer. We also use the defaultcurriculum for AutoFlow, which gradually increases the severity of the augmentations over time.",
+      "token_count": 252
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0099",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 99,
+      "section": "preamble",
+      "text": "We use the LAMB (You et al., 2021) optimizer. We also use the defaultcurriculum for AutoFlow, which gradually increases the severity of the augmentations over time. We\ufb01nd that na\u00efve training on AutoFlow does not train, so we use an additional phase in this curriculum,xxviiiPublished as a conference paper at ICLR 2022ParamsFLOPs (train)FLOPs (eval)Train steps/sec20.0M310B6.85T4.4where we completely disable all augmentations. Furthermore, for this phase, we feed every imagepair twice in a batch: once forward, and once reversed. As the inverse \ufb02ow is not currently availablefor AutoFlow, this inverse \ufb02ow was computed via an approximation which averages all the \ufb02owsterminating at a given pixel.The evaluation datasets have a different resolution, so we evaluated in a tiled manner, using sixevenly-spaced tiles. For pixels that are covered by multiple tiles, we average the predictions, weightedproportional the distance to the nearest edge of the respective tile (as we expect predictions nearer tothe tile edges to be less accurate). We leave the possibility of making Perceiver IO invariant to inputshape to future work.IMULTIMODAL AUTOENCODING: ADDITIONAL DETAILSFor the multimodal autoencoding experiments, we patch preprocessing for both images and audio,and we embed the labels as one-hot labels.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0100",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 100,
+      "section": "preamble",
+      "text": "The patch size is 1 \u00d7 4 \u00d7 4 for video and 16 for audio.The audio is sampled at 48kHz, or 1920 samples per frame. The decoder outputs 16 \u00d7 224 \u00d7 224 +16 \u00d7 1920/16 + 1 vectors with 512 channels, that is, one element for each pixel in the video, oneelement for each audio patch, and one element for the classi\ufb01cation label. These are then linearlyprojected to the appropriate channel size for each modality: 3 for videos, 16 for audio and 700 forclassi\ufb01cation (the logits for each of the 700 classes in Kinetics700). Finally, we un-patch the audio toarrive at the output audio. We note that we read and generate the audio waveform directly in the timedomain; we do not transform \ufb01rst to a spectrogram.We use a 387 dimensional 3D Fourier position embedding for each input video patch and a 385dimensional 1D Fourier position embedding for each audio patch (385 to ensure the input dimensionsto Perceiver IO match for all elements). In addition, we pad all input elements with a learned vectorrepresenting the modality; inputs from the same modality share the same token.",
+      "token_count": 266
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0101",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 101,
+      "section": "preamble",
+      "text": "In addition, we pad all input elements with a learned vectorrepresenting the modality; inputs from the same modality share the same token. In particular, we adda 317 dimensional modality embedding to video elements, a 319 dimensional modality embedding toaudio elements, and a 4 dimensional modality embedding to the label, so that all elements have 704features.The decoder queries are also constructed from Fourier position embeddings for video and audio anda learned positional embedding for label: 387 features for video, 385 features for audio, and 1024learned features for the label. We pad the queries for each modality with a different learned vector foreach modality, so that the \ufb01nal feature size for the queries is 1026.We train on Kinetics 700 (Smaira et al., 2020). We use batch size of 1024, and learning rate of 1e-3.The training loss is a weighted sum of the L1 loss for video, the L1 loss for audio, and the crossentropy loss for the label. The weightings are 0.03 for video, 1 for audio, and 0.0001 for the label;the loss weights are imbalanced in favor of audio because it is more dif\ufb01cult to obtain audio of highperceptual quality by directly outputting the waveform.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2107.14795_chunk_0102",
+      "arxiv_id": "2107.14795",
+      "chunk_index": 102,
+      "section": "preamble",
+      "text": "We also tried a different weighting (0.03 forvideo, 1 for audio, and 1 for the label) to obtain higher classi\ufb01cation accuracy. Additional modeldetails are given in Tab. 17.To help verify the quality of Perceiver IO\u2019s outputs on real-world data, we applied it a small numberof real videos (\u223c10) with audio taken from Getty Images. Perceiver IO is able to capture the structureof both video and audio inputs, despite encoding both jointly with a single network. The modelintroduces blurriness to both video and audio: this may be partially attributable to the preprocessing,which included coarse patching (Tab. 5) for both modalities due to the very high computational costof processing raw video and audio inputs (which amount to over 2 million raw points). Althoughdecoding can be done in parallel, allowing us to decode very large output arrays in sequential batches,Perceiver IO requires all points are encoded simultaneously. Addressing this limitation and scaling toeven larger inputs is an important direction for future work.xxix",
+      "token_count": 219
+    }
+  ]
+}

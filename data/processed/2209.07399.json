@@ -1,0 +1,1023 @@
+{
+  "arxiv_id": "2209.07399",
+  "title": "A Light Recipe to Train Robust Vision Transformers",
+  "authors": [
+    "Edoardo Debenedetti",
+    "Vikash Sehwag",
+    "Prateek Mittal"
+  ],
+  "year": 2022,
+  "abstract": "In this paper, we ask whether Vision Transformers (ViTs) can serve as an underlying architecture for improving the adversarial robustness of machine learning models against evasion attacks. While earlier works have focused on improving Convolutional Neural Networks, we show that also ViTs are highly suitable for adversarial training to achieve competitive performance. We achieve this objective using a custom adversarial training recipe, discovered using rigorous ablation studies on a subset of the ImageNet dataset. The canonical training recipe for ViTs recommends strong data augmentation, in part to compensate for the lack of vision inductive bias of attention modules, when compared to convolutions. We show that this recipe achieves suboptimal performance when used for adversarial training. In contrast, we find that omitting all heavy data augmentation, and adding some additional bag-of-tricks ($\\varepsilon$-warmup and larger weight decay), significantly boosts the performance of robust ViTs. We show that our recipe generalizes to different classes of ViT architectures and large-scale models on full ImageNet-1k. Additionally, investigating the reasons for the robustness of our models, we show that it is easier to generate strong attacks during training when using our recipe and that this leads to better robustness at test time. Finally, we further study one consequence of adversarial training by proposing a way to quantify the semantic nature of adversarial perturbations and highlight its correlation with the robustness of the model. Overall, we recommend that the community should avoid translating the canonical training recipes in ViTs to robust training and rethink common training choices in the context of adversarial training.",
+  "categories": [
+    "cs.CV",
+    "cs.LG"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2209.07399v2",
+  "page_count": 29,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 125,
+  "chunks": [
+    {
+      "chunk_id": "2209.07399_chunk_0000",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "A Light Recipe to Train Robust Vision TransformersEdoardo Debenedetti\u2020Vikash Sehwag, Prateek MittalDepartment of Electrical and Computer EngineeringPrinceton UniversityPrinceton, United States{vvikash,pmittal}@princeton.eduDepartment of Computer ScienceETH ZurichZ\u00a8urich, Switzerlandedoardo.debenedetti@inf.ethz.chAbstract\u2014In this paper, we ask whether Vision Transformers(ViTs) can serve as an underlying architecture for improvingthe adversarial robustness of machine learning models againstevasion attacks. While earlier works have focused on improvingConvolutional Neural Networks, we show that also ViTs arehighly suitable for adversarial training to achieve competitiveperformance. We achieve this objective using a custom ad-versarial training recipe, discovered using rigorous ablationstudies on a subset of the ImageNet dataset. The canonicaltraining recipe for ViTs recommends strong data augmentation,in part to compensate for the lack of vision inductive bias ofattention modules, when compared to convolutions. We showthat this recipe achieves suboptimal performance when used foradversarial training. In contrast, we find that omitting all heavydata augmentation, and adding some additional bag-of-tricks(\u03b5-warmup and larger weight decay), significantly boosts theperformance of robust ViTs. We show that our recipe generalizesto different classes of ViT architectures and large-scale modelson full ImageNet-1k.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0001",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "We show that our recipe generalizesto different classes of ViT architectures and large-scale modelson full ImageNet-1k. Additionally, investigating the reasons forthe robustness of our models, we show that it is easier togenerate strong attacks during training when using our recipeand that this leads to better robustness at test time. Finally,we further study one consequence of adversarial training byproposing a way to quantify the semantic nature of adversarialperturbations and highlight its correlation with the robustness ofthe model. Overall, we recommend that the community shouldavoid translating the canonical training recipes in ViTs to robusttraining and rethink common training choices in the context ofadversarial training. We share the code for our experiments athttps://github.com/dedeswim/vits-robustness-torch.Index Terms\u2014Adversarial Robustness, Adversarial Training,Computer Vision, Vision Transformer3035404550556065R50/WRN-28-10Robust Accuracy (%)XCiT-S12 (canonical)XCiT-S12 (ours)Im-1KC100FlowersC10Cal101Fine-tuningFig. 1: A light recipe is better! Comparison of our proposedrecipe with light data augmentation and the canonical onefor ViTs (XCiT-S12 in this experiment) in pre-training onImageNet-1k and finetuning on four different datasets.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0002",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "Comparison of our proposedrecipe with light data augmentation and the canonical onefor ViTs (XCiT-S12 in this experiment) in pre-training onImageNet-1k and finetuning on four different datasets. Ourrecipe boosts robust accuracy by 13.1% on ImageNet-1kand up to 5.5% on downstream finetuning tasks. For furthercomparison, we also include ResNet-50 (with smooth activationfunction [1, 2] \u2013 GELU [3]). Since a WideResNet-28-10performs better for low-resolution datasets, we use it as abaseline for C10 and C100. Abbreviations for datasets are 1)Im-1k: ImageNet-1k, 2) C100: CIFAR-100, 3) Flowers: Oxford-flowers, 4) C10: CIFAR-10, and 5) Ca101: Caltech-101.I. INTRODUCTIONVision Transformers for adversarial training. Several earlierworks have innovated on activation functions [1, 2, 16] forCNNs or their structure [17] to improve robustness.",
+      "token_count": 242
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0003",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "INTRODUCTIONVision Transformers for adversarial training. Several earlierworks have innovated on activation functions [1, 2, 16] forCNNs or their structure [17] to improve robustness. Whilesuch advancements in CNNs are helpful and CNNs are thede facto standard architecture for adversarial training, weshow that a drastic boost in adversarial robustness can beachieved by switching the architecture class itself, i.e., byusing Vision Transformers (ViTs) [18]. In fact, even non-adversarially trained ViTs show some signs of higher robustnessthan conventional CNNs when considering non-adversarialperturbations [2, 19\u201321], which further encourages their use inrobust training. Inspired by these features shown by ViTs, priorwork [2, 22, 23] has attempted to train ViTs with adversarialtraining but failed to replace CNNs as the dominant architectureon robustness benchmarks [24]. Since ViTs are competitiveAdversarial training [4], which has emerged as one of themost successful defenses against evasion attacks targetingmachine learning models [5, 6], consists of training againstworst-case inputs to make networks robust. However, it incursa large generalization gap [7\u20139], and closing this gap is akey challenge.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0004",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "However, it incursa large generalization gap [7\u20139], and closing this gap is akey challenge. Existing work that tackles this problem can bebroadly classified into three categories: 1) improvements in theadversarial training mechanism [4, 10\u201312], 2) modifications tothe training data [13\u201315], and 3) modifications of the neuralnetwork architecture for robust training [1, 16]. Our workfocuses on the latter category, by improving robustness withnew architectures while improving the training recipe.\u2020Work done as a Master\u2019s student at the IC Department at EPFL.with CNNs in standard training [25, 26], it is imperative to askwhether their suboptimal performance in adversarial training isfundamental or simply an artifact of sub-par training recipes.With a systematic investigation, we identify that the latter istrue and propose a simple, yet highly effective recipe to boostthe performance of ViTs in adversarial training.1k also directly transfer when finetuning on smaller datasetsof both high- and low- resolution.Delving deeper into adversarial robustness of ViTs. Weconduct two analyses to better understand why our recipebrings an improvement: attack effectiveness and semanticnature quantification. Since large-scale adversarial training usesonly few-step attacks, its performance depends on the strengthof adversarial examples generated with few-step attacks.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0005",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "Since large-scale adversarial training usesonly few-step attacks, its performance depends on the strengthof adversarial examples generated with few-step attacks. Weuncover that, throughout the whole training duration, few-stepattacks are more effective for a ViT trained with our recipethan for a ViT trained with the canonical recipe, as well asmore effective than a conventional CNN architecture. Thisresults in a model which is overall more robust to strongattacks at test time. Next, we propose a new way to quantifythe semantic nature of adversarial perturbations [35] for robustViTs. We show, with a quantitative method, that the adversarialperturbations targeting XCiT-S12 have more semantic featuresthan those targeting a GELU ResNet-50.Key contributions. We make the following key contributions:Canonical ViTs training recipes are suboptimal for adver-sarial training. Due to the lack of strong inductive bias inViTs, they need custom training recipes [27], which includeheavy data augmentation, to achieve optimal performance. Weobserve that using these canonical recipes with adversarialtraining leads to sub-optimal performance, even suggestingthat state-of-the-art ViTs [28] fail to significantly outperformconventional CNN architectures, such as ResNets [29].",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0006",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "Weobserve that using these canonical recipes with adversarialtraining leads to sub-optimal performance, even suggestingthat state-of-the-art ViTs [28] fail to significantly outperformconventional CNN architectures, such as ResNets [29]. Weshow that optimizing the training recipe boosts the performanceof ViTs from suboptimal to state-of-the-art (Fig. 1).Improved training recipe (weaker data augmentation isbetter!). Instead of just taking the canonical training recipeused by DeiT [30] and successive works [28, 31\u201333], we firstanalyze some ViT variations and architectural componentsthat could make ViTs more suitable for adversarial training.We then identify a set of important parameters that have afundamental role in adversarial training, such as adversarialtraining warm-up, data augmentations, and weight decay. Wego beyond the canonical training recipes commonly used forViT-like models by doing a thorough search for the optimalvalues of these parameters: we observe that the optimal choicesfor non-adversarial training drastically differ from those foradversarial training. In fact, we find that while the use of strongdata augmentation is recommended for standard training [27,30], this is detrimental to adversarial training: not only doesusing light data augmentation improve the robustness of ViTs,but it does so without sacrificing the clean accuracy.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0007",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "Ourrecommendation to use weaker data augmentation is alsosurprising since earlier works have argued for stronger dataaugmentation in adversarial training [2], albeit with a warm-upin the augmentation intensity, as well as the same weight decayas the one used for standard training.\u2022 Through a rigorous ablation study, we uncover a light yeteffective adversarial training recipe for ViTs. In particular,we find that the use of weak data augmentation, in contrastto strong augmentation in the canonical recipe, achievesstate-of-the-art performance on the ImageNet-1k dataset(compared with the other models on RobustBench [24]),with models having up to 47.60% AutoAttack accuracy and73.76% clean accuracy.\u2022 We further show that our proposed recipe generalizes acrossdifferent scales of datasets and models, and different classesof ViT architectures.\u2022 We demonstrate that the advantage of our recipe in pre-training also leads to benefits when finetuning on downstreamdatasets. Across four low- and high-resolution datasets, ourrecipe achieves up to 5.5% higher robust accuracy than thecanonical recipe.\u2022 We identify that the high robustness of ViTs is alsorelated to the effectiveness of adversarial attacks on them.Simultaneously, we quantify that adversarial perturbationstargeting robust ViTs have semantic characteristics.Generalization of our recipe across scales, architectures,and datasets.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0008",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "Improving over the canonical training reciperequires a rigorous ablation study, which has a high computa-tional cost on large-scale datasets and models.1 To circumventthis challenge, we optimize our recipe with a subset ofthe ImageNet-1k dataset and smaller models. However, forwidespread usage, it is imperative that the benefits of ourrecipe generalize across diverse scenarios. We first show thatthe proposed recipe outperforms the canonical one at scale, i.e.,on the full ImageNet-1k dataset. Next, we show that not only itperforms better across the XCiT transformer class [28], but alsofor other transformers (such as DeiT [30] and PoolFormer [32]),as well as for modern CNNs (ConvNeXt [34]). Finally, weshow that the gains of our recipe in pre-training on ImageNet-Paper Outline. We provide a brief overview of adversarialtraining and the ViT architecture in Section II. In Section III,we first identify the limitations of the canonical recipe andthen conduct an ablation study for the proposed training recipe.In Section IV, we first show the advantage of our recipe on thefull-scale ImageNet-1k dataset across different architectures.We later demonstrate its downstream benefits in finetuning.In Section V, we examine why ViTs are highly successfulin adversarial training.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0009",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "In Section VI, we present the relatedworks and conclude the paper with a discussion in Section VII.Open-sourced artifacts. Finally, we share the code on GitHub2to enable the community both to reproduce our results and fine-tune the models on further datasets. In the same repository, wealso share the checkpoints of our models for five datasets,1Doing such ablation on full ImageNet-1k with XCiT-S would take 2632TPUv3 hours (i.e., 179 TPUv3 days).2https://github.com/dedeswim/vits-robustness-torchnumerous architectures, and perturbations to enable otherresearchers to fine-tune the models, as well as run furtheranalyses.Linear classifier*Processed class tokenII. BACKGROUNDClassTransformerN \u2715 (Attention + MLP blocks)Adversarial training [4] has shown to be an effectiveand reliable method to defend against adversarial examples,and most of the subsequent work about defenses againstadversarial examples is based on it. On the other hand, ViTsare an emerging class of architectures that achieve competitiveperformance on standard computer vision benchmarks [25]. Inthis section, we give an overview of both.Learnable class tokenEmbedded tokens + positional embeddings4098765321Linear projectionA. Overview of adversarial trainingFig. 2: Overview of the transformer architecture.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0010",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "Inthis section, we give an overview of both.Learnable class tokenEmbedded tokens + positional embeddings4098765321Linear projectionA. Overview of adversarial trainingFig. 2: Overview of the transformer architecture. Thedifferent phases of a vision transformer model: 1) patchification2) addition of the positional encodings and of the [cls] token3) processing through N transformer blocks 4) classification.Further details about ViTs and some variants are in Appendix A.Image reproduced from Dosovitskiy et al. [18].Adversarial training [4] is one of the most successfuldefenses against adversarial examples. It consists of generatingadversarial examples at each step and training the model usingthe generated perturbed data instead of the original, clean data.Given a model with parameters \u03b8, input data x with label ysampled from a distribution pdata, a set of allowed inputs S anda loss L, adversarial training formally consists of optimizingthe following min-max problem:computer vision tasks [18]. The resulting architecture is calledVision Transformer (ViT). In particular, it is possible to dividethe input images into non-overlapping patches, which areembedded into tokens, and then fed to the transformer.",
+      "token_count": 252
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0011",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "The resulting architecture is calledVision Transformer (ViT). In particular, it is possible to dividethe input images into non-overlapping patches, which areembedded into tokens, and then fed to the transformer. Wegive additional in-depth details about the various componentsof this architecture, as well as more information about the ViTvariants used in this work in Appendix A.\\ l abe l {eq:adv-train}\\hat { \\vt h et a } = \\argmin _\\vtheta \\mathbb {E}_{(\\rvx , \\ry ) \\sim \\pdata } \\left [ \\max _{\\vdelta \\in \\sS } \\Ls (\\rvx + \\vdelta , \\ry ; \\vtheta ) \\right ]. (1)Several further techniques have been proposed to improveadversarial training and the trade-off [10] between robustnessand accuracy. Some of them include the optimization of adifferent objective [10, 36], early stopping to avoid the so-called robust overfitting [37], tuned data augmentation [13],weight averaging [13] etc.Metrics in adversarial training. It is common to use thefollowing two metrics to measure performance in adversarialtraining: a) Clean accuracy: the accuracy of the model evaluatedon the original data. b) Robust accuracy.: the accuracy of themodel on a dataset of adversarial examples generated fromthe original data using an attack.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0012",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "To avoid overestimating therobustness of our networks, it is critical to evaluate the modelsusing a strong attack when generating adversarial examples.We employ AutoAttack [38] for the robust accuracy evaluation.AutoAttack is considered the de-facto standardized method toassess the adversarial robustness of classification models. Itis an ensemble of four different parameter-free attacks, threewhite- and one black-box. We provide more details about theevaluation procedure of our experiments in Section III.III. FINDING AN EFFECTIVE ADVERSARIAL TRAININGRECIPE FOR VISION TRANSFORMERSWe now aim at finding an effective training recipe to leveragethe potential that ViTs have shown for standard training. Wefirst highlight the limitations of the canonical standard trainingrecipes which use strong data augmentation. We then conductan ablation study of major design choices: 1) a warm-up forthe perturbation budget, 2) data augmentation policy, and 3)weight decay. As a result, we show the factor which influencesperformance the most: surprisingly, strong data augmentationleads to sub-par performance.Setup. We validate the ablations in this section with a simplifiedsetup for the sake of efficiency: we train thirty-two models on asubset of 100 random classes of ImageNet-1k and validate themusing APGD-CE [38], the first attack of the well-establishedAutoAttack [38].",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0013",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "However, in Section IV we will validate thefindings of this section on the full ImageNet-1k dataset [41],using the full ensemble of AutoAttack. Throughout the paper,we mainly focus on untargeted \u2113\u221eattacks, and for ImageNet-100 and ImageNet-1k on perturbations of magnitude 4/255, asthis is the most studied scenario so far [24] (with the exceptionof Section IV-A, where we also test our recipe on the \u21132 threatmodel with \u03b5 = 3.0). We evaluate the checkpoint which hasthe highest FGSM accuracy throughout the training, to preventrobust overfitting [37]. Additional details about the trainingsetup and procedure are in Appendix D.B. Overview of Vision TransformersThe Transformer architecture [39] is an architecture forsequence transduction and Natural Language Processing (NLP)tasks (e.g., machine translation) based on the attention mech-anism [40]. This architecture includes a series of so-calledMulti-Head Attention layers, each followed by a Multi-LayerPerceptron block. Every layer has a residual connection.This architecture takes as input a series of words, whichare tokenized and embedded into vectors of size dmodel.The Transformer architecture can also be easily adapted forA.",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0014",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "Every layer has a residual connection.This architecture takes as input a series of words, whichare tokenized and embedded into vectors of size dmodel.The Transformer architecture can also be easily adapted forA. The canonical training recipe leads to suboptimal perfor-mance in adversarial trainingWhile early attempts with ViTs succeeded only with large-scale pre-training, a lot of effort has been put to achieve goodperformance without the need of pre-training them on verylarge datasets. In particular, both Touvron et al. [30] and Steineret al. [27] observe that strong data augmentation techniquesare needed, i.e., MixUp, CutMix, RandAugment, and RandomErasing, as they help compensate for the lack of a strong visionprior such as convolutions. Similarly, other work on ResNetsand CNNs, in general, observed that stronger data augmentationimproves the generalization of standard training [34, 42].Canonical training recipe. We refer to canonical trainingrecipe as the one used in the original XCiT paper [28], which,in turn, is borrowed from DeiT\u2019s paper [30], and used for thelarge majority of ViT variations (e.g., CaiT [31] and Pool-Former [32]), and modern CNNs (e.g., ConvNeXt [34]). Wesummarize this recipe below.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0015",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "Wesummarize this recipe below. When adversarially training XCiT-S, a ViT variant, if we use the canonical recipe, we observe verypoor performance when compared to the equivalent state-of-the-art ResNet-50 with GELU activation function by Bai et al. [2].They use a setup that does not differ from the standard setup forResNets and achieve almost one fourth better robust accuracy(35.51% vs. 28.70%). Given this difference, considering that onstandard training XCiT-S performs better than ResNet-50, it isnatural to investigate whether a better setup can lead to strongerresults. In this section, we rigorously analyze the design spaceof adversarial training and propose a better training recipe.In Table I, we show a summary of why the canonical recipeis sub-optimal for XCiT-S, with further, rigorous results inTable II, which we discuss in the next sections.B. Architecture choice: Architectural innovations significantlybenefit adversarial trainingOur objective is to understand how innovations in ViTsarchitecture, post the conception in Dosovitskiy et al. [18],directly benefit adversarial training. In particular, we focus onDeiT [30], CaiT [31], and XCiT [28]. These architectures are anatural choice, as each improves upon the latter.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0016",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "In particular, we focus onDeiT [30], CaiT [31], and XCiT [28]. These architectures are anatural choice, as each improves upon the latter. CaiT improvesover DeiT by introducing Class Attention while XCiT furtherimproves CaiT using Cross-Covariance Attention. We providedetailed descriptions of each architecture in Appendix B. Ourresults in Table IIa show that Class Attention in CaiT helps withthe fit to adversarial training, and Cross-Covariance Attentionboosts, even more, the performance. For this reason, we chooseXCiT as the base architecture for our experiments. To speed upthe ablation study, we use a smaller variant of XCiT, XCiT-N12.C. Data-augmentation: Adversarial training of ViTs requiresweak augmentationThe success of ViTs strongly depends on the use of heavydata augmentation and appropriate regularization (Steiner etal. [27] and Touvron et al. [30]), often attributed to their lackof inductive bias for vision tasks. Simultaneously, adversarialtraining for CNNs also benefits from heavy data augmenta-tion [13], albeit on low-resolution datasets, thus it is naturalto start using heavy data augmentation in adversarial trainingof ViTs. However, we find this choice highly sub-optimal, asweaker data augmentation achieves much better performancewith adversarial training (Table IIc).",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0017",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "However, we find this choice highly sub-optimal, asweaker data augmentation achieves much better performancewith adversarial training (Table IIc). We run a thoroughablation, considering all sixteen combinations of the four keydata augmentation policies: CutMix [44], RandAugment [45],MixUp [46], and Random Erasing [47]. We give an in-depthdescription and examples of the various data augmentationtechniques in Appendix C. In all the training runs, we alwaysapply basic augmentations such as horizontal flipping, randomresize-rescale, and color jitter. We show the top seven setupsin Table IIc, ranked by APGD-CE accuracy (full results inTable IX in Appendix E). Surprisingly, the augmentation setupthat leads to the best results in terms of APGD-CE accuracyis the one with no additional augmentations, apart from thebasic ones listed above, together with the one that uses onlyRandom Erasing. These setups improve the robust accuracyby 3.84% over the canonical strategy of using heavy dataaugmentation. This phenomenon is likely arising due to theinherent regularization imposed by adversarial training, wherestrong adversarial perturbations already make the optimizationmuch harder thus leading to better performance without heavyaugmentation. Moreover, we note that the models with the bestrobust accuracy are also the ones with the best clean accuracy,suggesting that using only light data augmentation does notaffect clean accuracy.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0018",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "Moreover, we note that the models with the bestrobust accuracy are also the ones with the best clean accuracy,suggesting that using only light data augmentation does notaffect clean accuracy. We note that the setup with only RandomErasing has the same robust accuracy as the one with no heavyaugmentation but has a slightly larger clean accuracy. Despitethis, we choose as a setup for the next experiments the onewithout Random Erasing, to keep the overall setup as simpleas possible. We will validate this choice in Section IV-A.TABLE I: Limitation of canonical training recipe. Whileborrowing the canonical recipe in adversarial training largelysucceeds for CNNs, i.e., ResNet-50, it leads to suboptimalperformance in ViTs, i.e., XCiT-S.",
+      "token_count": 163
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0019",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "Whileborrowing the canonical recipe in adversarial training largelysucceeds for CNNs, i.e., ResNet-50, it leads to suboptimalperformance in ViTs, i.e., XCiT-S. Directly translating thecanonical recipe to adversarial training gives a false impressionthat ViTs are not suitable for adversarial training.ArchitectureStandard trainingAdversarial trainingClean accuracyAutoAttack accuracyResNet-5076.0 [42, 43] 335.51 [2]XCiT-S82.0 [28]28.70Canonical training recipe\u2022 Strong data augmentations (MixUp + CutMix + Ran-dAugment + Random Erasing)\u2022 Small weight decay (0.05 using AdamW on ImageNet-1k)3For ResNet we show the clean accuracy of the model available in thetorchvision library, as reported by Wightman et al. [42]. However, this modelis trained without heavy augmentation, similarly to the adversarially trainedResNet-50 by Bai et al. [2], even though Wightman et al. [42] show thatheavy data augmentation benefits ResNets as well.TABLE II: Beyond canonical choices: identifying best adversarial training setup for ViTs. We analyze choices in architecture,data-augmentation, and optimization setup to identify the best training setup for adversarial training. We use the ImageNet-100 dataset and measure the robust accuracy using the APGD-CE attack.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0020",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "We analyze choices in architecture,data-augmentation, and optimization setup to identify the best training setup for adversarial training. We use the ImageNet-100 dataset and measure the robust accuracy using the APGD-CE attack. Our analysis uncovers intriguing trends: one is acounter-intuitive phenomenon where weaker data augmentations lead to better performance in ViTs with adversarial training.(a) Comparison of different ViT-like architectures. Innovation in ViTs architectures hasa relevant impact on adversarial training performance. We observe that the cross-covarianceattention-based XCiT architecture achieves significantly better performance than the others.(b) Attack curriculum. We warm up \u03b5 bylinearly increasing it for a fixed number ofearly epochs. It benefits both clean and robustaccuracy. (Arch: XCiT-N12).ArchitectureParametersGFLOPsAccuracyEpochsAccuracyCleanAPGD-CECleanAPGD-CEDeiT-S [30]22M4.6162.5233.32CaiT-S-12 [31]25M4.7670.2035.84XCiT-N12 [28]3M0.5648.4630.48XCiT-S12 [28]26M4.8185.0654.80048.4630.48552.0432.861054.6233.842056.1034.883056.1234.54(c) Weak data augmentation is better.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0021",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "The strategies that perform best are those withjust Random Erasing or no heavy augmentation at all. We report the seven best results,and the baseline recipe with all data augmentations, in this table (full results in Table IXin Appendix E). In all the runs in this table we keep weak data augmentations that arecommonly used (random flip and crop, and color jitter). (Arch: XCiT-N12)(d) Large weight decay helps.",
+      "token_count": 91
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0022",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "In all the runs in this table we keep weak data augmentations that arecommonly used (random flip and crop, and color jitter). (Arch: XCiT-N12)(d) Large weight decay helps. The bestresults are obtained with 0.5 weight decay,which is 10\u00d7 larger than the 0.05 weightdecay used in the canonical recipe. (Arch:XCiT-N12)Data Augmentation PolicyAccuracyWeight DecayAccuracyMixUpCutMixRandAugmentRandom ErasingCleanAPGD-CECleanAPGD-CE\u2717\u2717\u2717\u271367.2839.22\u2717\u2717\u2717\u271766.7839.22\u2713\u2717\u2717\u271761.0438.56\u2713\u2717\u2717\u271360.4638.26\u2713\u2713\u2717\u271762.0438.18\u2717\u2717\u2713\u271765.3437.64\u2717\u2717\u2713\u271364.7637.62\u2713\u2713\u2713\u271356.6435.38066.4439.020.00166.4039.040.0166.2838.660.0567.1639.300.167.2839.920.568.7842.021.067.6840.88D.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0023",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "Optimization setup: Tuning attack curriculum and addi-tional regularization brings further improvementsweight decay, in different orders of magnitude. The weightdecay used to train XCiT originally was 0.05 [28], but we getthe best results with the weight decay equal to 0.5 (Table IId),both in terms of clean and robust accuracy. We hypothesizethat the regularization introduced by the larger weight decayhelps as we have removed heavy data augmentation.Epsilon warm-up. Bai et al. [2] observe that adversariallytraining a DeiT on the full ImageNet-1k dataset would failusing the same setup as the one in the DeiT paper. For thisreason, we attempt training an XCiT-N12 to see if the trainingsucceeds. Even though the training run succeeds, the modelstruggles in the first few epochs. A possible solution couldbe to use the following attack curriculum: we make the taskeasier for the first few epochs and then gradually make itharder. We warm up the adversarial perturbation budget (\u03b5) bylinearly increasing \u03b5 for a fixed number of warm-up epochs.Our results (Table IIb) show that using 20 epochs as warm-upduration gives a significant increase in both clean accuracyand APGD-CE accuracy.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0024",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "This suggests that, while graduallyincreasing the difficulty of the task does not prove useful formodels with larger inductive bias, such as ResNets [48], it canhelp for models that have a low inductive bias (e.g., ViTs).IV. VALIDATING OUR TRAINING RECIPE AT SCALEWe now test the best setup found in the previous section onthe full ImageNet-1k dataset, with a range of architectures andmodel sizes. We show that not only our recipe achieves strongresults for XCiT-S when compared to the canonical recipe, butit also enables better results on other modern architectures,and other model sizes in the case of XCiT. Finally, we showthat we can also pre-train and fine-tune transformers using thisrecipe for a larger attack budget: XCiTs pre-trained in thisway can be robustly fine-tuned to a diverse set of downstreamdatasets achieving competitive performance.Our training recipe. Based on our previous findings, weuse a) a 10-epochs, linear warm-up for \u03b5, b) better-tuneddata augmentation, by using just weak data augmentation (i.e.,random resize, crop and horizontal flipping, and color jitter),and c) 0.5 weight decay. We do a 10 epochs warm-up, instead ofWeight decay.",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0025",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "We do a 10 epochs warm-up, instead ofWeight decay. As pointed out by Pang et al. [48], weightdecay has an important role to make models more robust: alarger weight decay helps reduce the generalization gap forrobust accuracy. For this reason, we ablate several values of20 (as what Table IIb would suggest), because ImageNet-1k is10 times larger than ImageNet-100: after 10 epochs the modelwill have seen enough easy images with small perturbations,to then continue the training with the full perturbation budget.Robust Accuracy (%)Proposed training recipe\u2022 10-epoch Linear \u03b5-warmup\u2022 Only basic data augmentation (random-resize-and-crop+ horizontal-flipping + color-jitter).0246810121416\u03b5\u2022 High weight decay (0.5 using AdamW on ImageNet-1k)Fig. 3: AutoAttack is reliable. We show how the robustnessof XCiT-S trained for \u03b5 = 4/255 goes down as \u03b5 increases.As expected from a reliable attack, the robust accuracymonotonically, but gently decreases with \u03b5.TABLE III: Weak data augmentation with large weightdecay is better than heavy data augmentation curriculum.In adversarial training of ViTs, Bai et al. [2] previouslyrecommended the use of strong data augmentation, but witha progressive curriculum.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0026",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "We observe that using only weakdata augmentations strategies, together with larger weightdecay, brings better results than using progressive strongdata augmentation increased in the first epochs. For a faircomparison, we use identical network architecture and trainingsetup as Bai et al. [2]. The model marked with \u2020, trained byBai et al. [2] with the canonical recipe, failed the training,while our implementation of the same model is marked with \u2217.them, reducing data augmentation yields the highest benefit,while all aspects combined improve the robust accuracy by12.42%, i.e., by more than 40% relative to the canonical reciperobust accuracy. In comparison, at the time of submission, theleading entry from RobustBench leaderboard for ImageNet-1k [49], by Salman et al. [50] achieves 38.14% robust accuracy(3.64% lower than ours) and 68.46% clean accuracy (3.88%lower than ours). Note that Salman et al. [50] use WideResNet-50-2, which has 2.6\u00d7 more parameters and 2.4\u00d7 more FLOPsthan XCiT-S12.",
+      "token_count": 247
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0027",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "Note that Salman et al. [50] use WideResNet-50-2, which has 2.6\u00d7 more parameters and 2.4\u00d7 more FLOPsthan XCiT-S12. Finally, we validate our choice not to useRandomErasing to keep the recipe light: the model trainedwith it only has 40.60% robust accuracy (1.18% less thanwithout), and comparable clean accuracy (72.42%).AutoAttack reliability. To make sure that AutoAttack is areliable attack for XCiT as much as it is for adversarially trainedResNets (i.e., the model does not suffer from gradient maskingor other factors which may impact AutoAttack\u2019s performance),we study how the robustness of XCiT-S12 changes when \u03b5increases. As we can see from Fig. 3, the robust accuracydecreases monotonically \u2013 but slowly \u2013 until it reaches \u223c0%when \u03b5 = 16. This suggests that AutoAttack has no clearissues to find adversarial examples for XCiT.",
+      "token_count": 218
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0028",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "This suggests that AutoAttack has no clearissues to find adversarial examples for XCiT. Finally, we notethat, among the 5000 validation images used by RobustBench,2345 are not perturbed successfully by either of APGD-CEand APGD-T [38], and among those 2345, only 1 is perturbedsuccessfully by the FAB-T [51] attack, and among the 2344remaining images, none is successfully perturbed by the black-box Square attack [52]. The fact that the black-box attack doesnot manage to decrease the robust accuracy of the white-boxones further suggests that no issues are encountered whencomputing gradients with white-box attacks. For completeness,we also report PGD-{5, 10, 50, 100} results in Table X in theappendix.Comparison with Bai et al. [2]. In their work, Bai et al.[2] observe that training DeiT-S with strong augmentationsleads to a collapse of the training procedure, and trainingwith no strong augmentation at all (but with no changes interms of weight decay) leads to suboptimal performance.",
+      "token_count": 236
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0029",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "Onthe other hand, they find that increasing the intensity of dataModelAccuracyCleanAutoAttackGELU ResNet-50 [2] (c)67.3835.53DeiT-S\u2020 [2] (c)\u2014\u2014DeiT-S [2] (c + heavy augmentation curriculum)66.5035.50DeiT-S\u2217(c, ours)66.3032.70DeiT-S (ours)66.8037.90XCiT-S12 (ours)72.3441.78A. Validating success on the full ImageNet-1k datasetIntuition of why the recipe should scale up. We observethat the data augmentation setup, as well as weight decay,could interact with the dataset size: a smaller dataset mayneed stronger data augmentation, as the model could overfit.In particular, this was experimentally validated for ViTs bySteiner et al. [27] and Touvron et al. [30]. On the otherside, we note that we use minimal data augmentation on thesmaller ImageNet-100.",
+      "token_count": 220
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0030",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "On the otherside, we note that we use minimal data augmentation on thesmaller ImageNet-100. Hence, we argue that, as ImageNet-1kis larger than ImageNet-100, it should require at most the same(if not weaker) data augmentation to improve generalization.Regarding weight decay, similarly, for a smaller dataset, wemay require a larger weight decay to avoid overfitting, whilea smaller weight decay may be desirable for a larger datasetto avoid underfitting. However, as we will show in the nextparagraph, using a larger weight decay brings improvements.Validating our proposed recipe step-by-step (Table IVa).We find that all three strategies, i.e., using \u03b5 warm-up, weak dataaugmentation, and large weight decay, helps the performanceof adversarial training for the XCiT transformer model. AmongTABLE IV: Success on full scale ImageNet-1k dataset. We validate our method on the full ImageNet-1k dataset in twosteps. In table (a) we step-by-step add each finding from our ablation study (Table II) and shows our bag-of-tricks for ViT\u2019sadversarial training generalize to the full ImageNet-1k dataset. The most noticeable improvement comes from using weakerdata augmentations, the key finding uncovered in our ablation study.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0031",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "The most noticeable improvement comes from using weakerdata augmentations, the key finding uncovered in our ablation study. In table (b) we test whether weak data augmentationconsistently benefits adversarial training across ViTs or ViTs-inspired architectures. For each network, we consider the trainingrecipe used in the original paper for standard training and compare it with the proposed training recipe. Across all networks,we find that proposed training improves both clean and robust accuracy. We use AutoAttack to measure robust accuracy.(a) Step-by-step improvements. The effect of our training recipe components incrementally when tested on the full ImageNet-1k dataset.Overall, our training recipe improves the robust accuracy by 13.08%, not at the expense of the clean one, which increases by 0.66%.FeatureAccuracyCleanAutoAttackXCiT-S1271.6828.70+ \u03b5 warmup (10 epochs)71.98 (+0.30)29.36 (+0.66)+ Tuned data augmentation71.70 (\u22120.28)38.78 (+9.42)+ Tuned weight decay72.34 (+0.64)41.78 (+3.00)(b) Cross-architecture generalization. We compare three different architectures adversarially trained on ImageNet-1k with and withoutheavy data augmentation and small weight decay.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0032",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "We compare three different architectures adversarially trained on ImageNet-1k with and withoutheavy data augmentation and small weight decay. For all three architectures, using weak data augmentation brings an advantage, as opposedto standard training, where heavy data augmentation and smaller weight decay bring an advantage. Since for standard training there is no \u03b5involved, the \u03b5 schedule column applies only to the adversarially trained models. The PoolFormer without data augmentation (marked with \u2217)is trained with 0.05 weight decay, as with 0.5 the training collapses.",
+      "token_count": 116
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0033",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "The PoolFormer without data augmentation (marked with \u2217)is trained with 0.05 weight decay, as with 0.5 the training collapses. The symbol \u2020 means that the training run collapsed.Architecture\u03b5 scheduleHeavy dataAugmentationWeightDecayAdversarial trainingStandard trainingClean accuracyAutoAttack accuracyClean accuracyXCiT-S12\u2717\u27130.0571.6828.7080.53\u2713\u27170.572.3441.7878.96DeiT-S\u2717\u27130.0566.3032.7074.61\u2713\u27170.566.8037.9073.38ConvNeXt-T\u2717\u27130.050.08\u20200.08\u202079.87\u2713\u27170.571.6444.4477.70PoolFormer-M12\u2717\u27130.0565.8834.0876.84\u2713\u27170.05\u221766.1634.7275.74augmentation in the first ten epochs stabilizes the trainingprocedure and leads to 35.50% AutoAttack accuracy. However,we observe that, using our implementation, we can train a DeiT-S with heavy augmentation to nontrivial AutoAttack accuracy(32.70%). Our hypothesis for this difference is that we useda 10-epochs learning rate warm-up, instead of a 5-epochsone.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0034",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "Our hypothesis for this difference is that we useda 10-epochs learning rate warm-up, instead of a 5-epochsone. Moreover, using our recipe, DeiT-S achieves better robustaccuracy than when using the canonical recipe with an increasein data augmentation intensity. Finally, we improve over thebest result reported in their work, obtained with a GELUResNet-50 with both better clean and robust accuracy. Thecomparison is summarized in Table III.with larger weight decay and weak data augmentation, themodel achieves state-of-the-art results. This phenomenon islikely due to the fact that adversarial training requires muchhigher capacity networks than standard training [4], as it solvesthe learning objective on all samples within the perturbationbudget. While solving it on heavily augmented instances,the network sacrifices network capacity but doesn\u2019t yield anequivalent benefit in generalization. On the other hand, fromthe PoolFormer family, we train PoolFormer-M12, which isboth smaller and has fewer FLOPs than ResNet-50, and weobserve that, if we use the weight decay from our recipe (0.5)it is extremely unstable. Hence, we use our training recipewith the canonical weight decay (0.05). If we train the samemodel with full data augmentation from the canonical recipe(the same as the DeiT and XCiT one), we obtain a model withboth worse AutoAttack and clean accuracy.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0035",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "If we train the samemodel with full data augmentation from the canonical recipe(the same as the DeiT and XCiT one), we obtain a model withboth worse AutoAttack and clean accuracy. Our recipe thenbrings an improvement also for this architecture, albeit by asmaller margin than ConvNeXt-T.Our recipe\u2019s benefits generalize across architectures (Ta-ble IVb). In adversarial training, reducing data augmentationstrength yields benefits not only for transformer architectures,such as XCiT and PoolFormer [32] but also for the Con-vNeXt [34] CNN architecture, as we summarize in Table IVb.With ConvNeXt-T, when using heavy data augmentation asin the original paper, both with, and without, \u03b5 warm-up, thetraining fails. However, when trained using our recipe, i.e.,Our recipe\u2019s benefits generalize to the \u21132 threat model(Table V). Even though the \u2113\u221ethreat model is the scenarioTABLE V: Performance in the \u21132 threat model. We trainXCiT-S12 to be robust against \u21132-bounded perturbation with\u03b5 = 3.0 employing the canonical recipe and compare it withour recipe. We show that despite the XCiT-S12 trained with ourrecipe having slightly lower clean accuracy, it has significantlylarger robust accuracy.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0036",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "We show that despite the XCiT-S12 trained with ourrecipe having slightly lower clean accuracy, it has significantlylarger robust accuracy. We also show the accuracies of botha GELU ResNet-50 trained according to the set-up of Bai etal. [2] and the ReLU ResNet-50 shared by Salman et al. [50].Both have lower performance than the XCiT-S12. The symbol\u2020 means that the training run collapsed.TABLE VI: Scaling to larger models. We test our recipeon larger variants XCiT and compare it to robust ResNets.The XCiT variants outperform ResNets by a wide margin,and achieve top rank on the RobustBench [24] benchmark.Finally, we use our training recipe for ConvNeXT [34],PoolFormer [32], and DeiT [30].",
+      "token_count": 172
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0037",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "We use baseline results fromBai et al. [2] and Salman et al. [50].ArchitectureParametersGFLOPsAccuracyCleanAutoAttackGELU ResNet-50 [2]25M4.1167.3835.51WideResNet-50-2 [50]68M11.4768.4638.14ModelRecipeAccuracyCleanAutoAttackXCiT-S1226M4.8272.3441.78XCiT-M1246M8.5474.0445.24XCiT-L12104M18.9773.7647.60ReLU ResNet-50 [50]Canonical62.8634.84GELU ResNet-50Canonical66.1435.60XCiT-S12Canonical71.2429.38Ours70.7839.94PoolFormer-M1222M3.2266.1634.72DeiT-S22M4.6166.8037.90ConvNeXt-T29M4.5071.6444.44ConvNeXt-TCanonical\u2020\u2014\u2014Ours70.5841.44PoolFormer-M12Canonical65.2632.10Ours66.4036.04Train robust accuracy (%)Val robust accuracy (%)DeiT-SCanonical64.2031.10Ours66.6436.20ModelXCiT-S12XCiT-M12XCiT-L12ModelXCiT-S12XCiT-M12XCiT-L12050100Epoch050100Epochthat has been studied the most so far for ImageNet [2, 24, 53,54], it is also important to see whether our recipe generalizes toother threat models, as they may bring additional benefits, suchas better standard fine-tuning performance [50].",
+      "token_count": 367
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0038",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "For this reason,we train XCiT-S12 with both the canonical and our recipe to berobust against \u21132-bounded perturbation with \u03b5 = 3.0. While themodel trained with our recipe has slightly lower clean accuracy,the robust accuracy is better by one-third (i.e., 29.38% vs.39.94%)., bringing a significant improvement. This suggeststhat our recipe also generalizes to the \u21132 threat model forXCiT-S12. For completeness, we also train a GELU ResNet-50using the recipe of Bai et al. [2] and report the results of theReLU ResNet-50 shared by Salman et al. [50]. Our XCiT-S12performs better than both, by a substantial margin. We canalso observe that our recipe brings improvements across theboard for other architectures: ConvNeXt-T, PoolFormer-M12,and DeiT-S.Fig. 4: Learning curves for the XCiT models. We show theprogress of the training (Left) and validation (Right) FGSMaccuracy for XCiT-{S,M,L}12 trained with our recipe.sub-par robust accuracy (43.78%). Investigating more, wenote that XCiT-L12 has better PGD-10 accuracy than XCiT-M12 (52.22% vs. 51.50%) on the RobustBench ImageNet-1k subset.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0039",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Investigating more, wenote that XCiT-L12 has better PGD-10 accuracy than XCiT-M12 (52.22% vs. 51.50%) on the RobustBench ImageNet-1k subset. However, when it comes to APGD-CE (the firstof the AutoAttack ensemble), XCiT-L12 is outperformed byXCiT-M12 (46.14% vs. 47.58%). For this reason, we trainXCiT-L12 using 2-step FGSM, which results in a model withbetter robust accuracy than XCiT-M12 (47.60% vs. 45.24%).Finally, to understand the accuracy-robustness trade-off, wealso standardly train these networks for 100 epochs. XCiT-S12,M12, and L12 achieve 80.36%, 81.71%, and 82.65% cleanaccuracy, respectively. This suggests that adversarial trainingin ViT sacrifices \u223c10% clean accuracy to achieve robustness.Comparison with the EasyRobust library models. Mao etal. [53] recently released EasyRobust, a PyTorch library toperform adversarial training. Concurrently to our work, theyreleased several models on GitHub (albeit without a paperthat gives information about how they trained the models).These models have been trained with a variety of recipes4.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0040",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "Concurrently to our work, theyreleased several models on GitHub (albeit without a paperthat gives information about how they trained the models).These models have been trained with a variety of recipes4. Inparticular, ViT-S has been trained with the canonical recipe,while the other models in Table VI have been trained withValidating success on large-scale models (Table VI). Giventhat our training recipe successfully generalizes across networkarchitectures, we use it to train larger-scale models. For thisexperiment, we train on a 64-core TPUv4 pod, while scalingbatch size and learning rate accordingly. The total training timefor XCiT-S12 is 19h30m, for XCiT-M12 it is 33h, and for XCiT-L12 it is 39h. We provide our detailed setup in Appendix D,and we show the progress of the validation FGSM accuracyin Fig. 4. When increasing the scale of the model from S12 toM12, we observe consistent improvement in robust accuracy(from 41.78% to 45.24%). Regarding XCiT-L12, instead, wefirst observe that, when trained with 1-step FGSM, it achieves4We discussed the parameters with the authors via e-mail.the same data augmentation we use in our recipe, plus theLightning noise data augmentation, used in the robustnesslibrary [55].",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0041",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "All the models have been trained for 300 epochs.As they have been trained for 3\u00d7 the number of epochs asours, it is not straightforward to draw a comparison. In anycase, we note that their top-performing models (when takinginto account FLOPs and parameters), i.e., Swin-S (73.41%clean and 46.76% AutoAttack accuracy) and Swin-B (75.05%clean and 47.42% AutoAttack accuracy), have been trainedwithout strong data augmentations and show very promisingresults. We leave for future research on whether integratingthe other elements of our recipe (i.e., \u03b5 warm-up and largerweight decay) can further improve the performance of thesemodels.converts patches to 1-D vectors, by changing the stride ofsubsequent convolutions from two to one. We finetune thenetworks for 20 epochs and report our results in Tables VIIband VIId. We provide additional details about the models\u2019adaptation and fine-tuning hyper-parameters in Appendix D.To highlight the necessity of pre-training, we also train fromscratch on CIFAR-10 using the same setup without pre-trainingfor 300 epochs. We also do a training run using additionalsynthetic data from Sehwag et al. [15] to compensate for thesmaller size of the dataset.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0042",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "We also do a training run using additionalsynthetic data from Sehwag et al. [15] to compensate for thesmaller size of the dataset. Moreover, we compare our models tothe WideResNet-28-10 by Hendrycks et al. [59], who fine-tunea model pre-trained on a sub-sampled version of ImageNet-1k, and to the fine-tuned ResNet-50 pre-trained by Salman etal. [50]. Our models perform better than both baselines. Inparticular, we suspect the performance of the ResNet-50 tobe sub-optimal because of the mismatch in resolution, whilethis factor may not affect XCiT as much. As a matter offact, XCiT is shown to be more resilient to changes in imageresolution [28], while Salman et al. [50], when using their pre-trained model for standardly fine-tuning, up-sample both CIFARdatasets. Finally, we note that our XCiT-L model fine-tuned onCIFAR-100, at the time of the submission, would rank secondin the corresponding RobustBench leaderboard [24], with betterperformance than more compute-intensive architectures.B. Beyond pre-training: Success of our approach with transferlearningSetup.",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0043",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "Beyond pre-training: Success of our approach with transferlearningSetup. We consider four datasets, namely CIFAR-10 andCIFAR-100 [56], Caltech-101 [57], and Oxford flowers [58].These datasets cover a diverse range in terms of the number ofimages and image resolution. For all datasets, we use \u03b5 = 8/255in both pre-training and finetuning. Our baselines will beXCiT-S12 and ResNet-50 pre-trained with the canonical recipe,which we compare their success with networks pre-trainedwith our proposed recipe. Additional details about pre-training,as well as the performance of the resulting models, can befound in Appendix D. When finetuning, we use the identicalrecipe as pre-training for the high-resolution dataset, and aslightly different one, employing TRADES-10 [10], for the low-resolution ones. We provide extensive details on our finetuningprocedure in Appendix D.Success in finetuning on high resolution datasets. Wefinetune our pre-trained networks on both Caltech-101 andOxford Flowers for 20 epochs.",
+      "token_count": 226
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0044",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "We provide extensive details on our finetuningprocedure in Appendix D.Success in finetuning on high resolution datasets. Wefinetune our pre-trained networks on both Caltech-101 andOxford Flowers for 20 epochs. From Table VIIa we can seethat: 1) we can easily fine-tune on both datasets out-of-the-box. 2) Our XCiT achieves the best results, by a significantmargin, for both the standardly and adversarially trained models.3) We can observe that, for XCiT-S12, there is a very goodrobustness-accuracy trade-off, as the robust model trained onCaltech-101 has a small drop of 2.77% w.r.t. the standardlyfine-tuned model (vs. a 5.59% drop for ResNet-50), and therobust model trained on Oxford Flowers has a drop in terms ofclean accuracy of 8.79% (vs. an 11.77% drop for ResNet-50).4) Despite the larger clean accuracy, XCiT-S12 is more robust,having a robust accuracy better by 27.25% on Caltech-101, and15.16% better on Oxford Flowers. 5) The models pre-trainedwith our recipe lead to better results across the board whencompared to the models pre-trained with the canonical recipe.Adapting to small resolution images.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0045",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "As we pre-train onthe ImageNet-1k dataset at 224 \u00d7 224 resolution, we firstneed to modify the network architecture to adapt to smallresolutions, i.e., 32 \u00d7 32 for CIFAR-10 and CIFAR-100.Previous work [23] achieves this by down-sampling the weightsof the convolutional layer that is used by ViT to embed eachpatch. For XCiT, we adapt the patch-processing module, whichV. UNDERSTANDING THE SUCCESS OF VISIONTRANSFORMERS IN ADVERSARIAL TRAININGSo far, we have shown that changing architecture canimprove adversarial robustness by a large margin when using anappropriate training recipe. Now, we first investigate a potentialreason for this: we hypothesize that, for the top-performingmodels, few-step attacks are more effective than a conventionalResNet or an XCiT trained with the canonical recipe. Thisattack effectiveness makes the models more robust at test time,as the models have seen stronger attacks during training. Afterthat, we further explore one consequence of robust models: wepropose a way to quantify the semantic nature of adversarialperturbations. We show that the perturbations targeting a robustXCiT-S have more semantic features than those targeting arobust GELU ResNet-50, reflecting the fact that the robustXCiT-S has larger robust accuracy than the robust ResNet-50.A.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0046",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "Attack effectiveness influences adversarial trainingAdversarial training (Eq. (1)) solves a min-max opti-mization where the inner maximization aims to generatestrong adversarial examples, while the outer minimizationoptimizes the network parameters to correctly classify theseadversarial examples. The choice of the network architecturesimultaneously impacts the optimization success in both minand max problems. Better network architectures can certainlyachieve better solutions for outer min problems (e.g., scalingin neural network size leads to better performance). However,their success in adversarial training can simultaneously stemfrom the ability to achieve a better solution for the innermax problem, i.e., generate stronger adversarial examples. It iscommon to use only a few gradient steps [4], even one in someTABLE VII: Advantages of the pre-training recipe also directly transfer to fine-tuning. When finetuning results on bothhigh and low-resolution datasets, we find that our proposed recipe achieves better performance. The XCiT-S12 marked with(c) is the one pre-trained using the canonical recipe used for standard training, while (ours) refers to models pre-trained withour proposed recipe. Both models are adapted by changing the stride of the initial convolution to change the patch size. Notethat pre-training and finetuning methods (standard/adversarial) are kept identical for Caltech-101 and Oxford Flowers.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0047",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "Both models are adapted by changing the stride of the initial convolution to change the patch size. Notethat pre-training and finetuning methods (standard/adversarial) are kept identical for Caltech-101 and Oxford Flowers. TheResNet-50 pre-trained checkpoint is from Salman et al. [50], and is adapted to small resolutions by changing the stride of thefirst convolution layer, and the WideResNet-28-10 in Tables VIIb and VIId are from Hendrycks et al. [59].(a) Fine-tuning on high-resolution datasets.(b) CIFAR-10 adversarial fine-tuning.Fine-tuningModelDatasetModelClean AccuracyAA AccuracyCaltech-101Oxford FlowersWideResNet-28-10 [59]87.1154.92ResNet-5084.8041.56XCiT-S12 (c)89.0754.37XCiT-S12 (ours)90.0656.14XCiT-M12 (ours)91.3057.27XCiT-L12 (ours)91.7357.58CleanAutoAttackCleanAutoAttackStandardResNet-5086.977.5686.281.96XCiT-S12 (c)89.920.9688.130.99XCiT-S12 (ours)90.3617.1291.655.71AdversarialResNet-5081.3834.4974.5132.75XCiT-S12 (c)86.1858.8476.2642.42XCiT-S12 (ours)87.5961.7482.8647.91(c) Pre-training is necessary for smaller datasets.",
+      "token_count": 347
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0048",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "Fine-tuning perfor-mance when a XCiT-S12 model is 1) trained from scratch 2) trained fromscratch with extra synthetic data [15] 3) pre-trained on ImageNet-1k.(d) CIFAR-100 adversarial fine-tuning.ModelClean AccuracyAA AccuracyPre-trainingSynthetic dataAccuracyWideResNet-28-10 [59]59.2328.42ResNet-5061.2822.01Clean AccuracyAA Accuracy\u2717\u271782.8439.49\u2717\u271380.0147.88\u2713\u271790.0656.14XCiT-S12 (c)65.4430.97XCiT-S12 (ours)67.3432.19XCiT-M12 (ours)69.2134.21XCiT-L12 (ours)70.7635.08cases [54], to reduce the computational burden of adversarialtraining. Thus the key question is not whether it\u2019s easier togenerate strong adversarial examples for ViTs but whether it\u2019seasier under few-steps gradient attacks. Our approach in thisdirection is not without precedent, as previous work on CNNsobserved that better robustness with improved architecturalcomponents is because they may make it easier to generateeffective adversarial examples in a few steps [1].Attacking XCiT with gradient-based attacks is as tractableas attacking ResNet.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0049",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "While it is empirically well known thatit is moderately tractable to optimize adversarial examples withgradient-based methods on adversarially trained ResNets [4],to the best of our knowledge this has not been studied in thecase of adversarially trained ViTs. For this reason, we computethe loss given by separate PGD attacks ran with a differentnumber of steps (1, 5, 10, 50, 100, 200, 500), scaling theattack step size accordingly: the maximum loss is reached byattacks that use at least 100 steps. We run this experimentwith twenty different random restarts for each point to seeif they all converge to similar maxima: all the runs for eachpoint show extremely similar loss curves, for both the robustXCiT-S12 and the robust ResNet-50 (Fig. 5). Finally, in Fig. 6we show how the loss changes at every step during twentyseparate PGD-500 runs, each starting from a different randomstart, targeting the same point, with a relatively large step size.This shows that the attack converges after a few steps.",
+      "token_count": 233
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0050",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "Weshow more results for both experiments on thirty-one morerandom samples in Appendix I.0.1000.1000.0750.075LossLoss0.050ModelXCiT-S12 (ours)GELU-ResNet-500.050ModelXCiT-S12 (ours)GELU-ResNet-500.0250.0250200400Attack steps0200400Attack stepsFig. 5: Is PGD-200 a goodOracle? Saturating of thecross-entropy loss in separateruns of PGD attacks with dif-ferent numbers of steps, per-turbing the same input. Plotsfor additional points are in Ap-pendix I.Fig. 6: Attacks with differ-ent initialization converge tovery similar losses. Evolutionof the loss for different runsof PGD attacks perturbingthe same input, using a largestep size. Plots for additionalpoints are in Appendix I.Effectiveness of k-step attacks.",
+      "token_count": 205
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0051",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 51,
+      "section": "preamble",
+      "text": "Evolutionof the loss for different runsof PGD attacks perturbingthe same input, using a largestep size. Plots for additionalpoints are in Appendix I.Effectiveness of k-step attacks. We use the following metric(dk) to measure the tractability of the inner maximizationproblem with a k-step gradient attack, which we call attackeffectiveness:d _k = \\f ra c { \\Ls (\\r vx +\\v d elt a _{k}, \\ry ; \\vtheta ) - \\Ls (\\rvx + \\vdelta _{O}, \\ry ; \\vtheta )}{\\Ls (\\rvx + \\vdelta _{O}, \\ry ; \\vtheta )} (2)where \u03b4k is the perturbation generated with k step attackswhile \u03b4O is the perturbation generated with an Oracle, i.e.,a strong attack. As commonly done, we use cross-entropyloss (L). This metric measures the strength of a k-step attackcompared to the strongest attack. As validated previously, usinga very high number of attack iterations appears to find thelocal optimum. Thus we use 200 attack steps as an Oracle. Wemeasure the effectiveness of adversarial examples generatedwith PGD-{1, 2, 5, 10} attacks.",
+      "token_count": 273
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0052",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 52,
+      "section": "preamble",
+      "text": "Thus we use 200 attack steps as an Oracle. Wemeasure the effectiveness of adversarial examples generatedwith PGD-{1, 2, 5, 10} attacks. We use the full ImageNet-1kvalidation dataset (50,000 images) for this experiment.Few step attacks are highly effective for the most successfulmodels. Throughout training progress (epochs 1 to 100), wefind that a single-step attack is more effective against our trainedXCiT than a ResNet-50 network (Fig. 7a). A similar trend isobserved when we ablate across the number of attack steps(Fig. 7b). This does not hold just for transformers: we observethat the modern ConvNeXt model, which is as successful asXCiT, also enjoys high effectiveness of few-steps attacks. Bothobservations suggest that the ease of optimizing the inner maxproblem with few-step attacks does indeed heavily impact thesuccess of a model in adversarial training.Attack effectiveness in proposed vs canonical trainingrecipe. Since the min and max problems are solved alter-natively, i.e., network parameters are continuously updated,the ability the generate strong adversarial examples underfixed steps attacks would vary over time.",
+      "token_count": 248
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0053",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 53,
+      "section": "preamble",
+      "text": "Since the min and max problems are solved alter-natively, i.e., network parameters are continuously updated,the ability the generate strong adversarial examples underfixed steps attacks would vary over time. To analyze thisphenomenon, we compare the effectiveness of attacks whenattacking the XCiT-S12 trained with the canonical trainingrecipe (with just the \u03b5 warm-up from our recipe): we observethat when using the canonical recipe, the attacks are extremelyineffective, also compared to ResNet\u2019s training. This shows thatthe way we perform the (outer) min optimization of adversarialtraining influences the ease of (inner) max optimization, andan effective training recipe is crucial for successful training.Discussion. Intuitively, one could argue that it\u2019s easy togenerate attacks for poorly trained models, and these modelsshow no robust accuracy. However, in our case, the XCiT-S12trained with our recipe, not only has nontrivial performance,but the clean accuracy is better than that of the XCiT-S12trained with the canonical recipe.",
+      "token_count": 212
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0054",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 54,
+      "section": "preamble",
+      "text": "However, in our case, the XCiT-S12trained with our recipe, not only has nontrivial performance,but the clean accuracy is better than that of the XCiT-S12trained with the canonical recipe. Nonetheless, few-steps attacksgenerate more powerful adversarial examples for these models,and doing more steps does not bring a significant advantage.On the other hand, for other models, such as the XCiT-S12trained with the canonical recipe or the GELU ResNet-50,doing more attack steps brings a larger advantage, suggestingthat for these models the inner max optimization is harder.Robust loss rel. di\ufb00. (%)Robust loss rel. di\ufb00. (%)ModelXCiT-S12XCiT-S12\u2217ModelXCiT-S12XCiT-S12\u2217ResNet-50ConvNeXt-TResNet-50ConvNeXt-T255075100Epoch12510Attack steps(a) Relative difference betweenthe adversarial loss computedwith PGD-1 and the one com-puted with PGD-200, varyingover the training epochs.(b) Relative difference betweenthe adversarial losses computedwith PGD attacks with 1, 2, 5,and 10 steps, and the adversar-ial loss computed with PGD-200, averaged across 10 epochs.Fig. 7: Few-step attacks of the more robust models are moreeffective throughout the training.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0055",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 55,
+      "section": "preamble",
+      "text": "We test whether the higherrobustness of models relates to the ease of optimization ofadversarial loss, i.e., using few-step attacks during adversarialtraining. We measure the relative difference in the success ofa few-step attack, i.e., weak but fast, compared to a strongone. We can observe that the relative difference is smallerfor the more robust models. This suggests that these few-stepattacks (with often one or two steps) are more effective forXCiT-S and ConvNeXt, hence making the final models morerobust. We can also observe a significant difference betweenthe XCiT-S12 trained with our recipe and the one trained withthe canonical recipe (marked as \u201cXCiT-S12\u2217\u201d).These results are computed on the ImageNet-1k validation setand the confidence intervals are over three runs.and compare them with those targeting a non-robust XCiT fromtimm [60], and those targeted to the robust GELU ResNet-50by Bai et al. [2].Quantifying the semantic nature of perturbations. Toquantify how semantic the perturbations are, we proposeto classify untargeted adversarial perturbations with high-performing, standardly trained models.",
+      "token_count": 256
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0056",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 56,
+      "section": "preamble",
+      "text": "Toquantify how semantic the perturbations are, we proposeto classify untargeted adversarial perturbations with high-performing, standardly trained models. We hypothesize that if aperturbation is semantic enough (i.e., tries to change the natureof the input from the point of view of the human eye), thenit should be classified with the class it tries to evade, as theperturbations should be focused on the shapes characterizingsuch class in the input image. We use, as classifiers, ConvNeXt-XL [34], with 87.01% clean accuracy, BeiT-L [61], with87.48% clean accuracy, and Swin-B [62], with 86.32% cleanaccuracy on ImageNet-1k, using the implementation and pre-trained weights from the timm library [60]. All the modelsaccept input size 224\u00d7224. We generate PGD-100 perturbationsfor the 5000 images subset of RobustBench for our robust XCiT-S12 and a non-robust XCiT-S12 with pre-trained weights fromtimm [60], as well as for a robust ResNet-50 from Bai et al.[2] and a non-robust ResNet-50 from the timm library (sharedby Wightman et al. [42]). We scale the perturbations into the[0, 1] range.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0057",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 57,
+      "section": "preamble",
+      "text": "We scale the perturbations into the[0, 1] range. We show some example images of perturbationsin Fig. 8. We can see from Table VIII that, according to thismetric, the perturbations generated for both robust models leadB. Semantic nature of XCiT\u2019s adversarial perturbationsEarlier works have demonstrated that adversarial perturba-tions for robust CNNs have semantic, interpretable patternsrather than unintelligible noise as in the case of non-robust net-works [35]. Given the different nature of the ViTs architecturessuch as XCiT, compared to CNNs, it is natural to ask whethera similar characteristic also emerges for these architectures.Hence, we explore the perturbations targeting a robust XCiTto non-trivial accuracies and that the perturbations generatedfor XCiT-S12 have indeed semantic characteristics, and moreso than those generated for the robust ResNet-50. We provideadditional feature visualizations in Appendix J.Adversarially trained Vision Transformers. Shao et al.[23] adversarially fine-tuned non-robust ViTs, pre-trained onImageNet-1k. Since they use a non-robust pre-trained network,they achieve suboptimal performance [59]. Bai et al. [2]comes closest to our work: they noticed poor performanceof DeiT-S transformers with data augmentation in adversarialtraining.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0058",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 58,
+      "section": "preamble",
+      "text": "Bai et al. [2]comes closest to our work: they noticed poor performanceof DeiT-S transformers with data augmentation in adversarialtraining. We show that similar challenges persist with otherViT architectures, such as XCiTs. While Bai et al. [2] advocatefor a progressively increasing augmentation budget, we showthat avoiding strong data augmentation entirely can achievestate-of-the-art performance. Even further, we perform anin-depth analysis of adversarially robust ViTs in both pre-training and finetuning. Wu et al. [22] propose a techniqueto make adversarial training of transformers more efficient.This mechanism reduces the training time while increasing therobust accuracy over 1-step FGSM. However, since they use thecanonical training recipe from DeiT [30], the robust accuracyof their models could be sub-optimal. Finally, concurrentlywith this work, Mao et al. [53] published the checkpoints ofseveral ViTs who are adversarially trained and show promisingperformance. However, the training recipe for their models isnot public and there is no paper discussing their results.Robustness through architectural development.",
+      "token_count": 233
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0059",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 59,
+      "section": "preamble",
+      "text": "However, the training recipe for their models isnot public and there is no paper discussing their results.Robustness through architectural development. Xie et al.[1] observe that, in ResNets and other CNN variants, theusage of smooth activation functions, such as SiLU [68] andGELU [3] increases the robustness of adversarially trainedmodels: their hypothesis is that smoother activation functionsmake the inner maximization problem in Eq. (1) easier to solve.This behavior is also observed by Bai et al. [2]: ResNet-50is more robust when employing GELU. Huang et al. [17]observe that increasing the capacity of a model helps withrobustness, but there is a trade-off given by the fact thatadditional capacity makes the model less smooth and less robust.However, reducing the capacity of the last stage can improvethis trade-off. Similar observations are done in concurrent workby Wu et al. [69] who propose a technique to efficiently finda suitable TRADES\u2019 \u03bb when training wide models.Improvingtherobustness-accuracy-efficiencytrade-off.Apart from the work by Wu et al. [22] mentioned above,other previous work addresses the problem of efficiency ofrobustness in different ways.",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0060",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 60,
+      "section": "preamble",
+      "text": "One line of work focuses onmaking adversarial training more efficient: Shafahi et al. [70]proposes to re-use adversarial examples from previous epochs,while Wong et al. [54] find an effective way to performadversarial training with just 1-step FGSM. On the other hand,Sehwag et al. [71] and Kundu et al. [72] work on compressingthe model\u2019s size by pruning in ways that are fully compatiblewith adversarial training. Other works show that both robustnessand accuracy are improved when we use either extra unlabeleddata [73] or synthetic data [14, 15].TABLE VIII: Semantic characteristics in adversarial pertur-bations. For each robust network, we first generate adversarialperturbations (\u03b5 =4255, \u2113\u221e, scaled to [0, 1]) using untar-geted attack. We provide an example visualization of theseperturbations in Figure 8.",
+      "token_count": 204
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0061",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 61,
+      "section": "preamble",
+      "text": "We provide an example visualization of theseperturbations in Figure 8. Measuring the top-5 accuracy usingpre-trained ConvNeXt-XL, BeiT-L, and Swin-L models, weobserve that robust XCiT-S perturbations indeed have semanticcharacteristics, even higher than a robust ResNet-50.Perturbations generatorClassifierConvNeXt-XL [34]BeiT-L [61]Swin-L [62]RobustXCiT-S12 (ours)43.8649.5240.24GELU ResNet-50 [2]38.4045.0236.70Non-robustXCiT-S12 [28]0.840.780.84ResNet-50 [42]0.820.740.80VI. RELATED WORKVision Transformers and variants The ViT [18] is anarchitecture that was adapted for computer vision tasks fromthe transformer [39], which was first meant for natural languageprocessing. After the introduction of the transformer, severalvariants have been proposed.",
+      "token_count": 215
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0062",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 62,
+      "section": "preamble",
+      "text": "RELATED WORKVision Transformers and variants The ViT [18] is anarchitecture that was adapted for computer vision tasks fromthe transformer [39], which was first meant for natural languageprocessing. After the introduction of the transformer, severalvariants have been proposed. Some of these are: DeiT [30], toreduce the need for pre-training on extremely large datasets,CaiT [31], to train deeper ViTs, XCiT [28], to use a moreefficient attention-like operation, LeViT [33], a CNN-ViThybrid to speed-up transformer inference, and the SwinTransformer [62], which is a hierarchical transformer whichcan perform image segmentation and object detection.Robustness of Vision Transformers to non-adversarialperturbations. Whether ViTs are more robust than CNNshas been a controversial topic so far, with contrasting resultsbased on the different contexts and settings where the modelsare tested. On the one hand, many recent works [2, 19, 20]agree on the fact that ViTs are more robust than CNNs when itcomes to out-of-distribution samples.",
+      "token_count": 225
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0063",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 63,
+      "section": "preamble",
+      "text": "On the one hand, many recent works [2, 19, 20]agree on the fact that ViTs are more robust than CNNs when itcomes to out-of-distribution samples. Although, more recently,Pinto et al. [63] find that ViTs suffer from simplicity biassimilarly to CNNs [64], and that, when compared to modernCNNs such as ConvNeXt, there is no clear winner.Adversarial robustness of Vision Transformers At the sametime as they assess ViTs\u2019 robustness to natural perturbations,many works also study the robustness of non-adversariallytrained ViTs to adversarial examples. In particular, in the caseof attacks with \u03b5 \u22640.01, ViTs show better robustness thanCNNs [20, 21, 65]. However, when running stronger attacks,such as APGD or AutoAttack, with \u03b5 = 4/255, both ResNetsand ViTs have 0% robust accuracy [2, 23, 66]. Finally, Maoet al. [67] propose the Robust ViT (RVT), a ViT with specificarchitectural innovations which show additional robustnessto FGSM and PGD-5 attacks. However, they do not test therobustness of RVT to stronger attacks such as AutoAttack.VII. DISCUSSION AND CONCLUSIONArchitectures and custom recipes.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0064",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 64,
+      "section": "preamble",
+      "text": "However, they do not test therobustness of RVT to stronger attacks such as AutoAttack.VII. DISCUSSION AND CONCLUSIONArchitectures and custom recipes. This work shows that,by shifting architecture, we can significantly improve therobustness of image classification models, by keeping a goodFig. 8: Example adversarial perturbations for robust vs. non-robust models. Comparison between the adversarialperturbations generated for a robust XCiT-S12, a robust GELU ResNet-50 by Bai et al. [2] and a regular XCiT-S12 from thetimm [60] library. The perturbations, generated with a \u2113\u221eattack (\u03b5= 4255), are scaled to the [0, 1] range, and, for the sake ofvisualization, transformed into black and white images. Similar to robust CNNs [35], as demonstrated for a ResNet-50 here,robust XCiT perturbations also exhibit semantic characteristics in its adversarial perturbations. When quantitatively compared,we find that XCiT adversarial perturbations have even more semantic information than the robust ResNet-50 perturbation.accuracy-robustness-efficiency tradeoff. We do so by identifyingan architecture that has a good fit for adversarial training:the Cross-Covariance Image Transformer (XCiT).",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0065",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 65,
+      "section": "preamble",
+      "text": "We do so by identifyingan architecture that has a good fit for adversarial training:the Cross-Covariance Image Transformer (XCiT). We alsoshow that to achieve optimal results, it is important to find atailored training recipe, which may differ from the canonicaltraining recipe for standard training. Using this custom recipe,we achieve good results which are better than the currentstate-of-the-art, both in terms of clean and robust accuracy.On the other hand, we have also tested this training recipeon ConvNeXt, a recently proposed modern convolutionalarchitecture, showing that, with our training recipe, it canreach state-of-the-art performance. We leave to future researchwhether the performance can be further boosted with a custom-tailored recipe for ConvNeXt and the architectural innovationsto come (both for training from scratch and fine-tuning).Fine-tuning. We further successfully show that ViTs can beefficiently robustly fine-tuned, for larger perturbation sizes, tovery high accuracy on smaller datasets. As a matter of fact, ourtailored training recipe also works for larger perturbations withminimal changes. This enables efficiently fine-tuning thesemodels to other datasets and doing adversarial training onsmaller high-resolution datasets.",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0066",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 66,
+      "section": "preamble",
+      "text": "As a matter of fact, ourtailored training recipe also works for larger perturbations withminimal changes. This enables efficiently fine-tuning thesemodels to other datasets and doing adversarial training onsmaller high-resolution datasets. Moreover, given the trendsshown in standard training of ViTs and previous work aboutadversarial training, we believe that XCiT could further benefitfrom being trained on larger datasets such as ImageNet-21kand then fine-tuned on downstream datasets. We suggest thatresearchers should consider this option when doing adversarialtraining for ViT-like models, given that, as we have shown, amodel can be fine-tuned efficiently in a few epochs.Analyses. We show a potential explanation of the improvedrobustness of XCiT and ConvNeXt compared to ResNet andXCiT trained with the canonical recipe: for former models, the1-step attack is more effective throughout the whole trainingprocedure. Finally, we analyze the gradients of our robustXCiT and compare the visualizations to a state-of-the-art robustResNet: we quantify that the perturbations found for XCiT aremore semantic than those of ResNet, suggesting that the robustXCiT\u2019s perturbations are more aligned with human perception.We believe that further insightful analyses can be carried on,given the different nature of ViT-like models. For this reason,we release the checkpoints of our models trained for differentepsilons.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0067",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 67,
+      "section": "preamble",
+      "text": "For this reason,we release the checkpoints of our models trained for differentepsilons. We believe that this enables researchers to do furtheranalyses that will improve our understanding of why such asimple recipe is particularly suitable for adversarial training.VIII. ACKNOWLEDGEMENTSWe thank Google\u2019s TPU Research Cloud (TRC) Program5,which provided us with extremely generous computing re-sources. We also thank Maksym Andriushchenko, JacopoTeneggi, Florian Tram`er, Chong Xiang, and Xinyu Tang fortheir feedback about this work. This work was also supportedin part by the National Science Foundation under grantsCNS-1553437 and CNS-1704105, the ARL\u2019s Army ArtificialIntelligence Innovation Institute (A2I2), the Office of NavalResearch Young Investigator Award, the Army Research OfficeYoung Investigator Prize, Schmidt DataX award, PrincetonE-ffiliates Award, and Princeton Gordon Y. S. Wu Fellowship.REFERENCES[1]C. Xie, M. Tan, B. Gong, A. Yuille, and Q. V.Le, \u201cSmooth adversarial training,\u201d arXiv preprintarXiv:2006.14536, 2020.[2]Y. Bai, J. Mei, A. L. Yuille, and C.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0068",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 68,
+      "section": "preamble",
+      "text": "V.Le, \u201cSmooth adversarial training,\u201d arXiv preprintarXiv:2006.14536, 2020.[2]Y. Bai, J. Mei, A. L. Yuille, and C. Xie, \u201cAre trans-formers more robust than cnns?\u201d Advances in NeuralInformation Processing Systems, vol. 34, 2021.[3]D. Hendrycks and K. Gimpel, \u201cGaussian error linearunits (gelus),\u201d arXiv preprint arXiv:1606.08415, 2016.[4]A. Madry, A. Makelov, L. Schmidt, D. Tsipras, andA. Vladu, \u201cTowards deep learning models resistant toadversarial attacks,\u201d arXiv preprint arXiv:1706.06083,2017.5https://sites.research.google/trc/about/[5]B. Biggio, I. Corona, D. Maiorca, B. Nelson, N. \u02c7Srndi\u00b4c,P. Laskov, G. Giacinto, and F. Roli, \u201cEvasion attacksagainst machine learning at test time,\u201d in Joint Euro-pean conference on machine learning and knowledgediscovery in databases, Springer, 2013, pp. 387\u2013402.[6]C. Szegedy, W.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0069",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 69,
+      "section": "preamble",
+      "text": "Szegedy, W. Zaremba, I. Sutskever, J. Bruna, D. Er-han, I. Goodfellow, and R. Fergus, \u201cIntriguing propertiesof neural networks,\u201d arXiv preprint arXiv:1312.6199,2013.[7]D. Tsipras, S. Santurkar, L. Engstrom, A. Turner, andA. Madry, \u201cRobustness may be at odds with accuracy,\u201darXiv preprint arXiv:1805.12152, 2018.[8]S. Lee, H. Lee, and S. Yoon, \u201cAdversarial vertex mixup:Toward better adversarially robust generalization,\u201d inProceedings of the IEEE/CVF Conference on ComputerVision and Pattern Recognition, 2020, pp. 272\u2013281.[9]L. Schmidt, S. Santurkar, D. Tsipras, K. Talwar, andA. Madry, \u201cAdversarially robust generalization requiresmore data,\u201d Advances in neural information processingsystems, vol. 31, 2018.[10]H. Zhang, Y. Yu, J. Jiao, E. Xing, L. El Ghaoui, andM.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0070",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 70,
+      "section": "preamble",
+      "text": "Zhang, Y. Yu, J. Jiao, E. Xing, L. El Ghaoui, andM. Jordan, \u201cTheoretically principled trade-off betweenrobustness and accuracy,\u201d in International conferenceon machine learning, PMLR, 2019, pp. 7472\u20137482.[11]Y. Wang, D. Zou, J. Yi, J. Bailey, X. Ma, and Q. Gu,\u201cImproving adversarial robustness requires revisitingmisclassified examples,\u201d in International Conferenceon Learning Representations, 2020. [Online]. Available:https://openreview.net/forum?id=rklOg6EFwS.[12]D. Wu, S.-T. Xia, and Y. Wang, \u201cAdversarial weightperturbation helps robust generalization,\u201d Advancesin Neural Information Processing Systems, vol. 33,pp. 2958\u20132969, 2020.[13]S.-A. Rebuffi, S. Gowal, D. A. Calian, F. Stimberg,O. Wiles, and T. A. Mann, \u201cData augmentation canimprove robustness,\u201d Advances in Neural InformationProcessing Systems, vol. 34, 2021.[14]S. Gowal, S.-A. Rebuffi, O. Wiles, F. Stimberg, D.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0071",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 71,
+      "section": "preamble",
+      "text": "Gowal, S.-A. Rebuffi, O. Wiles, F. Stimberg, D. A.Calian, and T. A. Mann, \u201cImproving robustness usinggenerated data,\u201d Advances in Neural Information Pro-cessing Systems, vol. 34, 2021.[15]V. Sehwag, S. Mahloujifar, T. Handina, S. Dai, C. Xiang,M. Chiang, and P. Mittal, \u201cRobust learning meets genera-tive models: Can proxy distributions improve adversarialrobustness?\u201d arXiv preprint arXiv:2104.09425, 2021.[16]S. Dai, S. Mahloujifar, and P. Mittal, \u201cParameterizingactivation functions for adversarial robustness,\u201d in 2022IEEE Security and Privacy Workshops (SPW), IEEE,2022, pp. 80\u201387.[17]H. Huang, Y. Wang, S. Erfani, Q. Gu, J. Bailey, and X.Ma, \u201cExploring architectural ingredients of adversariallyrobust deep neural networks,\u201d Advances in NeuralInformation Processing Systems, vol. 34, 2021.[18]A. Dosovitskiy, L. Beyer, A. Kolesnikov, D. Weis-senborn, X.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0072",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 72,
+      "section": "preamble",
+      "text": "Dosovitskiy, L. Beyer, A. Kolesnikov, D. Weis-senborn, X. Zhai, T. Unterthiner, M. Dehghani, M. Min-derer, G. Heigold, S. Gelly, J. Uszkoreit, and N. Houlsby,\u201cAn image is worth 16x16 words: Transformers for imagerecognition at scale,\u201d ArXiv, vol. abs/2010.11929, 2021.[19]S. Paul and P.-Y. Chen, \u201cVision transformers are robustlearners,\u201d arXiv preprint arXiv:2105.07581, 2021.[20]S. Bhojanapalli, A. Chakrabarti, D. Glasner, D. Li, T.Unterthiner, and A. Veit, \u201cUnderstanding robustness oftransformers for image classification,\u201d in Proceedings ofthe IEEE/CVF International Conference on ComputerVision, 2021, pp. 10 231\u201310 241.[21]A. Aldahdooh, W. Hamidouche, and O. Deforges, \u201cRe-veal of vision transformers robustness against adversarialattacks,\u201d arXiv preprint arXiv:2106.03734, 2021.[22]B. Wu, J.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0073",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 73,
+      "section": "preamble",
+      "text": "Deforges, \u201cRe-veal of vision transformers robustness against adversarialattacks,\u201d arXiv preprint arXiv:2106.03734, 2021.[22]B. Wu, J. Gu, Z. Li, D. Cai, X. He, and W. Liu, \u201cTowardsefficient adversarial training on vision transformers,\u201darXiv preprint arXiv:2207.10498, 2022.[23]R. Shao, Z. Shi, J. Yi, P.-Y. Chen, and C.-J. Hsieh, \u201cOnthe adversarial robustness of vision transformers,\u201d arXivpreprint arXiv:2103.15670, 2021.[24]F.Croce,M.Andriushchenko,V.Sehwag,E.Debenedetti, N. Flammarion, M. Chiang, P. Mittal, andM. Hein, \u201cRobustbench: A standardized adversarial ro-bustness benchmark,\u201d arXiv preprint arXiv:2010.09670,2020.[25]S. Khan, M. Naseer, M. Hayat, S. W. Zamir, F. S. Khan,and M.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0074",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 74,
+      "section": "preamble",
+      "text": "Khan, M. Naseer, M. Hayat, S. W. Zamir, F. S. Khan,and M. Shah, \u201cTransformers in vision: A survey,\u201d ACMComputing Surveys (CSUR), 2021.[26]Image classification on imagenet (papers with code),[Accessed Sep 1, 2022], 2022. [Online]. Available: https://paperswithcode.com/sota/image- classification- on-imagenet.[27]A. P. Steiner, A. Kolesnikov, X. Zhai, R. Wightman,J. Uszkoreit, and L. Beyer, \u201cHow to train your vit? data,augmentation, and regularization in vision transformers,\u201dTransactions of Machine Learning Research, 2022.[Online]. Available: https://openreview.net/forum?id=4nPswr1KcP.[28]A. El-Nouby, H. Touvron, M. Caron, P. Bojanowski, M.Douze, A. Joulin, I. Laptev, N. Neverova, G. Synnaeve,J. Verbeek, and H. J\u00b4egou, \u201cXcit: Cross-covariance imagetransformers,\u201d ArXiv, vol. abs/2106.09681, 2021.[29]K.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0075",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 75,
+      "section": "preamble",
+      "text": "Verbeek, and H. J\u00b4egou, \u201cXcit: Cross-covariance imagetransformers,\u201d ArXiv, vol. abs/2106.09681, 2021.[29]K. He, X. Zhang, S. Ren, and J. Sun, \u201cDeep residuallearning for image recognition. arxiv 2015,\u201d arXivpreprint arXiv:1512.03385, 2015.[30]H. Touvron, M. Cord, M. Douze, F. Massa, A. Sablay-rolles, and H. J\u00b4egou, \u201cTraining data-efficient imagetransformers & distillation through attention,\u201d in Interna-tional Conference on Machine Learning, PMLR, 2021,pp. 10 347\u201310 357.[31]H. Touvron, M. Cord, A. Sablayrolles, G. Synnaeve,and H. J\u2019egou, \u201cGoing deeper with image transformers,\u201dArXiv, vol. abs/2103.17239, 2021.[32]W. Yu, M. Luo, P. Zhou, C. Si, Y. Zhou, X. Wang,J. Feng, and S.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0076",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 76,
+      "section": "preamble",
+      "text": "Yu, M. Luo, P. Zhou, C. Si, Y. Zhou, X. Wang,J. Feng, and S. Yan, \u201cMetaformer is actually what youneed for vision,\u201d arXiv preprint arXiv:2111.11418, 2021.[33]B. Graham, A. El-Nouby, H. Touvron, P. Stock, A.Joulin, H. J\u00b4egou, and M. Douze, \u201cLevit: A visiontransformer in convnet\u2019s clothing for faster inference,\u201d inProceedings of the IEEE/CVF International Conferenceon Computer Vision, 2021, pp. 12 259\u201312 269.[34]Z. Liu, H. Mao, C.-Y. Wu, C. Feichtenhofer, T. Darrell,and S. Xie, \u201cA convnet for the 2020s,\u201d in Proceedingsof the IEEE/CVF Conference on Computer Vision andPattern Recognition (CVPR), 2022.[35]L. Engstrom, A. Ilyas, S. Santurkar, D. Tsipras,B. Tran, and A. Madry, \u201cAdversarial robustness asa prior for learned representations,\u201d arXiv preprintarXiv:1906.00945, 2019.[36]R.",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0077",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 77,
+      "section": "preamble",
+      "text": "Tsipras,B. Tran, and A. Madry, \u201cAdversarial robustness asa prior for learned representations,\u201d arXiv preprintarXiv:1906.00945, 2019.[36]R. Rade and S.-M. Moosavi-Dezfooli, \u201cHelper-basedadversarial training: Reducing excessive margin toachieve a better accuracy vs. robustness trade-off,\u201d inICML 2021 Workshop on Adversarial Machine Learning,2021. [Online]. Available: https://openreview.net/forum?id=BuD2LmNaU3a.[37]L. Rice, E. Wong, and Z. Kolter, \u201cOverfitting in adversar-ially robust deep learning,\u201d in International Conferenceon Machine Learning, PMLR, 2020, pp. 8093\u20138104.[38]F. Croce and M. Hein, \u201cReliable evaluation of adversarialrobustness with an ensemble of diverse parameter-freeattacks,\u201d ArXiv, vol. abs/2003.01690, 2020.[39]A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L.Jones, A. N. Gomez, \u0141. Kaiser, and I.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0078",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 78,
+      "section": "preamble",
+      "text": "Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L.Jones, A. N. Gomez, \u0141. Kaiser, and I. Polosukhin, \u201cAt-tention is all you need,\u201d Advances in neural informationprocessing systems, vol. 30, 2017.[40]D. Bahdanau, K. Cho, and Y. Bengio, \u201cNeural machinetranslation by jointly learning to align and translate,\u201darXiv preprint arXiv:1409.0473, 2014.[41]J. Deng, W. Dong, R. Socher, L.-J. Li, K. Li, and L.Fei-Fei, \u201cImageNet: A Large-Scale Hierarchical ImageDatabase,\u201d in Proceedings of the IEEE/CVF Conferenceon Computer Vision and Pattern Recognition, 2009.[42]R. Wightman, H. Touvron, and H. J\u00b4egou, \u201cResnet strikesback: An improved training procedure in timm,\u201d arXivpreprint arXiv:2110.00476, 2021.[43]A. Paszke, S. Gross, F. Massa, A. Lerer, J. Bradbury,G. Chanan, T. Killeen, Z. Lin, N.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0079",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 79,
+      "section": "preamble",
+      "text": "Paszke, S. Gross, F. Massa, A. Lerer, J. Bradbury,G. Chanan, T. Killeen, Z. Lin, N. Gimelshein, L. Antiga,A. Desmaison, A. Kopf, E. Yang, Z. DeVito, M. Raison,A. Tejani, S. Chilamkurthy, B. Steiner, L. Fang, J. Bai,and S. Chintala, \u201cPytorch: An imperative style, high-performance deep learning library,\u201d in Advances inNeural Information Processing Systems 32, H. Wallach,H. Larochelle, A. Beygelzimer, F. d\u2019Alch\u00b4e-Buc, E. Fox,and R. Garnett, Eds., Curran Associates, Inc., 2019,pp. 8024\u20138035. [Online]. Available: http://papers.neurips.cc / paper / 9015 - pytorch - an - imperative - style - high -performance-deep-learning-library.pdf.[44]S. Yun, D. Han, S. J. Oh, S. Chun, J.",
+      "token_count": 248
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0080",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 80,
+      "section": "preamble",
+      "text": "Yun, D. Han, S. J. Oh, S. Chun, J. Choe, and Y.Yoo, \u201cCutmix: Regularization strategy to train strongclassifiers with localizable features,\u201d in Proceedings ofthe IEEE/CVF international conference on computervision, 2019, pp. 6023\u20136032.[45]E. D. Cubuk, B. Zoph, J. Shlens, and Q. V. Le,\u201cRandaugment: Practical automated data augmentationwith a reduced search space,\u201d in Proceedings of theIEEE/CVF Conference on Computer Vision and PatternRecognition Workshops, 2020, pp. 702\u2013703.[46]H. Zhang, M. Cisse, Y. N. Dauphin, and D. Lopez-Paz,\u201cMixup: Beyond empirical risk minimization,\u201d arXivpreprint arXiv:1710.09412, 2017.[47]Z. Zhong, L. Zheng, G. Kang, S. Li, and Y. Yang,\u201cRandom erasing data augmentation,\u201d in Proceedings ofthe AAAI conference on artificial intelligence, vol. 34,2020, pp. 13 001\u201313 008.[48]T. Pang, X. Yang, Y. Dong, H. Su, and J.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0081",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 81,
+      "section": "preamble",
+      "text": "Pang, X. Yang, Y. Dong, H. Su, and J. Zhu,\u201cBag of tricks for adversarial training,\u201d arXiv preprintarXiv:2010.00467, 2020.[49]F.Croce,M.Andriushchenko,V.Sehwag,E.Debenedetti, N. Flammarion, M. Chiang, P. Mittal, andM. Hein, RobustBench website, [Accessed Sep 1, 2022],2021. [Online]. Available: https://robustbench.github.io.[50]H. Salman, A. Ilyas, L. Engstrom, A. Kapoor, andA. Madry, \u201cDo adversarially robust imagenet modelstransfer better?\u201d Advances in Neural Information Pro-cessing Systems, vol. 33, pp. 3533\u20133545, 2020.[51]F. Croce and M. Hein, \u201cMinimally distorted adversarialexamples with a fast adaptive boundary attack,\u201d inProceedings of the 37th International Conference onMachine Learning, H. D. III and A. Singh, Eds.,ser. Proceedings of Machine Learning Research, vol. 119,PMLR, Jun. 2020, pp. 2196\u20132205. [Online].",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0082",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 82,
+      "section": "preamble",
+      "text": "D. III and A. Singh, Eds.,ser. Proceedings of Machine Learning Research, vol. 119,PMLR, Jun. 2020, pp. 2196\u20132205. [Online]. Available:https://proceedings.mlr.press/v119/croce20a.html.[52]M. Andriushchenko, F. Croce, N. Flammarion, andM. Hein, \u201cSquare attack: A query-efficient black-boxadversarial attack via random search,\u201d in EuropeanConference on Computer Vision, Springer, 2020, pp. 484\u2013501.[53]X. Mao, Y. Chen, J. Lin, X. Li, G. Qi, R. Duan,R. Zhang, and H. Xue, EasyRobust: A large-scale robusttraining toolkit, https://github.com/alibaba/easyrobust/tree / 4c0ec0b0c908004b5c65f718de43a530a0856366,[Online; accessed 24-August-2022], 2022.[54]E. Wong, L. Rice, and J. Z. Kolter, \u201cFast is betterthan free: Revisiting adversarial training,\u201d arXiv preprintarXiv:2001.03994, 2020.[55]L. Engstrom, A.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0083",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 83,
+      "section": "preamble",
+      "text": "Z. Kolter, \u201cFast is betterthan free: Revisiting adversarial training,\u201d arXiv preprintarXiv:2001.03994, 2020.[55]L. Engstrom, A. Ilyas, H. Salman, S. Santurkar, andD. Tsipras, Robustness (python library), 2019. [Online].Available: https://github.com/MadryLab/robustness.[56]A. Krizhevsky, \u201cLearning multiple layers of featuresfrom tiny images,\u201d University of Toronto, Tech. Rep.,2009.[57]L. Fei-Fei, R. Fergus, and P. Perona, \u201cLearning gen-erative visual models from few training examples: Anincremental bayesian approach tested on 101 objectcategories,\u201d Computer Vision and Pattern RecognitionWorkshop, 2004.[58]M.-E. Nilsback and A. Zisserman, \u201cAutomated flowerclassification over a large number of classes,\u201d in Pro-ceedings of the Indian Conference on Computer Vision,Graphics and Image Processing, Dec. 2008.[59]D. Hendrycks, K. Lee, and M. Mazeika, \u201cUsing pre-training can improve model robustness and uncertainty,\u201din Proceedings of the 36th International Conferenceon Machine Learning, K. Chaudhuri and R.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0084",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 84,
+      "section": "preamble",
+      "text": "Hendrycks, K. Lee, and M. Mazeika, \u201cUsing pre-training can improve model robustness and uncertainty,\u201din Proceedings of the 36th International Conferenceon Machine Learning, K. Chaudhuri and R. Salakhut-dinov, Eds., ser. Proceedings of Machine LearningResearch, vol. 97, PMLR, Jun. 2019, pp. 2712\u20132721.[Online]. Available: https://proceedings.mlr.press/v97/hendrycks19a.html.[60]R. Wightman, Pytorch image models, https://github.com/rwightman/pytorch- image- models, 2019. DOI:10.5281/zenodo.4414861.[61]H. Bao, L. Dong, S. Piao, and F. Wei, \u201cBEit: BERTpre-training of image transformers,\u201d in InternationalConference on Learning Representations, 2022. [Online].Available: https : / / openreview . net / forum ? id = p -BhZSz59o4.[62]Z. Liu, Y. Lin, Y. Cao, H. Hu, Y. Wei, Z. Zhang, S. Lin,and B.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0085",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 85,
+      "section": "preamble",
+      "text": "Liu, Y. Lin, Y. Cao, H. Hu, Y. Wei, Z. Zhang, S. Lin,and B. Guo, \u201cSwin transformer: Hierarchical visiontransformer using shifted windows,\u201d in Proceedings ofthe IEEE/CVF International Conference on ComputerVision (ICCV), Oct. 2021, pp. 10 012\u201310 022.[63]F. Pinto, P. H. Torr, and P. K. Dokania, \u201cAn impartialtake to the cnn vs transformer robustness contest,\u201d arXivpreprint arXiv:2207.11347, 2022.[64]H. Shah, K. Tamuly, A. Raghunathan, P. Jain, andP. Netrapalli, \u201cThe pitfalls of simplicity bias in neuralnetworks,\u201d in Advances in Neural Information Process-ing Systems, H. Larochelle, M. Ranzato, R. Hadsell,M. Balcan, and H. Lin, Eds., vol. 33, Curran Asso-ciates, Inc., 2020, pp. 9573\u20139585. [Online]. Available:https : / / proceedings . neurips . cc / paper / 2020 / file /6cfe0e6127fa25df2a0ef2ae1067d915-Paper.pdf.[65]P.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0086",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 86,
+      "section": "preamble",
+      "text": "Available:https : / / proceedings . neurips . cc / paper / 2020 / file /6cfe0e6127fa25df2a0ef2ae1067d915-Paper.pdf.[65]P. Benz, S. Ham, C. Zhang, A. Karjauv, and I. S.Kweon, \u201cAdversarial robustness comparison of visiontransformer and mlp-mixer to cnns,\u201d arXiv preprintarXiv:2110.02797, 2021.[66]K. Mahmood, R. Mahmood, and M. Van Dijk, \u201cOn therobustness of vision transformers to adversarial exam-ples,\u201d in Proceedings of the IEEE/CVF InternationalConference on Computer Vision, 2021, pp. 7838\u20137847.[67]X. Mao, G. Qi, Y. Chen, X. Li, R. Duan, S. Ye, Y. He,and H. Xue, \u201cTowards robust vision transformer,\u201d inProceedings of the IEEE/CVF Conference on ComputerVision and Pattern Recognition, 2022, pp. 12 042\u201312 051.[68]S. Elfwing, E. Uchibe, and K.",
+      "token_count": 264
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0087",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 87,
+      "section": "preamble",
+      "text": "Elfwing, E. Uchibe, and K. Doya, \u201cSigmoid-weightedlinear units for neural network function approximationin reinforcement learning,\u201d Neural Networks, vol. 107,pp. 3\u201311, 2018.[69]B. Wu, J. Chen, D. Cai, X. He, and Q. Gu, \u201cDowider neural networks really help adversarial robustness?\u201dAdvances in Neural Information Processing Systems,vol. 34, pp. 7054\u20137067, 2021.[70]A. Shafahi, M. Najibi, M. A. Ghiasi, Z. Xu, J. Dickerson,C. Studer, L. S. Davis, G. Taylor, and T. Goldstein,\u201cAdversarial training for free!\u201d Advances in NeuralInformation Processing Systems, vol. 32, 2019.[71]V. Sehwag, S. Wang, P. Mittal, and S. Jana, \u201cHydra:Pruning adversarially robust neural networks,\u201d Advancesin Neural Information Processing Systems, vol. 33,pp. 19 655\u201319 666, 2020.[72]S. Kundu, M. Nazemi, P. A. Beerel, and M.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0088",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 88,
+      "section": "preamble",
+      "text": "Kundu, M. Nazemi, P. A. Beerel, and M. Pe-dram, \u201cA tunable robust pruning framework throughdynamic network rewiring of dnns,\u201d arXiv preprintarXiv:2011.03083, 2020.[73]Y. Carmon, A. Raghunathan, L. Schmidt, J. C. Duchi,and P. S. Liang, \u201cUnlabeled data improves adversarialrobustness,\u201d Advances in Neural Information ProcessingSystems, vol. 32, 2019.[74]C. Sun, A. Shrivastava, S. Singh, and A. Gupta, \u201cRevis-iting unreasonable effectiveness of data in deep learningera,\u201d in Proceedings of the IEEE international conferenceon computer vision, 2017, pp. 843\u2013852.[75]I. Loshchilov and F. Hutter, \u201cDecoupled weight decayregularization,\u201d arXiv preprint arXiv:1711.05101, 2017.[76]E. Hoffer, T. Ben-Nun, I. Hubara, N. Giladi, T. Hoefler,and D.",
+      "token_count": 250
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0089",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 89,
+      "section": "preamble",
+      "text": "Hoffer, T. Ben-Nun, I. Hubara, N. Giladi, T. Hoefler,and D. Soudry, \u201cAugment your batch: Improving gen-eralization through instance repetition,\u201d in Proceedingsof the IEEE/CVF Conference on Computer Vision andPattern Recognition, 2020, pp. 8129\u20138138.[77]C. Herrmann, K. Sargent, L. Jiang, R. Zabih, H. Chang,C. Liu, D. Krishnan, and D. Sun, \u201cPyramid adversarialtraining improves vit performance,\u201d arXiv preprintarXiv:2111.15121, 2021.APPENDIXA. The vision transformer architectureWe now cover the basic building blocks of the (vision)transformer architecture: attention and multi-head attention, theMLP block, positional encoding, and tokens embedding.1) Attention: The attention function maps a query vectorand a set of key-value vector pairs to an output vector.",
+      "token_count": 211
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0090",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 90,
+      "section": "preamble",
+      "text": "Inparticular, the form of attention by Vaswani et al. [39], calledScaled Dot-Product Attention, can be formally expressed as\\text {Att en t i o n}(\\mQ , \\m\\ mV ) = \\text {Softmax}\\left ( \\frac {\\mQ \\mK ^T}{\\sqrt {d_k}} \\right ) \\mV , (3)K ,where Q, K, and V represent respectively the set of queries,keys, and values grouped in matrices, and dk represents thedimension of the queries and the keys, while the values havedimension dv. The product is scaled by1\u221adk to compensatefor the fact that the dot products can reach large values inmagnitude when dk is large. Large values would saturatesoftmax and make its gradients very small. In practice, in thecontext of NLP, attention is computed among different words(or parts of words). Given a set of words (e.g., a sentence), itmeasures how much a word is dependent on another word inthe same set. For instance, in the sentence \u201cThis is a paperabout Vision Transformers\u201d, \u201cthis\u201d will attend to \u201cis\u201d, whichwill, in turn, attend to \u201cpaper\u201d. The main advantage of attention,when compared to convolutions, is the ability to capture long-distance dependencies between tokens, which is somethingconvolutions fail to do because of the local nature of theconvolution operator.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0091",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 91,
+      "section": "preamble",
+      "text": "The main advantage of attention,when compared to convolutions, is the ability to capture long-distance dependencies between tokens, which is somethingconvolutions fail to do because of the local nature of theconvolution operator. A potential advantage of using attentionfor computer vision tasks is that it can measure how mucha portion of an image attends to another one, enabling thepossibility of working more at a global level than a local one,as convolutions do. For instance, in an image of a cat, the tail,or the paws, will attend to the cat\u2019s head, and vice-versa.2) Multi-Head Attention: Before passing Q, K, and Vto the Attention function, Vaswani et al. [39] linearly project,using learnable matrices, the inputs into vectors with dimensiondk, dk, and dv respectively. Moreover, instead of doing it justonce, they do it h times, and each projection is passed to theAttention function simultaneously, creating the so-called Multi-Head Attention. After the parallel processing, the resultingmatrices are concatenated and linearly projected, using, again,a learnable matrix. Parallel processing enables the model toefficiently process information from different representationsof the inputs.",
+      "token_count": 250
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0092",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 92,
+      "section": "preamble",
+      "text": "After the parallel processing, the resultingmatrices are concatenated and linearly projected, using, again,a learnable matrix. Parallel processing enables the model toefficiently process information from different representationsof the inputs. Formally,5) Input tokenization and positional encoding: Consideringeach pixel as a token and computing attention between everypixel would be computationally unfeasible, as the attentionoperation has O(n2) complexity for both memory and runtime.For this reason, Dosovitskiy et al. [18] split the image intonon-overlapping input patches. The patches are embedded intotokens by reducing, by the size of the patches, the overallnumber of inputs to the attention operation. The patches areembedded by linearly projecting them to vectors of dimensionRdmodel. Given an image of size (H, W) and patches of size(P, P), the resulting number of patches is N = HW/P 2.6) Class token: After the input tokens are generated, a vector\u2014 called [class] token \u2014 is prepended to the sequence oftokens and processed along with the other tokens. The initialstate of this vector is a learnable parameter of the model. Theclass token is meant to attend to the most relevant parts of animage, e.g., in the case of an image with a cat, the [class]token will attend to the patches, including the cat\u2019s head, itstail, and its whiskers.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0093",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 93,
+      "section": "preamble",
+      "text": "Finally, at the end of the last block, thereis the so-called \u201cMLP Head\u201d: an MLP which takes as inputthe [class] token resulting from the last attention block,and maps it to the class predicted for the input.7) Performance and variations of Vision Transformers:ViTs achieve state-of-the-art performance on several datasets,such as ImageNet-1k [41], CIFAR-10, and CIFAR-100 [56]. Inparticular, their maximum potential is reached when they arepre-trained on larger datasets, such as ImageNet-21k and JFT-300M [74]. In this way, they can learn representations that aremore generalizable and do not overfit when they are trained onsmaller datasets such as CIFAR-10 and CIFAR-100. To reducethe need for pre-training on larger datasets, concurrent workSteiner et al. [27] and Touvron et al. [30] shows that a tunedtraining recipe, strong regularization, and data augmentations,such as CutMix [44], RandAugment [45], MixUp [46], andRandomErasing [47], lead to a ten-fold decrease in the need ofdata to achieve the same performance.",
+      "token_count": 252
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0094",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 94,
+      "section": "preamble",
+      "text": "In particular, Touvronet al. [30] call the model trained with this training recipe DeiT.On the architectural point of view, instead, it has been proposedto specialize layers for patches processing and classificationseparately, with the aim of more effectively train deeperViTs [31], and to use different operations than multi-head self-attention, such as cross-covariance attention [28] or averagepooling [32].\\begin {sp li t } \\text {MultiH e a d } (\\mQ , \\mK , \\ mV ) & = \\text {Co nc a t} (\\ t e x t {head}_1, \\dots , \\text {head}_h)\\mW ^O, \\\\ \\text {where head}_i & = \\text {Attention}(\\mQ \\mW _i^Q, \\mK \\mW _i^K, \\mV \\mW _i^V), \\end {split}(4)where W Qi\u2208Rdmodel\u00d7dk, W Ki\u2208Rdmodel\u00d7dk, W Vi\u2208Rdmodel\u00d7dv,and W O \u2208Rhdv\u00d7dmodel are the learnable matrices used tolinearly project the inputs and the result of the Attentionoperation.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0095",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 95,
+      "section": "preamble",
+      "text": "Finally, we call Self-Attention the special case whereK = V , and \u2013analogously\u2013 Multi-Head Self-Attention (MSA)a Multi-Head Attention in the case where K = V .3) The MLP block and the overall Transformer block: Aftercomputing self-attention for the inputs, the result is passed toa fully connected Multi-Layer Perceptron (MLP) block withone hidden layer.",
+      "token_count": 88
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0096",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 96,
+      "section": "preamble",
+      "text": "Formally, given an input x, and learnableweights and biases W1, b1, W2, b2, and an activation function\u03c1, the MLP block can be expressed as\\labe l {eq: m lp-bl o ck} \\mlp (\\vx ) = \\rho (\\vx \\mW _1 + \\vb _1)\\mW _2 + \\vb _2. (5)The vision transformer uses the Gaussian Error Linear Unit(GELU) [3] activation and apply layer normalization to theinput of each MSA and MLP block.To summarize, given an input xl to the l-th Vision Trans-former block, a multi-head self-attention block MSA, anMLP block, and a layer normalization block LN, the overallTransformer block can be expressed as:\\l a be l {eq:vit-block} \\be g in {split} \\vx _l' & = \\vx _l + \\msa (\\layn (\\vx _l)) \\\\ \\vx _{l + 1} & = \\vx _l' + \\mlp _{\\text {GELU}}(\\layn (\\vx _l')). \\end {split} (6)B.",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0097",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 97,
+      "section": "preamble",
+      "text": "Transformer variations4) Positional encoding: The reader can observe that atten-tion, per se, considers the input as a set, and not as a sequence.Hence, all information about the position of the inputs iscompletely lost. For this reason, Vaswani et al. [39] add theso called Positional Encodings to the input embeddings beforefeeding them to the encoder and the decoder. The positionalencodings have the same size as the embeddings of the inputtokens, i.e., dmodel. In the case of the vision transformer, thepositional embeddings are learned parameters.We now give an overview of two transformer architectureswe employ in our experiments, i.e., CaiT [31] and XCiT [28].1) Class Attention in Transformers (CaiT): In order to traindeeper ViTs, Touvron et al. [31] introduce two innovations:LayerScale and Class Attention.a) LayerScale: LayerScale consists of two learnablediagonal matrices: one is multiplied to the result of the attentionoperation, and the other is multiplied to the result of the MLPblock.",
+      "token_count": 228
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0098",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 98,
+      "section": "preamble",
+      "text": "Formally, given the two LayerScale diagonal matricesdiag(\u03bbl,1, . . . \u03bbl,d) and diag(\u03bb\u2032l,1, . . . \u03bb\u2032l,d), the transformerblock function becomesa) Cross-Covariance Attention: Cross-Covariance At-tention (XCA) is an attention mechanism based on cross-covariance, which works along the features dimension, i.e.,along each dimension of the token embeddings. Given a queriesmatrix Q, a keys matrix K, and a values matrix V , cross-covariance attention is defined as\\l a be l {eq:layer - s c ale} \\begin {split} \\ vx _ l' & = \\vx _ l + \\dia g (\\lambda _{l, 1}, \\dots \\lambda _{l, d}) \\msa (\\layn (\\vx _l)) \\\\ \\vx _{l + 1} & = \\vx _l' + \\diag (\\lambda _{l, 1}', \\dots \\lambda _{l, d}') \\mlp (\\layn (\\vx _l')). \\end {split} (7)In the case of deeper architectures (i.e., with a total of 24transformer blocks), these diagonal matrices are initialized toa value \u03b5.",
+      "token_count": 271
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0099",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 99,
+      "section": "preamble",
+      "text": "This value is equal to 0.1 for architectures with upto depth 18, 10\u22125 for those with depth 24, and 10\u22126 for thosewith depth 38.b) Class Attention: On the other hand, class attentionintroduces a new way to handle the [class] token: insteadof prepending it to the sequence of the input tokens at thebeginning of the sequence of transformer blocks, Touvronet al. [31] first process the input tokens through a series ofTransformer blocks (according to Eq. (7)), in a stage called self-attention stage. They then prepend the [class] token, andgo through a series of blocks composed of a Multi-Head ClassAttention block followed by an MLP block. They call this stageclass-attention stage. A Multi-Head Class Attention block islike a Multi-Head Self-Attention block where only the Attentionof the [class] to the other tokens is computed, and the othertokens are left untouched.",
+      "token_count": 207
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0100",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 100,
+      "section": "preamble",
+      "text": "A Multi-Head Class Attention block islike a Multi-Head Self-Attention block where only the Attentionof the [class] to the other tokens is computed, and the othertokens are left untouched. Formally, given a [class] tokenxclass, a vector z = [xclass; xpatches] given by the concatenationof the class token and the patches, learnable weight matricesWq, Wk, Wv, and Wo in Rd\u00d7d, and corresponding biasvectors bq, bk, bv, and bo in Rd where d is the size of thetoken embeddings, they first perform the projections:\\mK ,\\text {XC-Att en t i o n }(\\mQ ,mV ) = \\mV \\text {Softmax}\\left ( \\frac {\\hat {\\mK }^T \\hat {\\mQ }}{\\tau } \\right ), (10)where \u02c6K and \u02c6Q are the L2-normalized versions (i.e., with unitL2 norm) of K and Q. It is called cross-covariance attention as,in the case of self-attention \u02c6KT \u02c6Q = W Tk XT XWq is the crosscovariance matrix of \u02c6K and \u02c6Q, Cov( \u02c6K, \u02c6Q).",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0101",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 101,
+      "section": "preamble",
+      "text": "Cross-covarianceis linear in time in the number of elements in X, i.e., thenumber of patches N. We can interpret XCA as a dynamic,data-dependent, 1\u00d71 convolution along the axis of the featuresof the embeddings, as each patch is multiplied by the samedata-dependent weight-matrix.Finally, \u03c4 corresponds to a learnable temperature scalingparameter, which is applied to help the convergence of thetraining procedure.b) Local Patch Interaction: Given the nature of XCA,the patches do not explicitly interact with each other. For thisreason, after computing XCA, El-Nouby et al. [28] apply theso-called Local Patch Interaction (LPI), which consists of two3 \u00d7 3 depth-wise convolutional layers with batch normalizationand GELU activation between the two layers.c) Convolutional Patch Projection: Differently than theprevious works about ViTs introduced above, following Grahamet al. [33], El-Nouby et al. [28] embed the input patches intotokens using a series of 3 \u00d7 3 convolutions of stride 2 withGELU activation in between.",
+      "token_count": 235
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0102",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 102,
+      "section": "preamble",
+      "text": "As an example, for a modelwith embedding dimension dmodel with patch size 16, an RGBinput image of size (3, 224, 224) goes through the follow-ing transformations: (3, 224, 224) \u2192(dmodel/8, 112, 112) \u2192(dmodel/4, 56, 56) \u2192(dmodel/2, 28, 28) \u2192(dmodel, 14, 14). Wenote that 224/16 = 14, i.e., the final result, as expected, is aset of 14 \u00d7 14 vectors of size dmodel, each of which is mappedfrom a patch.",
+      "token_count": 144
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0103",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 103,
+      "section": "preamble",
+      "text": "Wenote that 224/16 = 14, i.e., the final result, as expected, is aset of 14 \u00d7 14 vectors of size dmodel, each of which is mappedfrom a patch. Finally, they use fixed, sinusoidal positionalencoding as in the original work from Vaswani et al. [39].\\begin { s pli t } \\ m Q & = \\ m W _q \\vx _\\text {class} + \\vb _q \\\\ \\mK & = \\mW _k \\vz + \\vb _k \\\\ \\mV & = \\mW _v \\vz + \\vb _v. \\end {split}(8)They then compute class attention as\\mK\\te xt { C A}(\\mQ ,) = \\mW _o \\text {Softmax}\\left (\\frac {\\mQ \\mK ^T}{\\sqrt {\\nicefrac {d}{h}}}\\right ) \\mV + \\vb _o, (9)where QKT \u2208Rh\u00d71\u00d7p, and h is the number of heads and pis the number of patches.",
+      "token_count": 242
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0104",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 104,
+      "section": "preamble",
+      "text": "The class-attention stage is composedof two Class Attention blocks, and the resulting architecture isdubbed Class Attention in Transformers (CaiT).2) Cross-Covariance Attention and XCiT: Dosovitskiy etal. [18] show that using a smaller patch size brings betterresults. However, the attention operation has O(n2) complexityfor both memory and runtime, making decreasing the patchsize hard. For this reason, El-Nouby et al. [28] propose analternative to the attention operation, called Cross-CovarianceAttention, with complexity O(n). The corresponding ViT-likearchitecture is called Cross-Covariance Image Transformer(XCiT). Overall, XCiT has a structure analogous to that of CaiT(i.e., with self-attention and class-attention phases), with thedifference that it employs Cross-Covariance Attention insteadof Self-Attention. As a further difference, models with depth12 initialize LayerScale\u2019s \u03b5 to 1 instead of 0.1 (as discussedin Paragraph B1a).C. Data augmentationsApart from classic data augmentation strategies, such asrandom flipping, there are more advanced data augmentationtechniques. The ones employed by Touvron et al. [30] areMixUp, CutMix, RandAugment, and Random Erasing.MixUp and CutMix.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0105",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 105,
+      "section": "preamble",
+      "text": "The ones employed by Touvron et al. [30] areMixUp, CutMix, RandAugment, and Random Erasing.MixUp and CutMix. MixUp [46] consists of creating animage \u02dcX \u2208{0, 1}H\u00d7W of size (H, W) and a correspondinglabel \u02dcy as the convex combination of two images and theirrespective labels. This means that, given two images X1 andX2, with respective one-hot-encoded labels y1 and y2, MixUpgenerates an image \u02dcX = \u03bbX1 + (1 \u2212\u03bb)X2, and the same isapplied to the one-hot-encoded labels: the resulting label is\u02dcy = \u03bby1 + (1 \u2212\u03bb)y2. CutMix [44] follows a similar principleby cutting a portion of an image and superimposing it onanother image. Formally, the resulting image is computed as\u02dcX = M \u2299X1 + (1 \u2212M) \u2299X2, where 1 is the matrix of allones, and M is a masking matrix.",
+      "token_count": 237
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0106",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 106,
+      "section": "preamble",
+      "text": "Formally, the resulting image is computed as\u02dcX = M \u2299X1 + (1 \u2212M) \u2299X2, where 1 is the matrix of allones, and M is a masking matrix. In particular, the maskingmatrix M has zeros everywhere apart from the bounding boxB delimited by the coordinates (rx, ry, rh, rw), where rx andry are sampled uniformly along the height and the width of theimage, rh = H\u221aepochs, with a learning rate cosine decay with a final value of5 \u00d7 10\u22125, a 10-epochs warm-up from 5 \u00d7 10\u22126 and 10 epochscool-down. We use the AdamW optimizer [75]. Apart fromthe architecture ablation (Section III-B), we do not employrepeated augmentations [76] to save training time. Repeatedaugmentations consist of repeating each batch 3 times: the firstone without data augmentations and the following ones with it.Hence, employing repeated augmentations would be equivalentto doing 3\u00d7 the number of epochs. On the other hand, forXCiT-M12, XCiT-L12, ConvNeXt, and PoolFormer, we useTPUv4 pods with either 32 or 64 TPU cores.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0107",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 107,
+      "section": "preamble",
+      "text": "On the other hand, forXCiT-M12, XCiT-L12, ConvNeXt, and PoolFormer, we useTPUv4 pods with either 32 or 64 TPU cores. As mentionedabove, we increase the total batch size according to the modelsize and on the number of devices in use, and we scale thelearning rate according to the rule stated above.Training runtime. We train all three XCiT variants on a podwith 64 TPUv4 cores to compare the training time. We use thelargest batch size that can fit into each device, which is 256 forXCiT-S12 and XCiT-M12, and 128 for XCiT-L12. We scalethe learning rates as described in the paragraph above. Thetotal training time for XCiT-S12 is 19h30m, for XCiT-M12 itis 33h, and for XCiT-L12 it is 39h.Training attack setup. Finally, unless otherwise stated, we useFGSM for adversarial training [54], initializing the adversarialperturbation to be uniformly distributed in [\u2212\u03b5, \u03b5], and adding10\u22125 to avoid numerical instability. Moreover, we apply early-stopping, i.e., we evaluate the checkpoint at the epoch wherethe model was performing best in terms of FGSM accuracyon the test set.Large epsilon pre-training setup.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0108",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 108,
+      "section": "preamble",
+      "text": "Moreover, we apply early-stopping, i.e., we evaluate the checkpoint at the epoch wherethe model was performing best in terms of FGSM accuracyon the test set.Large epsilon pre-training setup. We pre-train an XCiT-S12on ImageNet-1k with \u03b5 = 8/255. Using the same setup as the\u03b5 = 4/255 training, we observe strong label leaking (whichwas also observed by previous work on ViTs adversarialtraining [77]). To solve this, we use 2-steps FGSM instead of1-step FGSM as the attack for adversarial training. By doingso, we manage to train a model which has 25.00% AutoAttackaccuracy and 63.46% clean accuracy on the subset of 5000images from RobustBench when using \u03b5 = 8/255 as attackbudget. We similarly train an XCiT-M12 and an XCiT-L12,using the same setup. Moreover, as a baseline, we attempt topre-train an XCiT-S12 robust to \u03b5 = 8/255 perturbations usingthe canonical training recipe. However, we observe that thetraining fails. For this reason, we adopt the epsilon warm-upfrom our tailored training recipe. Finally, we pre-train a ResNet-50 with GELU activation function, using the same setup as Baiet al. [2].",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0109",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 109,
+      "section": "preamble",
+      "text": "For this reason, we adopt the epsilon warm-upfrom our tailored training recipe. Finally, we pre-train a ResNet-50 with GELU activation function, using the same setup as Baiet al. [2]. To validate the correctness of our implementationand setup, we first successfully reproduce their results with\u03b5 = 4/255. However, when training a model robust to \u03b5 = 8/255perturbations with this setup, the resulting model is worse thanthe ReLU ResNet-50 pre-trained by Salman et al. [50]6. Forthis reason, in the fine-tuning experiments, we fine-tune thisnetwork. We show the full pre-training results in Table XI.High-resolution finetuning setup. We fine-tune the model pre-trained on ImageNet-1k with \u03b5 = 8/255 on the high-resolution1 \u2212\u03bb and rw = W\u221a1 \u2212\u03bb. In this way, thebox is placed randomly in the image and has area proportionalto \u03bb. We show some examples for these data augmentationsin Fig. 9.(a) MixUp example.(b) CutMix example.Fig. 9: Examples for MixUp (Top) and CutMix (Bottom) dataaugmentations.RandAugment.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0110",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 110,
+      "section": "preamble",
+      "text": "RandAugment [45] improves the so-calledautomated augmentations, which automatically select the bestaugmentations for a given model and task, among a givenlist of possible transformations (e.g., rotation and brightnesschange). Automated augmentations are effective, but needa separate search phase. RandAugment reduces the searchspace, which enables training without a prior search phase.In particular, given K augmentations, RandAugment chooseseach transformation with probability 1/K. We show an examplefor three RandAugment augmentations in Fig. 10.Random Erasing. Finally, Random Erasing [47] randomlyselects a portion of pixels in an image, and occludes them,either by setting them to 0 or by sampling their value from anormal distribution with mean and standard deviation equal tothose of the dataset. We show an example for Random Erasingin Fig. 11.D. Setup and hyperparametersIn this section, we give additional details about the training,evaluation, and implementation setups.Training hyperparameters. Apart from the experiments onlarger models, we run all the training runs using VMs with 8TPUv3 cores. In all the runs, unless otherwise stated, we use thesame setup as the one used for DeiT [30].",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0111",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 111,
+      "section": "preamble",
+      "text": "In all the runs, unless otherwise stated, we use thesame setup as the one used for DeiT [30]. We use as a batch size64 \u00d7 8 = 512 (i.e. 64 samples per TPU core), and the learningrate is chosen according to the formula provided by Touvronet al. [30] (i.e. lr = 0.0005 \u00d7 batch size512), which corresponds to0.0005 with the batch size we use in most experiments. For allthe training runs on ImageNet-1k, we train the model for 1106The checkpoints from this paper can be downloaded from https://github.com/microsoft/robust-models-transferFig. 10: Original image (Left) and three examples of augmented images generated by RandAugmentrate, which we find to be 2 \u00d7 10\u22124 (as opposed to 5.0 \u00d7 10\u22125that we used for pre-training and the high-resolution datasets).We probably need a larger learning rate to better tune the inputembedding layer whose structure we change.",
+      "token_count": 222
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0112",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 112,
+      "section": "preamble",
+      "text": "Finally, given thesmaller resolution of the images, we change the values for therandom scale and crop data augmentation as follows: the ratioof possible crop ranges from [0.75, 1.33] to [0.95, 1.05], andthe input re-scaling range from [0.08, 1.0] to [0.8, 1.2]. If wekept these large ranges, then very few pixels of the originalimage would remain after cropping and resizing, hence thetask would be too hard, and the model would underfit.Fig. 11: Original image (Left) and example of erasure generatedby Random Erasing (Right).Evaluation setup. For the final ablation and the scaled-upmodels trained on ImageNet-1k, we run AutoAttack [38],an ensemble of white- and black-box attacks. We run theattack on the subset of 5000 ImageNet-1k images used forthe RobustBench benchmark [24]. Given that AutoAttack iscomposed of four attacks, two of which are black-box, it iscomputational expensive. To strike a balance between strengthand computational cost, instead, we assess the robustness ofthe individual ablations using APGD-CE [38]. APGD-CE is aparameter-free attack, which is the first of the ensemble thatmakes up AutoAttack.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0113",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 113,
+      "section": "preamble",
+      "text": "APGD-CE is aparameter-free attack, which is the first of the ensemble thatmakes up AutoAttack. We run this attack with 5 restarts and100 iterations, the same settings of the attack that is part ofAutoAttack. Finally, we compute the FLOPs and number ofparameters using the fvcore library7.datasets Caltech-101 and Oxford Flowers. We fine-tune using\u03b5 = 8/255 for 20 epochs and the same training recipe as the oneused for pre-training, with the difference that we do adversarialtraining with 1-step FGSM instead of 2-steps, and we do notemploy a warm-up for \u03b5. We also do a fine-tuning run withoutadversarial training to better quantify the clean-robust accuracytradeoff.Low-resolution finetuning setup. The pre-trained XCiT mod-els are meant for inputs with patch size 16. However, sucha patch size would be too large for datasets of smallerimages such as CIFAR-10 and CIFAR-100 (which have 32\u00d732resolution). For this reason, we need a way to adapt the modelto support a different patch size. Previous work [23] achievesthis by down-sampling the weights of the convolutional layerthat is used by ViT to embed each patch.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0114",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 114,
+      "section": "preamble",
+      "text": "For this reason, we need a way to adapt the modelto support a different patch size. Previous work [23] achievesthis by down-sampling the weights of the convolutional layerthat is used by ViT to embed each patch. However, XCiT uses4 subsequent convolutional layers to embed 16\u00d716 patches into1-D vectors, and each layer has stride 2 [33]. To embed 4\u00d74patches, we need to use just 2 subsequent convolutions withstride 2. For this reason, we adapt our model by setting thestride of the first two convolutional layers to 1. Regarding theResNet-50, instead, we substitute the first convolutional layer(which has originally kernel size 7 and stride 2) with one withkernel size 3 and stride 1, and we remove the first pooling layer.Given the smaller size and resolution of the CIFAR datasets, wefine-tune the robustly trained model using TRADES [10], withPGD-10 as the attack. Similar to the high-resolution datasets,we fine-tune for 20 epochs. However, we remove the color jitterdata augmentation, as the inputs are smaller and would makethe task too hard. Moreover, we search for the best learningAdditional implementation details. We base our implemen-tation on the PyTorch Image Models repository [60]8, whichincludes the timm library and provides a template trainingscript.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0115",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 115,
+      "section": "preamble",
+      "text": "Moreover, we search for the best learningAdditional implementation details. We base our implemen-tation on the PyTorch Image Models repository [60]8, whichincludes the timm library and provides a template trainingscript. This library uses the PyTorch framework [43]. Inparticular, given that we run our experiments on TensorProcessing Unit (TPU) devices, we use the PyTorch XLAlibrary, which compiles PyTorch code to the XLA9 IntermediateRepresentation (XLA IR), needed to run the computationson TPUs. The XLA IR consists of a graph representing thecomputation performed on tensors. The graph is then compiledand optimized (e.g., by fusing operations when possible).",
+      "token_count": 150
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0116",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 116,
+      "section": "preamble",
+      "text": "The XLA IR consists of a graph representing thecomputation performed on tensors. The graph is then compiledand optimized (e.g., by fusing operations when possible). Touse timm\u2019s utility functions to work with TPUs, we use the7https://github.com/facebookresearch/fvcore8https://github.com/rwightman/pytorch-image-models/9XLA stands for Accelerated Linear Algebra, more information about theXLA compiler can be found here: https://www.tensorflow.org/xla/architecturebits_and_tpu branch of PyTorch Image Models10, whichintroduces the compatibility of the library with XLA and TPUs.We adapt timm\u2019s default training script to perform adversarialtraining.Because of an existing bug we identified in PyTorch XLA11,when we run the attacks (e.g., FGSM) during training, we haveto set the model to the .train() mode (which influences thebehavior of batch normalization layers). However, this shouldnot impact the overall robustness of the models [48]. Moreover,while all the AutoAttack and APGD-CE evaluations are runon V100 GPUs, hence with the model in .eval() mode,in the case of the attack effectiveness experiment (sec:attack-effectiveness) we run the evaluations on TPUs, thus with themodel in .train() mode.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0117",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 117,
+      "section": "preamble",
+      "text": "We do so as the large number ofevaluations we run (160) would have been unfeasible with ourGPU compute budget.J. Additional experiment about XCiT\u2019s gradientsDirect feature visualization. Gradients of robust CNNs aremore aligned with human perception [35]. In particular, in theirwork, they introduce a visualization technique called directfeature visualization, by which they maximize the output ofa model at a specific activation in the penultimate layer byoptimizing an input image via PGD. They observe that theimages generated in this way using an adversarially-trainedmodel contain semantically meaningful information withoutthe need for regularization terms on the input. We explore avariation of this experiment: instead of maximizing a specificactivation, starting from uniformly random inputs, we run atargeted attack that targets a random class, i.e., we change theinput so that it is classified with the given class with the highestconfidence. We do so by optimizing the input via PGD-100,using \u03b5 = 15. To the best of our knowledge, we are the firstto run a similar experiment on a robust ViT-like model.",
+      "token_count": 227
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0118",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 118,
+      "section": "preamble",
+      "text": "We do so by optimizing the input via PGD-100,using \u03b5 = 15. To the best of our knowledge, we are the firstto run a similar experiment on a robust ViT-like model. Wecan see a set of random images and classes in Fig. 18.We make the following observations: 1) The non-robustXCiT gradients have no semantic meaning. 2) Regarding thefirst image on the left, whose target class is \u201csmall white\u201d (abutterfly species), for both the robust models, we can see awhite portion in the shape of a butterfly with a black spot,which is what a small white butterfly looks. 3) Regardingthe image targeting \u201cfeather boa\u201d (feathery party apparel), wecan see, in the case of the robust XCiT-S12, long, colorfulstructures with feather-like edges. 4) For the images targetingthe \u201cpot\u201d class, we can see the borders of a pot in the caseof the robust XCiT-S12.",
+      "token_count": 213
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0119",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 119,
+      "section": "preamble",
+      "text": "We can also observe that we can seesome plants as well, meaning that, probably, in the datasets,pots are most often represented when containing plants. 5)Finally, in the last image on the right, which should target the\u201cborder collie\u201d class, we can see a Border Collie for the robustXCiT-S12 and the head of one in the lower right corner forthe robust ResNet-50.Perturbations visualization. We also visualize the adversarialperturbations generated with a PGD-100 attack for a robustand a non-robust XCiT, compared to those generated for arobust ResNet-50. Given that a perturbation \u03b4 is in [\u2212\u03b5, \u03b5], werescale it to [0, 1] to visualize it as an image. For this reason,we compute the visualized images \u03b4viz = \u03b4+\u03b5Carbon emissions. Finally, the carbon footprint of the project,measured via Google Cloud\u2019s Carbon Footprint Console12, is33 kgCO2. For scale, a flight from Paris to London generatesaround 55.7 kgCO2 per person in economy class13.E. Additional ablation resultsWe show in Table IX the full results for the data augmenta-tion ablation. We can observe that the setups with the heaviestdata augmentations rank at the bottom.F. PGD ResultsWe report the results for PGD attacks in Table X.G.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0120",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 120,
+      "section": "preamble",
+      "text": "We can observe that the setups with the heaviestdata augmentations rank at the bottom.F. PGD ResultsWe report the results for PGD attacks in Table X.G. Pre-training resultsWe show in Table XI the results for training runs with\u03b5 = 8/255. These are the models we use for fine-tuning.H. Additional plots regarding attack effectivenessWe show, in Figs. 12 and 13 additional results regarding theattack effectiveness experiment.2\u03b5 and we visualizethe intensity of the perturbation by transforming the image togrey-scale colors.We can see a random sample of images and their respectiveperturbations in Fig. 8. We note that the shapes of the originalimages are visible in the robust XCiT and ResNet perturbations,while they are not in the non-robust ones.I. Additional samples for the optimization sanity checksWe show the loss for different attack steps for 32 differentsamples from ImageNet-1k in Fig. 14 (XCiT-S12), and Fig. 15(ResNet-50), and the loss progression of the loss in one attacktargeting the same 32 samples in Fig. 16 (XCiT-S12), andFig. 17 (ResNet-50).10https://github.com/rwightman/pytorch-image-models/tree/bits and tpu.The branch may be eventually merged into main.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0121",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 121,
+      "section": "preamble",
+      "text": "Hence, this URL maybecome invalid.11https://github.com/pytorch/xla/issues/336112https://cloud.google.com/carbon-footprint13Computed on https://www.icao.int/environmental-protection/Carbonoffset/Pages/default.aspxTABLE IX: Weak data augmentation is better. The strategies that perform best are those with just Random Erasing, orno heavy augmentation, such as RandAugment, at all. We report the full results results in this table, sorted by APGD-CEaccuracy.",
+      "token_count": 106
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0122",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 122,
+      "section": "preamble",
+      "text": "The strategies that perform best are those with just Random Erasing, orno heavy augmentation, such as RandAugment, at all. We report the full results results in this table, sorted by APGD-CEaccuracy. In all the runs we keep weak data augmentation that are commonly used (random flip and crop, and color jitter).(Arch: XCiT-N12)Data Augmentation PolicyAccuracyMixUpCutMixRandAugmentRandom ErasingCleanAPGD-CE\u2717\u2717\u2717\u271367.2839.22\u2717\u2717\u2717\u271766.7839.22\u2713\u2717\u2717\u271761.0438.56\u2713\u2717\u2717\u271360.4638.26\u2713\u2713\u2717\u271762.0438.18\u2717\u2717\u2713\u271765.3437.64\u2717\u2717\u2713\u271364.7637.62\u2713\u2713\u2717\u271359.8037.20\u2713\u2717\u2713\u271757.1636.74\u2717\u2713\u2717\u271761.6236.30\u2713\u2713\u2713\u271757.6036.06\u2717\u2713\u2717\u271361.7035.74\u2713\u2717\u2713\u271355.6435.70\u2713\u2713\u2713\u271355.9635.38\u2717\u2713\u2713\u271756.6432.92\u2717\u2713\u2713\u271355.6432.40TABLE X: PGD accuracy decreases with the number of steps.",
+      "token_count": 332
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0123",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 123,
+      "section": "preamble",
+      "text": "We run the PGD attack with 5, 10, 50, and 100 steps for\u03b5 = 8/255. We observe that, as expected, the robust accuracy gently plateaus at 50 steps, with no significant difference between50 and 100 steps, for all three models. We run the attack on the full ImageNet validation set, using as a step size 1.5 \u00b7 \u03b5/n),where n is the number of attack steps.ModelClean AccuracyRobust AccuracyPGD-5PGD-10PGD-50PGD-100XCiT-S1272.3449.1648.9148.7148.69XCiT-M1274.0451.9651.7151.5551.53XCiT-L1273.7653.7553.5253.3753.36TABLE XI: The training recipe also works for larger epsilons.",
+      "token_count": 188
+    },
+    {
+      "chunk_id": "2209.07399_chunk_0124",
+      "arxiv_id": "2209.07399",
+      "chunk_index": 124,
+      "section": "preamble",
+      "text": "Results for training with \u03b5 = 8/255: we can observe that, forXCiT, the performance improves with scale.ModelClean AccuracyAA AccuracyGELU ResNet-5058.0817.14ReLU ResNet-50 [50]54.9019.72XCiT-S1263.4625.00XCiT-M1267.8026.58XCiT-L1269.2428.74steps = 1steps = 2Robust loss relative di\ufb00erence (%)ModelResNet-50XCiT-S12XCiT-S12\u2217steps = 5steps = 10Robust loss relative di\ufb00erence (%)ConvNeXt-T20406080100Epoch20406080100EpochFig. 12: Comparison, across different attack steps, of the relative difference between the adversarial loss computed with thegiven attack steps and the adversarial loss computed with PGD-200, and how this quantity changes every 10 training epochs.epoch = 10epoch = 20Robust loss relative di\ufb00erence (%)epoch = 30epoch = 40Robust loss relative di\ufb00erence (%)epoch = 50epoch = 60Robust loss relative di\ufb00erence (%)ModelResNet-50XCiT-S12XCiT-S12\u2217ConvNeXt-Tepoch = 70epoch = 80Robust loss relative di\ufb00erence (%)epoch = 90epoch = 100Robust loss relative di\ufb00erence (%)12510Attack steps12510Attack stepsFig. 13: Comparison, every 10 epochs, of the relative difference between the adversarial loss computed with different numbersof attack steps and the adversarial loss computed with PGD-200.2.00.140.071.5Loss0.120.061.00.100.050.50.040.080.220.400.200.140.350.180.120.30Loss0.160.100.250.140.080.200.150.120.060.100.100.170.180.160.140.80.150.12Loss0.160.140.60.140.130.100.40.080.120.120.20.300.140.200.100.120.180.090.250.16Loss0.080.200.100.140.070.080.120.060.150.100.100.060.080.100.301",
+      "token_count": 522
+    }
+  ]
+}

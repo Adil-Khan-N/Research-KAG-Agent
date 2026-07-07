@@ -1,0 +1,505 @@
+{
+  "arxiv_id": "2010.11929",
+  "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+  "authors": [
+    "Alexey Dosovitskiy",
+    "Lucas Beyer",
+    "Alexander Kolesnikov",
+    "Dirk Weissenborn",
+    "Xiaohua Zhai",
+    "Thomas Unterthiner",
+    "Mostafa Dehghani",
+    "Matthias Minderer",
+    "Georg Heigold",
+    "Sylvain Gelly",
+    "Jakob Uszkoreit",
+    "Neil Houlsby"
+  ],
+  "year": 2020,
+  "abstract": "While the Transformer architecture has become the de-facto standard for natural language processing tasks, its applications to computer vision remain limited. In vision, attention is either applied in conjunction with convolutional networks, or used to replace certain components of convolutional networks while keeping their overall structure in place. We show that this reliance on CNNs is not necessary and a pure transformer applied directly to sequences of image patches can perform very well on image classification tasks. When pre-trained on large amounts of data and transferred to multiple mid-sized or small image recognition benchmarks (ImageNet, CIFAR-100, VTAB, etc.), Vision Transformer (ViT) attains excellent results compared to state-of-the-art convolutional networks while requiring substantially fewer computational resources to train.",
+  "categories": [
+    "cs.CV",
+    "cs.AI",
+    "cs.LG"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2010.11929v2",
+  "page_count": 22,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 59,
+  "chunks": [
+    {
+      "chunk_id": "2010.11929_chunk_0000",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "Published as a conference paper at ICLR 2021AN IMAGE IS WORTH 16X16 WORDS:TRANSFORMERS FOR IMAGE RECOGNITION AT SCALEAlexey Dosovitskiy\u2217,\u2020, Lucas Beyer\u2217, Alexander Kolesnikov\u2217, Dirk Weissenborn\u2217,Xiaohua Zhai\u2217, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer,Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, Neil Houlsby\u2217,\u2020\u2217equal technical contribution, \u2020equal advisingGoogle Research, Brain Team{adosovitskiy, neilhoulsby}@google.comABSTRACTWhile the Transformer architecture has become the de-facto standard for naturallanguage processing tasks, its applications to computer vision remain limited. Invision, attention is either applied in conjunction with convolutional networks, orused to replace certain components of convolutional networks while keeping theiroverall structure in place. We show that this reliance on CNNs is not necessaryand a pure transformer applied directly to sequences of image patches can performvery well on image classi\ufb01cation tasks.",
+      "token_count": 247
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0001",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "We show that this reliance on CNNs is not necessaryand a pure transformer applied directly to sequences of image patches can performvery well on image classi\ufb01cation tasks. When pre-trained on large amounts ofdata and transferred to multiple mid-sized or small image recognition benchmarks(ImageNet, CIFAR-100, VTAB, etc.), Vision Transformer (ViT) attains excellentresults compared to state-of-the-art convolutional networks while requiring sub-stantially fewer computational resources to train.11INTRODUCTIONSelf-attention-based architectures, in particular Transformers (Vaswani et al., 2017), have becomethe model of choice in natural language processing (NLP). The dominant approach is to pre-train ona large text corpus and then \ufb01ne-tune on a smaller task-speci\ufb01c dataset (Devlin et al., 2019). Thanksto Transformers\u2019 computational ef\ufb01ciency and scalability, it has become possible to train models ofunprecedented size, with over 100B parameters (Brown et al., 2020; Lepikhin et al., 2020). With themodels and datasets growing, there is still no sign of saturating performance.In computer vision, however, convolutional architectures remain dominant (LeCun et al., 1989;Krizhevsky et al., 2012; He et al., 2016).",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0002",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "Inspired by NLP successes, multiple works try combiningCNN-like architectures with self-attention (Wang et al., 2018; Carion et al., 2020), some replacingthe convolutions entirely (Ramachandran et al., 2019; Wang et al., 2020a). The latter models, whiletheoretically ef\ufb01cient, have not yet been scaled effectively on modern hardware accelerators due tothe use of specialized attention patterns. Therefore, in large-scale image recognition, classic ResNet-like architectures are still state of the art (Mahajan et al., 2018; Xie et al., 2020; Kolesnikov et al.,2020).Inspired by the Transformer scaling successes in NLP, we experiment with applying a standardTransformer directly to images, with the fewest possible modi\ufb01cations. To do so, we split an imageinto patches and provide the sequence of linear embeddings of these patches as an input to a Trans-former. Image patches are treated the same way as tokens (words) in an NLP application. We trainthe model on image classi\ufb01cation in supervised fashion.When trained on mid-sized datasets such as ImageNet without strong regularization, these mod-els yield modest accuracies of a few percentage points below ResNets of comparable size.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0003",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "We trainthe model on image classi\ufb01cation in supervised fashion.When trained on mid-sized datasets such as ImageNet without strong regularization, these mod-els yield modest accuracies of a few percentage points below ResNets of comparable size. Thisseemingly discouraging outcome may be expected: Transformers lack some of the inductive biases1Fine-tuningcodeandpre-trainedmodelsareavailableathttps://github.com/google-research/vision_transformerPublished as a conference paper at ICLR 2021inherent to CNNs, such as translation equivariance and locality, and therefore do not generalize wellwhen trained on insuf\ufb01cient amounts of data.However, the picture changes if the models are trained on larger datasets (14M-300M images). We\ufb01nd that large scale training trumps inductive bias. Our Vision Transformer (ViT) attains excellentresults when pre-trained at suf\ufb01cient scale and transferred to tasks with fewer datapoints. Whenpre-trained on the public ImageNet-21k dataset or the in-house JFT-300M dataset, ViT approachesor beats state of the art on multiple image recognition benchmarks.",
+      "token_count": 236
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0004",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "Whenpre-trained on the public ImageNet-21k dataset or the in-house JFT-300M dataset, ViT approachesor beats state of the art on multiple image recognition benchmarks. In particular, the best modelreaches the accuracy of 88.55% on ImageNet, 90.72% on ImageNet-ReaL, 94.55% on CIFAR-100,and 77.63% on the VTAB suite of 19 tasks.2RELATED WORKTransformers were proposed by Vaswani et al. (2017) for machine translation, and have since be-come the state of the art method in many NLP tasks. Large Transformer-based models are oftenpre-trained on large corpora and then \ufb01ne-tuned for the task at hand: BERT (Devlin et al., 2019)uses a denoising self-supervised pre-training task, while the GPT line of work uses language mod-eling as its pre-training task (Radford et al., 2018; 2019; Brown et al., 2020).Naive application of self-attention to images would require that each pixel attends to every otherpixel. With quadratic cost in the number of pixels, this does not scale to realistic input sizes. Thus,to apply Transformers in the context of image processing, several approximations have been tried inthe past.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0005",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "With quadratic cost in the number of pixels, this does not scale to realistic input sizes. Thus,to apply Transformers in the context of image processing, several approximations have been tried inthe past. Parmar et al. (2018) applied the self-attention only in local neighborhoods for each querypixel instead of globally. Such local multi-head dot-product self attention blocks can completelyreplace convolutions (Hu et al., 2019; Ramachandran et al., 2019; Zhao et al., 2020). In a differentline of work, Sparse Transformers (Child et al., 2019) employ scalable approximations to global self-attention in order to be applicable to images. An alternative way to scale attention is to apply it inblocks of varying sizes (Weissenborn et al., 2019), in the extreme case only along individual axes (Hoet al., 2019; Wang et al., 2020a). Many of these specialized attention architectures demonstratepromising results on computer vision tasks, but require complex engineering to be implementedef\ufb01ciently on hardware accelerators.Most related to ours is the model of Cordonnier et al. (2020), which extracts patches of size 2 \u00d7 2from the input image and applies full self-attention on top.",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0006",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "This model is very similar to ViT,but our work goes further to demonstrate that large scale pre-training makes vanilla transformerscompetitive with (or even better than) state-of-the-art CNNs. Moreover, Cordonnier et al. (2020)use a small patch size of 2 \u00d7 2 pixels, which makes the model applicable only to small-resolutionimages, while we handle medium-resolution images as well.There has also been a lot of interest in combining convolutional neural networks (CNNs) with formsof self-attention, e.g. by augmenting feature maps for image classi\ufb01cation (Bello et al., 2019) or byfurther processing the output of a CNN using self-attention, e.g. for object detection (Hu et al., 2018;Carion et al., 2020), video processing (Wang et al., 2018; Sun et al., 2019), image classi\ufb01cation (Wuet al., 2020), unsupervised object discovery (Locatello et al., 2020), or uni\ufb01ed text-vision tasks (Chenet al., 2020c; Lu et al., 2019; Li et al., 2019).Another recent related model is image GPT (iGPT) (Chen et al., 2020a), which applies Transformersto image pixels after reducing image resolution and color space.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0007",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "The model is trained in an unsu-pervised fashion as a generative model, and the resulting representation can then be \ufb01ne-tuned orprobed linearly for classi\ufb01cation performance, achieving a maximal accuracy of 72% on ImageNet.Our work adds to the increasing collection of papers that explore image recognition at larger scalesthan the standard ImageNet dataset. The use of additional data sources allows to achieve state-of-the-art results on standard benchmarks (Mahajan et al., 2018; Touvron et al., 2019; Xie et al., 2020).Moreover, Sun et al. (2017) study how CNN performance scales with dataset size, and Kolesnikovet al. (2020); Djolonga et al. (2020) perform an empirical exploration of CNN transfer learning fromlarge scale datasets such as ImageNet-21k and JFT-300M.",
+      "token_count": 189
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0008",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "We focus on these two latter datasets aswell, but train Transformers instead of ResNet-based models used in prior works.Published as a conference paper at ICLR 2021Vision Transformer (ViT)Transformer EncoderClass+L xBirdBallMLP HeadCar...MLPNormTransformer EncoderPatch + PositionMulti-HeadEmbedding123456789AttentionLinear Projection of Flattened Patches* Extra learnable [ cl ass] embeddingNormEmbeddedPatches3METHODIn model design we follow the original Transformer (Vaswani et al., 2017) as closely as possible.An advantage of this intentionally simple setup is that scalable NLP Transformer architectures \u2013 andtheir ef\ufb01cient implementations \u2013 can be used almost out of the box.3.1VISION TRANSFORMER (VIT)An overview of the model is depicted in Figure 1. The standard Transformer receives as input a 1Dsequence of token embeddings. To handle 2D images, we reshape the image x \u2208RH\u00d7W \u00d7C into asequence of \ufb02attened 2D patches xp \u2208RN\u00d7(P 2\u00b7C), where (H, W) is the resolution of the originalimage, C is the number of channels, (P, P) is the resolution of each image patch, and N = HW/P 2is the resulting number of patches, which also serves as the effective input sequence length for theTransformer.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0009",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "The Transformer uses constant latent vector size D through all of its layers, so we\ufb02atten the patches and map to D dimensions with a trainable linear projection (Eq. 1). We refer tothe output of this projection as the patch embeddings.Similar to BERT\u2019s [class] token, we prepend a learnable embedding to the sequence of embed-ded patches (z00 = xclass), whose state at the output of the Transformer encoder (z0L) serves as theimage representation y (Eq. 4). Both during pre-training and \ufb01ne-tuning, a classi\ufb01cation head is at-tached to z0L. The classi\ufb01cation head is implemented by a MLP with one hidden layer at pre-trainingtime and by a single linear layer at \ufb01ne-tuning time.Position embeddings are added to the patch embeddings to retain positional information. We usestandard learnable 1D position embeddings, since we have not observed signi\ufb01cant performancegains from using more advanced 2D-aware position embeddings (Appendix D.4). The resultingsequence of embedding vectors serves as input to the encoder.The Transformer encoder (Vaswani et al., 2017) consists of alternating layers of multiheaded self-attention (MSA, see Appendix A) and MLP blocks (Eq. 2, 3).",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0010",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "Layernorm (LN) is applied beforeevery block, and residual connections after every block (Wang et al., 2019; Baevski & Auli, 2019).Published as a conference paper at ICLR 2021The MLP contains two layers with a GELU non-linearity.z0 = [xclass; x1pE; x2pE; \u00b7 \u00b7 \u00b7 ; xNp E] + Epos,E \u2208R(P 2\u00b7C)\u00d7D, Epos \u2208R(N+1)\u00d7D(1)z\u2032\u2113= MSA(LN(z\u2113\u22121)) + z\u2113\u22121,\u2113= 1 . . . L(2)z\u2113= MLP(LN(z\u2032\u2113)) + z\u2032\u2113,\u2113= 1 . . . L(3)y = LN(z0L)(4)Inductive bias.We note that Vision Transformer has much less image-speci\ufb01c inductive bias thanCNNs. In CNNs, locality, two-dimensional neighborhood structure, and translation equivariance arebaked into each layer throughout the whole model. In ViT, only MLP layers are local and transla-tionally equivariant, while the self-attention layers are global.",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0011",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "In ViT, only MLP layers are local and transla-tionally equivariant, while the self-attention layers are global. The two-dimensional neighborhoodstructure is used very sparingly: in the beginning of the model by cutting the image into patches andat \ufb01ne-tuning time for adjusting the position embeddings for images of different resolution (as de-scribed below). Other than that, the position embeddings at initialization time carry no informationabout the 2D positions of the patches and all spatial relations between the patches have to be learnedfrom scratch.Hybrid Architecture.As an alternative to raw image patches, the input sequence can be formedfrom feature maps of a CNN (LeCun et al., 1989). In this hybrid model, the patch embeddingprojection E (Eq. 1) is applied to patches extracted from a CNN feature map. As a special case,the patches can have spatial size 1x1, which means that the input sequence is obtained by simply\ufb02attening the spatial dimensions of the feature map and projecting to the Transformer dimension.The classi\ufb01cation input embedding and position embeddings are added as described above.3.2FINE-TUNING AND HIGHER RESOLUTIONTypically, we pre-train ViT on large datasets, and \ufb01ne-tune to (smaller) downstream tasks.",
+      "token_count": 271
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0012",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "Forthis, we remove the pre-trained prediction head and attach a zero-initialized D \u00d7 K feedforwardlayer, where K is the number of downstream classes. It is often bene\ufb01cial to \ufb01ne-tune at higherresolution than pre-training (Touvron et al., 2019; Kolesnikov et al., 2020). When feeding imagesof higher resolution, we keep the patch size the same, which results in a larger effective sequencelength. The Vision Transformer can handle arbitrary sequence lengths (up to memory constraints),however, the pre-trained position embeddings may no longer be meaningful. We therefore perform2D interpolation of the pre-trained position embeddings, according to their location in the originalimage. Note that this resolution adjustment and patch extraction are the only points at which aninductive bias about the 2D structure of the images is manually injected into the Vision Transformer.4EXPERIMENTSWe evaluate the representation learning capabilities of ResNet, Vision Transformer (ViT), and thehybrid. To understand the data requirements of each model, we pre-train on datasets of varying sizeand evaluate many benchmark tasks. When considering the computational cost of pre-training themodel, ViT performs very favourably, attaining state of the art on most recognition benchmarks ata lower pre-training cost.",
+      "token_count": 266
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0013",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "When considering the computational cost of pre-training themodel, ViT performs very favourably, attaining state of the art on most recognition benchmarks ata lower pre-training cost. Lastly, we perform a small experiment using self-supervision, and showthat self-supervised ViT holds promise for the future.4.1SETUPDatasets. To explore model scalability, we use the ILSVRC-2012 ImageNet dataset with 1k classesand 1.3M images (we refer to it as ImageNet in what follows), its superset ImageNet-21k with21k classes and 14M images (Deng et al., 2009), and JFT (Sun et al., 2017) with 18k classes and303M high-resolution images. We de-duplicate the pre-training datasets w.r.t. the test sets of thedownstream tasks following Kolesnikov et al. (2020). We transfer the models trained on thesedataset to several benchmark tasks: ImageNet on the original validation labels and the cleaned-upReaL labels (Beyer et al., 2020), CIFAR-10/100 (Krizhevsky, 2009), Oxford-IIIT Pets (Parkhi et al.,2012), and Oxford Flowers-102 (Nilsback & Zisserman, 2008).",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0014",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "For these datasets, pre-processingfollows Kolesnikov et al. (2020).Published as a conference paper at ICLR 2021ModelLayersHidden size DMLP sizeHeadsParamsViT-Base1276830721286MViT-Large241024409616307MViT-Huge321280512016632MWe also evaluate on the 19-task VTAB classi\ufb01cation suite (Zhai et al., 2019b). VTAB evaluateslow-data transfer to diverse tasks, using 1 000 training examples per task. The tasks are divided intothree groups: Natural \u2013 tasks like the above, Pets, CIFAR, etc. Specialized \u2013 medical and satelliteimagery, and Structured \u2013 tasks that require geometric understanding like localization.Model Variants. We base ViT con\ufb01gurations on those used for BERT (Devlin et al., 2019), assummarized in Table 1. The \u201cBase\u201d and \u201cLarge\u201d models are directly adopted from BERT and weadd the larger \u201cHuge\u201d model.",
+      "token_count": 223
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0015",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "The \u201cBase\u201d and \u201cLarge\u201d models are directly adopted from BERT and weadd the larger \u201cHuge\u201d model. In what follows we use brief notation to indicate the model size andthe input patch size: for instance, ViT-L/16 means the \u201cLarge\u201d variant with 16\u00d716 input patch size.Note that the Transformer\u2019s sequence length is inversely proportional to the square of the patch size,thus models with smaller patch size are computationally more expensive.For the baseline CNNs, we use ResNet (He et al., 2016), but replace the Batch Normalization lay-ers (Ioffe & Szegedy, 2015) with Group Normalization (Wu & He, 2018), and used standardizedconvolutions (Qiao et al., 2019). These modi\ufb01cations improve transfer (Kolesnikov et al., 2020),and we denote the modi\ufb01ed model \u201cResNet (BiT)\u201d. For the hybrids, we feed the intermediate fea-ture maps into ViT with patch size of one \u201cpixel\u201d. To experiment with different sequence lengths,we either (i) take the output of stage 4 of a regular ResNet50 or (ii) remove stage 4, place the samenumber of layers in stage 3 (keeping the total number of layers), and take the output of this extendedstage 3.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0016",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "Option (ii) results in a 4x longer sequence length, and a more expensive ViT model.Training & Fine-tuning. We train all models, including ResNets, using Adam (Kingma & Ba,2015) with \u03b21 = 0.9, \u03b22 = 0.999, a batch size of 4096 and apply a high weight decay of 0.1, whichwe found to be useful for transfer of all models (Appendix D.1 shows that, in contrast to commonpractices, Adam works slightly better than SGD for ResNets in our setting). We use a linear learningrate warmup and decay, see Appendix B.1 for details. For \ufb01ne-tuning we use SGD with momentum,batch size 512, for all models, see Appendix B.1.1. For ImageNet results in Table 2, we \ufb01ne-tuned athigher resolution: 512 for ViT-L/16 and 518 for ViT-H/14, and also used Polyak & Juditsky (1992)averaging with a factor of 0.9999 (Ramachandran et al., 2019; Wang et al., 2020b).Metrics.",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0017",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "We report results on downstream datasets either through few-shot or \ufb01ne-tuning accuracy.Fine-tuning accuracies capture the performance of each model after \ufb01ne-tuning it on the respectivedataset. Few-shot accuracies are obtained by solving a regularized least-squares regression problemthat maps the (frozen) representation of a subset of training images to {\u22121, 1}K target vectors. Thisformulation allows us to recover the exact solution in closed form. Though we mainly focus on\ufb01ne-tuning performance, we sometimes use linear few-shot accuracies for fast on-the-\ufb02y evaluationwhere \ufb01ne-tuning would be too costly.4.2COMPARISON TO STATE OF THE ARTWe \ufb01rst compare our largest models \u2013 ViT-H/14 and ViT-L/16 \u2013 to state-of-the-art CNNs fromthe literature. The \ufb01rst comparison point is Big Transfer (BiT) (Kolesnikov et al., 2020), whichperforms supervised transfer learning with large ResNets. The second is Noisy Student (Xie et al.,2020), which is a large Ef\ufb01cientNet trained using semi-supervised learning on ImageNet and JFT-300M with the labels removed. Currently, Noisy Student is the state of the art on ImageNet andBiT-L on the other datasets reported here.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0018",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "Currently, Noisy Student is the state of the art on ImageNet andBiT-L on the other datasets reported here. All models were trained on TPUv3 hardware, and wereport the number of TPUv3-core-days taken to pre-train each of them, that is, the number of TPUv3 cores (2 per chip) used for training multiplied by the training time in days.Published as a conference paper at ICLR 2021Ours-JFTOurs-JFTOurs-I21kBiT-LNoisy Student(ViT-H/14)(ViT-L/16)(ViT-L/16)(ResNet152x4)(Ef\ufb01cientNet-L2)ImageNet88.55 \u00b1 0.0487.76 \u00b1 0.0385.30 \u00b1 0.0287.54 \u00b1 0.0288.4/88.5\u2217ImageNet ReaL90.72 \u00b1 0.0590.54 \u00b1 0.0388.62 \u00b1 0.0590.5490.55CIFAR-1099.50 \u00b1 0.0699.42 \u00b1 0.0399.15 \u00b1 0.0399.37 \u00b1 0.06\u2212CIFAR-10094.55 \u00b1 0.0493.90 \u00b1 0.0593.25 \u00b1 0.0593.51 \u00b1 0.08\u2212Oxford-IIIT Pets97.56 \u00b1 0.0397.32 \u00b1 0.1194.67 \u00b1 0.1596.62 \u00b1 0.23\u2212Oxford Flowers-10299.68 \u00b1 0.0299.74 \u00b1 0.0099.61 \u00b1 0.0299.63 \u00b1 0.03\u2212VTAB (19 tasks)77.63 \u00b1 0.2376.28 \u00b1 0.4672.72 \u00b1 0.2176.29 \u00b1 1.70\u2212TPUv3-core-days2.5k0.68k0.23k9.9k12.3k70ViT-H/14BiT-L (R152x4)VIVI-Ex-100% (R50x3)S4L (R50x1)Accuracy [%]VTAB (19 tasks)65Natural (7 tasks)70Specialized (4 tasks)80Structured (8 tasks)50model still took substantially less compute to pre-train than prior state of the art.",
+      "token_count": 524
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0019",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "However, we notethat pre-training ef\ufb01ciency may be affected not only by the architecture choice, but also other pa-rameters, such as training schedule, optimizer, weight decay, etc. We provide a controlled study ofperformance vs. compute for different architectures in Section 4.4. Finally, the ViT-L/16 modelpre-trained on the public ImageNet-21k dataset performs well on most datasets too, while takingfewer resources to pre-train: it could be trained using a standard cloud TPUv3 with 8 cores in ap-proximately 30 days.4.3PRE-TRAINING DATA REQUIREMENTSThe Vision Transformer performs well when pre-trained on a large JFT-300M dataset. With fewerinductive biases for vision than ResNets, how crucial is the dataset size? We perform two series ofexperiments.First, we pre-train ViT models on datasets of increasing size: ImageNet, ImageNet-21k, and JFT-300M. To boost the performance on the smaller datasets, we optimize three basic regularizationparameters \u2013 weight decay, dropout, and label smoothing. Figure 3 shows the results after \ufb01ne-tuning to ImageNet (results on other datasets are shown in Table 5)2. When pre-trained on thesmallest dataset, ImageNet, ViT-Large models underperform compared to ViT-Base models, despite(moderate) regularization.",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0020",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "When pre-trained on thesmallest dataset, ImageNet, ViT-Large models underperform compared to ViT-Base models, despite(moderate) regularization. With ImageNet-21k pre-training, their performances are similar. Onlywith JFT-300M, do we see the full bene\ufb01t of larger models. Figure 3 also shows the performance2Note that the ImageNet pre-trained models are also \ufb01ne-tuned, but again on ImageNet. This is because theresolution increase during \ufb01ne-tuning improves the performance.Published as a conference paper at ICLR 2021ImageNet Top1 Accuracy [%]Linear 5-shot ImageNet Top1 [%]BiTViT-B/32ViT-B/16ViT-L/32ViT-L/16ViT-H/14ViT-L/16ViT-L/32ViT-B/32ViT-b/32ResNet50x1 (BiT)ResNet152x2 (BiT)ImageNetImageNet-21kJFT-300MPre-training dataset10 M30 M100 M300 MNumber of JFT pre-training samplesAverage-590ImageNetTransfer accuracy [%]Transformer (ViT)ResNet (BiT)HybridTransformer (ViT)ResNet (BiT)Hybrid10210375102103Total pre-training compute [exaFLOPs]region spanned by BiT models of different sizes.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0021",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "The BiT CNNs outperform ViT on ImageNet, butwith the larger datasets, ViT overtakes.Second, we train our models on random subsets of 9M, 30M, and 90M as well as the full JFT-300M dataset. We do not perform additional regularization on the smaller subsets and use the samehyper-parameters for all settings. This way, we assess the intrinsic model properties, and not theeffect of regularization. We do, however, use early-stopping, and report the best validation accuracyachieved during training. To save compute, we report few-shot linear accuracy instead of full \ufb01ne-tuning accuracy. Figure 4 contains the results. Vision Transformers over\ufb01t more than ResNets withcomparable computational cost on smaller datasets. For example, ViT-B/32 is slightly faster thanResNet50; it performs much worse on the 9M subset, but better on 90M+ subsets. The same is truefor ResNet152x2 and ViT-L/16. This result reinforces the intuition that the convolutional inductivebias is useful for smaller datasets, but for larger ones, learning the relevant patterns directly fromdata is suf\ufb01cient, even bene\ufb01cial.Overall, the few-shot results on ImageNet (Figure 4), as well as the low-data results on VTAB(Table 2) seem promising for very low-data transfer.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0022",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "Further analysis of few-shot properties of ViTis an exciting direction of future work.Published as a conference paper at ICLR 20214.4SCALING STUDYWe perform a controlled scaling study of different models by evaluating transfer performance fromJFT-300M. In this setting data size does not bottleneck the models\u2019 performances, and we assessperformance versus pre-training cost of each model. The model set includes: 7 ResNets, R50x1,R50x2 R101x1, R152x1, R152x2, pre-trained for 7 epochs, plus R152x2 and R200x3 pre-trainedfor 14 epochs; 6 Vision Transformers, ViT-B/32, B/16, L/32, L/16, pre-trained for 7 epochs, plusL/16 and H/14 pre-trained for 14 epochs; and 5 hybrids, R50+ViT-B/32, B/16, L/32, L/16 pre-trained for 7 epochs, plus R50+ViT-L/16 pre-trained for 14 epochs (for hybrids, the number at theend of the model name stands not for the patch size, but for the total dowsampling ratio in the ResNetbackbone).4.5INSPECTING VISION TRANSFORMERTo begin to understand how the Vision Transformer processes im-age data, we analyze its internal representations.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0023",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "The \ufb01rst layer ofthe Vision Transformer linearly projects the \ufb02attened patches into alower-dimensional space (Eq. 1). Figure 7 (left) shows the top prin-cipal components of the the learned embedding \ufb01lters. The com-ponents resemble plausible basis functions for a low-dimensionalrepresentation of the \ufb01ne structure within each patch.InputAttentionAfter the projection, a learned position embedding is added to thepatch representations. Figure 7 (center) shows that the model learnsto encode distance within the image in the similarity of position em-beddings, i.e. closer patches tend to have more similar position em-beddings. Further, the row-column structure appears; patches in thesame row/column have similar embeddings. Finally, a sinusoidalstructure is sometimes apparent for larger grids (Appendix D). Thatthe position embeddings learn to represent 2D image topology ex-plains why hand-crafted 2D-aware embedding variants do not yieldimprovements (Appendix D.4).Self-attention allows ViT to integrate information across the entireimage even in the lowest layers. We investigate to what degreethe network makes use of this capability. Speci\ufb01cally, we computethe average distance in image space across which information isintegrated, based on the attention weights (Figure 7, right).",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0024",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "We investigate to what degreethe network makes use of this capability. Speci\ufb01cally, we computethe average distance in image space across which information isintegrated, based on the attention weights (Figure 7, right). This\u201cattention distance\u201d is analogous to receptive \ufb01eld size in CNNs.We \ufb01nd that some heads attend to most of the image already in the lowest layers, showing thatthe ability to integrate information globally is indeed used by the model. Other attention headshave consistently small attention distances in the low layers. This highly localized attention isless pronounced in hybrid models that apply a ResNet before the Transformer (Figure 7, right),suggesting that it may serve a similar function as early convolutional layers in CNNs. Further, theattention distance increases with network depth. Globally, we \ufb01nd that the model attends to imageregions that are semantically relevant for classi\ufb01cation (Figure 6).4.6SELF-SUPERVISIONTransformers show impressive performance on NLP tasks.",
+      "token_count": 213
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0025",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "Globally, we \ufb01nd that the model attends to imageregions that are semantically relevant for classi\ufb01cation (Figure 6).4.6SELF-SUPERVISIONTransformers show impressive performance on NLP tasks. However, much of their success stemsnot only from their excellent scalability but also from large scale self-supervised pre-training (DevlinPublished as a conference paper at ICLR 2021RGB embedding filters(first 28 principal components)Position embedding similarityViT-L/16Mean attention distance (pixels)Input patch rowCosine similarityHead 1Head 2Head 3...1234567Input patch column05101520Network depth (layer)et al., 2019; Radford et al., 2018). We also perform a preliminary exploration on masked patchprediction for self-supervision, mimicking the masked language modeling task used in BERT. Withself-supervised pre-training, our smaller ViT-B/16 model achieves 79.9% accuracy on ImageNet, asigni\ufb01cant improvement of 2% to training from scratch, but still 4% behind supervised pre-training.Appendix B.1.2 contains further details.",
+      "token_count": 244
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0026",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "We leave exploration of contrastive pre-training (Chenet al., 2020b; He et al., 2020; Bachman et al., 2019; H\u00b4enaff et al., 2020) to future work.5CONCLUSIONWe have explored the direct application of Transformers to image recognition. Unlike prior worksusing self-attention in computer vision, we do not introduce image-speci\ufb01c inductive biases intothe architecture apart from the initial patch extraction step. Instead, we interpret an image as asequence of patches and process it by a standard Transformer encoder as used in NLP. This simple,yet scalable, strategy works surprisingly well when coupled with pre-training on large datasets.Thus, Vision Transformer matches or exceeds the state of the art on many image classi\ufb01cationdatasets, whilst being relatively cheap to pre-train.While these initial results are encouraging, many challenges remain. One is to apply ViT to othercomputer vision tasks, such as detection and segmentation. Our results, coupled with those in Carionet al. (2020), indicate the promise of this approach. Another challenge is to continue exploring self-supervised pre-training methods. Our initial experiments show improvement from self-supervisedpre-training, but there is still large gap between self-supervised and large-scale supervised pre-training.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0027",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "Another challenge is to continue exploring self-supervised pre-training methods. Our initial experiments show improvement from self-supervisedpre-training, but there is still large gap between self-supervised and large-scale supervised pre-training. Finally, further scaling of ViT would likely lead to improved performance.ACKNOWLEDGEMENTSThe work was performed in Berlin, Z\u00a8urich, and Amsterdam. We thank many colleagues at Googlefor their help, in particular Andreas Steiner for crucial help with the infrastructure and the open-source release of the code; Joan Puigcerver and Maxim Neumann for help with the large-scaletraining infrastructure; Dmitry Lepikhin, Aravindh Mahendran, Daniel Keysers, Mario Lu\u02c7ci\u00b4c, NoamShazeer, Ashish Vaswani, and Colin Raffel for useful discussions.REFERENCESSamira Abnar and Willem Zuidema. Quantifying attention \ufb02ow in transformers. In ACL, 2020.Philip Bachman, R Devon Hjelm, and William Buchwalter. Learning representations by maximizingmutual information across views. In NeurIPS, 2019.Published as a conference paper at ICLR 2021Alexei Baevski and Michael Auli. Adaptive input representations for neural language modeling. InICLR, 2019.I. Bello, B. Zoph, Q. Le, A. Vaswani, and J.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0028",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "Adaptive input representations for neural language modeling. InICLR, 2019.I. Bello, B. Zoph, Q. Le, A. Vaswani, and J. Shlens. Attention augmented convolutional networks.In ICCV, 2019.Lucas Beyer, Olivier J. H\u00b4enaff, Alexander Kolesnikov, Xiaohua Zhai, and A\u00a8aron van den Oord. Arewe done with imagenet? arXiv, 2020.Tom B Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan, Prafulla Dhariwal,Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models arefew-shot learners. arXiv, 2020.Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Kirillov, andSergey Zagoruyko. End-to-end object detection with transformers. In ECCV, 2020.Mark Chen, Alec Radford, Rewon Child, Jeff Wu, and Heewoo Jun. Generative pretraining frompixels. In ICML, 2020a.Ting Chen, Simon Kornblith, Mohammad Norouzi, and Geoffrey E. Hinton. A simple frameworkfor contrastive learning of visual representations.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0029",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "Generative pretraining frompixels. In ICML, 2020a.Ting Chen, Simon Kornblith, Mohammad Norouzi, and Geoffrey E. Hinton. A simple frameworkfor contrastive learning of visual representations. In ICML, 2020b.Yen-Chun Chen, Linjie Li, Licheng Yu, Ahmed El Kholy, Faisal Ahmed, Zhe Gan, Yu Cheng, andJingjing Liu. UNITER: UNiversal Image-TExt Representation Learning. In ECCV, 2020c.Rewon Child, Scott Gray, Alec Radford, and Ilya Sutskever. Generating long sequences with sparsetransformers. arXiv, 2019.Jean-Baptiste Cordonnier, Andreas Loukas, and Martin Jaggi. On the relationship between self-attention and convolutional layers. In ICLR, 2020.J. Deng, W. Dong, R. Socher, L. Li, Kai Li, and Li Fei-Fei. Imagenet: A large-scale hierarchicalimage database. In CVPR, 2009.Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deepbidirectional transformers for language understanding.",
+      "token_count": 266
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0030",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "Imagenet: A large-scale hierarchicalimage database. In CVPR, 2009.Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deepbidirectional transformers for language understanding. In NAACL, 2019.Josip Djolonga, Jessica Yung, Michael Tschannen, Rob Romijnders, Lucas Beyer, AlexanderKolesnikov, Joan Puigcerver, Matthias Minderer, Alexander D\u2019Amour, Dan Moldovan, SylvanGelly, Neil Houlsby, Xiaohua Zhai, and Mario Lucic. On robustness and transferability of convo-lutional neural networks. arXiv, 2020.Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recog-nition. In CVPR, 2016.Kaiming He, Haoqi Fan, Yuxin Wu, Saining Xie, and Ross Girshick.Momentum contrast forunsupervised visual representation learning. In CVPR, 2020.Jonathan Ho, Nal Kalchbrenner, Dirk Weissenborn, and Tim Salimans. Axial attention in multidi-mensional transformers. arXiv, 2019.Han Hu, Jiayuan Gu, Zheng Zhang, Jifeng Dai, and Yichen Wei.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0031",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "Axial attention in multidi-mensional transformers. arXiv, 2019.Han Hu, Jiayuan Gu, Zheng Zhang, Jifeng Dai, and Yichen Wei. Relation networks for objectdetection. In CVPR, 2018.Han Hu, Zheng Zhang, Zhenda Xie, and Stephen Lin. Local relation networks for image recognition.In ICCV, 2019.Zilong Huang, Xinggang Wang, Yunchao Wei, Lichao Huang, Humphrey Shi, Wenyu Liu, andThomas S. Huang. Ccnet: Criss-cross attention for semantic segmentation. In ICCV, 2020.Olivier J. H\u00b4enaff, Aravind Srinivas, Jeffrey De Fauw, Ali Razavi, Carl Doersch, S. M. Ali Eslami,and Aaron van den Oord. Data-ef\ufb01cient image recognition with contrastive predictive coding. InICML, 2020.Published as a conference paper at ICLR 2021Sergey Ioffe and Christian Szegedy. Batch normalization: Accelerating deep network training byreducing internal covariate shift. 2015.Diederik P. Kingma and Jimmy Ba. Adam: A method for stochastic optimization.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0032",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "Batch normalization: Accelerating deep network training byreducing internal covariate shift. 2015.Diederik P. Kingma and Jimmy Ba. Adam: A method for stochastic optimization. In ICLR, 2015.Alexander Kolesnikov, Lucas Beyer, Xiaohua Zhai, Joan Puigcerver, Jessica Yung, Sylvain Gelly,and Neil Houlsby. Big transfer (BiT): General visual representation learning. In ECCV, 2020.Alex Krizhevsky. Learning multiple layers of features from tiny images. Technical report, 2009.Alex Krizhevsky, Ilya Sutskever, and Geoffrey E. Hinton. Imagenet classi\ufb01cation with deep convo-lutional neural networks. In NIPS, 2012.Y. LeCun, B. Boser, J. Denker, D. Henderson, R. Howard, W. Hubbard, and L. Jackel. Backpropa-gation applied to handwritten zip code recognition. Neural Computation, 1:541\u2013551, 1989.Dmitry Lepikhin, HyoukJoong Lee, Yuanzhong Xu, Dehao Chen, Orhan Firat, Yanping Huang,Maxim Krikun, Noam Shazeer, and Zhifeng Chen.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0033",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "Gshard: Scaling giant models with conditionalcomputation and automatic sharding. arXiv, 2020.Liunian Harold Li, Mark Yatskar, Da Yin, Cho-Jui Hsieh, and Kai-Wei Chang. VisualBERT: ASimple and Performant Baseline for Vision and Language. In Arxiv, 2019.Francesco Locatello, Dirk Weissenborn, Thomas Unterthiner, Aravindh Mahendran, Georg Heigold,Jakob Uszkoreit, Alexey Dosovitskiy, and Thomas Kipf. Object-centric learning with slot atten-tion. arXiv, 2020.Jiasen Lu, Dhruv Batra, Devi Parikh, and Stefan Lee. ViLBERT: Pretraining Task-Agnostic Visi-olinguistic Representations for Vision-and-Language Tasks. In NeurIPS. 2019.Dhruv Mahajan, Ross Girshick, Vignesh Ramanathan, Kaiming He, Manohar Paluri, Yixuan Li,Ashwin Bharambe, and Laurens van der Maaten.Exploring the limits of weakly supervisedpretraining. In ECCV, 2018.M. Nilsback and A. Zisserman. Automated \ufb02ower classi\ufb01cation over a large number of classes.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0034",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "In ECCV, 2018.M. Nilsback and A. Zisserman. Automated \ufb02ower classi\ufb01cation over a large number of classes. InICVGIP, 2008.Omkar M. Parkhi, Andrea Vedaldi, Andrew Zisserman, and C. V. Jawahar. Cats and dogs. In CVPR,2012.Niki Parmar, Ashish Vaswani, Jakob Uszkoreit, Lukasz Kaiser, Noam Shazeer, Alexander Ku, andDustin Tran. Image transformer. In ICML, 2018.B. T. Polyak and A. B. Juditsky. Acceleration of stochastic approximation by averaging. SIAMJournal on Control and Optimization, 30(4):838\u2013855, 1992.doi: 10.1137/0330046.URLhttps://doi.org/10.1137/0330046.Siyuan Qiao, Huiyu Wang, Chenxi Liu, Wei Shen, and Alan Yuille. Weight standardization. arXivpreprint arXiv:1903.10520, 2019.Alec Radford, Karthik Narasimhan, Tim Salimans, and Ilya Sutskever. Improving language under-standing with unsupervised learning.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0035",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "Improving language under-standing with unsupervised learning. Technical Report, 2018.Alec Radford, Jeff Wu, Rewon Child, David Luan, Dario Amodei, and Ilya Sutskever. Languagemodels are unsupervised multitask learners. Technical Report, 2019.Prajit Ramachandran, Niki Parmar, Ashish Vaswani, Irwan Bello, Anselm Levskaya, and Jon Shlens.Stand-alone self-attention in vision models. In NeurIPS, 2019.Chen Sun, Abhinav Shrivastava, Saurabh Singh, and Abhinav Gupta. Revisiting unreasonable ef-fectiveness of data in deep learning era. In ICCV, 2017.Chen Sun, Austin Myers, Carl Vondrick, Kevin Murphy, and Cordelia Schmid. Videobert: A jointmodel for video and language representation learning. In ICCV, 2019.Published as a conference paper at ICLR 2021Hugo Touvron, Andrea Vedaldi, Matthijs Douze, and Herve Jegou. Fixing the train-test resolutiondiscrepancy. In NeurIPS. 2019.Hugo Touvron, Andrea Vedaldi, Matthijs Douze, and Herve Jegou.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0036",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "Fixing the train-test resolutiondiscrepancy. In NeurIPS. 2019.Hugo Touvron, Andrea Vedaldi, Matthijs Douze, and Herve Jegou. Fixing the train-test resolutiondiscrepancy: Fixef\ufb01cientnet. arXiv preprint arXiv:2003.08237, 2020.Michael Tschannen, Josip Djolonga, Marvin Ritter, Aravindh Mahendran, Neil Houlsby, SylvainGelly, and Mario Lucic. Self-supervised learning of video-induced visual invariances. In Pro-ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), June2020.Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez,\u0141ukasz Kaiser, and Illia Polosukhin. Attention is all you need. In NIPS, 2017.Huiyu Wang, Yukun Zhu, Bradley Green, Hartwig Adam, Alan Yuille, and Liang-Chieh Chen.Axial-deeplab: Stand-alone axial-attention for panoptic segmentation.",
+      "token_count": 257
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0037",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "In ECCV, 2020a.Huiyu Wang, Yukun Zhu, Bradley Green, Hartwig Adam, Alan Yuille, and Liang-ChiehChen.Axial-deeplab: Stand-alone axial-attention for panoptic segmentation.arXiv preprintarXiv:2003.07853, 2020b.Qiang Wang, Bei Li, Tong Xiao, Jingbo Zhu, Changliang Li, Derek F. Wong, and Lidia S. Chao.Learning deep transformer models for machine translation. In ACL, 2019.Xiaolong Wang, Ross Girshick, Abhinav Gupta, and Kaiming He. Non-local neural networks. InCVPR, 2018.Dirk Weissenborn, Oscar T\u00a8ackstr\u00a8om, and Jakob Uszkoreit. Scaling autoregressive video models. InICLR, 2019.Bichen Wu, Chenfeng Xu, Xiaoliang Dai, Alvin Wan, Peizhao Zhang, Masayoshi Tomizuka, KurtKeutzer, and Peter Vajda. Visual transformers: Token-based image representation and processingfor computer vision. arxiv, 2020.Yuxin Wu and Kaiming He. Group normalization. In ECCV, 2018.Qizhe Xie, Minh-Thang Luong, Eduard Hovy, and Quoc V. Le.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0038",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "Group normalization. In ECCV, 2018.Qizhe Xie, Minh-Thang Luong, Eduard Hovy, and Quoc V. Le. Self-training with noisy studentimproves imagenet classi\ufb01cation. In CVPR, 2020.Xiaohua Zhai, Avital Oliver, Alexander Kolesnikov, and Lucas Beyer. S4L: Self-Supervised Semi-Supervised Learning. In ICCV, 2019a.Xiaohua Zhai, Joan Puigcerver, Alexander Kolesnikov, Pierre Ruyssen, Carlos Riquelme, MarioLucic, Josip Djolonga, Andre Susano Pinto, Maxim Neumann, Alexey Dosovitskiy, et al. Alarge-scale study of representation learning with the visual task adaptation benchmark. arXivpreprint arXiv:1910.04867, 2019b.Hengshuang Zhao, Jiaya Jia, and Vladlen Koltun. Exploring self-attention for image recognition.",
+      "token_count": 223
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0039",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Exploring self-attention for image recognition. InCVPR, 2020.Published as a conference paper at ICLR 2021ModelsDatasetEpochsBase LRLR decayWeight decayDropoutViT-B/{16,32}JFT-300M78 \u00b7 10\u22124linear0.10.0ViT-L/32JFT-300M76 \u00b7 10\u22124linear0.10.0ViT-L/16JFT-300M7/144 \u00b7 10\u22124linear0.10.0ViT-H/14JFT-300M143 \u00b7 10\u22124linear0.10.0R50x{1,2}JFT-300M710\u22123linear0.10.0R101x1JFT-300M78 \u00b7 10\u22124linear0.10.0R152x{1,2}JFT-300M76 \u00b7 10\u22124linear0.10.0R50+ViT-B/{16,32}JFT-300M78 \u00b7 10\u22124linear0.10.0R50+ViT-L/32JFT-300M72 \u00b7 10\u22124linear0.10.0R50+ViT-L/16JFT-300M7/144 \u00b7 10\u22124linear0.10.0ViT-B/{16,32}ImageNet-21k9010\u22123linear0.030.1ViT-L/{16,32}ImageNet-21k30/9010\u22123linear0.030.1ViT-\u2217ImageNet3003 \u00b7 10\u22123cosine0.30.1APPENDIXAMULTIHEAD SELF-ATTENTIONStandard qkv self-attention (SA, Vaswani et al. (2017)) is a popular building block for neural archi-tectures.",
+      "token_count": 394
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0040",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "For each element in an input sequence z \u2208RN\u00d7D, we compute a weighted sum over allvalues v in the sequence. The attention weights Aij are based on the pairwise similarity betweentwo elements of the sequence and their respective query qi and key kj representations.[q, k, v] = zUqkvUqkv \u2208RD\u00d73Dh,(5)A = softmaxqk\u22a4/pDhA \u2208RN\u00d7N,(6)SA(z) = Av .(7)Multihead self-attention (MSA) is an extension of SA in which we run k self-attention operations,called \u201cheads\u201d, in parallel, and project their concatenated outputs. To keep compute and number ofparameters constant when changing k, Dh (Eq. 5) is typically set to D/k.MSA(z) = [SA1(z); SA2(z); \u00b7 \u00b7 \u00b7 ; SAk(z)] UmsaUmsa \u2208Rk\u00b7Dh\u00d7D(8)BEXPERIMENT DETAILSB.1TRAININGB.1.1FINE-TUNINGWe \ufb01ne-tune all ViT models using SGD with a momentum of 0.9. We run a small grid search overlearning rates, see learning rate ranges in Table 4.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0041",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "We run a small grid search overlearning rates, see learning rate ranges in Table 4. To do so, we use small sub-splits from the trainingset (10% for Pets and Flowers, 2% for CIFAR, 1% ImageNet) as development set and train on theremaining data. For \ufb01nal results we train on the entire training set and evaluate on the respectivetest data. For \ufb01ne-tuning ResNets and hybrid models we use the exact same setup, with the onlyexception of ImageNet where we add another value 0.06 to the learning rate sweep.",
+      "token_count": 127
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0042",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "For \ufb01ne-tuning ResNets and hybrid models we use the exact same setup, with the onlyexception of ImageNet where we add another value 0.06 to the learning rate sweep. Additionally,Published as a conference paper at ICLR 2021DatasetStepsBase LRImageNet20 000{0.003, 0.01, 0.03, 0.06}CIFAR10010 000{0.001, 0.003, 0.01, 0.03}CIFAR1010 000{0.001, 0.003, 0.01, 0.03}Oxford-IIIT Pets500{0.001, 0.003, 0.01, 0.03}Oxford Flowers-102500{0.001, 0.003, 0.01, 0.03}VTAB (19 tasks)2 5000.01for ResNets we also run the setup of Kolesnikov et al. (2020) and select the best results acrossthis run and our sweep.",
+      "token_count": 236
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0043",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "Finally, if not mentioned otherwise, all \ufb01ne-tuning experiments run at 384resolution (running \ufb01ne-tuning at different resolution than training is common practice (Kolesnikovet al., 2020)).When transferring ViT models to another dataset, we remove the whole head (two linear layers) andreplace it by a single, zero-initialized linear layer outputting the number of classes required by thetarget dataset. We found this to be a little more robust than simply re-initializing the very last layer.For VTAB we follow the protocol in Kolesnikov et al. (2020), and use the same hyperparametersetting for all tasks. We use a learning rate of 0.01 and train for 2500 steps (Tab. 4). We chose thissetting by running a small sweep over two learning rates and two schedules, and selecting the settingwith the highest VTAB score on the 200-example validation sets. We follow the pre-processing usedin Kolesnikov et al. (2020), except that we do not use task-speci\ufb01c input resolutions. Instead we \ufb01ndthat Vision Transformer bene\ufb01ts most from a high resolution (384 \u00d7 384) for all tasks.B.1.2SELF-SUPERVISIONWe employ the masked patch prediction objective for preliminary self-supervision experiments.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0044",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "Instead we \ufb01ndthat Vision Transformer bene\ufb01ts most from a high resolution (384 \u00d7 384) for all tasks.B.1.2SELF-SUPERVISIONWe employ the masked patch prediction objective for preliminary self-supervision experiments. Todo so we corrupt 50% of patch embeddings by either replacing their embeddings with a learnable[mask] embedding (80%), a random other patch embedding (10%) or just keeping them as is(10%). This setup is very similar to the one used for language by Devlin et al. (2019). Finally, wepredict the 3-bit, mean color (i.e., 512 colors in total) of every corrupted patch using their respectivepatch representations.We trained our self-supervised model for 1M steps (ca. 14 epochs) with batch size 4096 on JFT.",
+      "token_count": 172
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0045",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "Weuse Adam, with a base learning rate of 2\u00b710\u22124, warmup of 10k steps and cosine learning rate decay.As prediction targets for pretraining we tried the following settings: 1) predicting only the mean,3bit color (i.e., 1 prediction of 512 colors), 2) predicting a 4 \u00d7 4 downsized version of the 16 \u00d7 16patch with 3bit colors in parallel (i.e., 16 predictions of 512 colors), 3) regression on the full patchusing L2 (i.e., 256 regressions on the 3 RGB channels). Surprisingly, we found that all worked quitewell, though L2 was slightly worse. We report \ufb01nal results only for option 1) because it has shownbest few-shot performance. We also experimented with 15% corruption rate as used by Devlin et al.(2019) but results were also slightly worse on our few-shot metrics.Lastly, we would like to remark that our instantiation of masked patch prediction doesn\u2019t requiresuch an enormous amount of pretraining nor a large dataset such as JFT in order to lead to sim-ilar performance gains on ImageNet classi\ufb01cation.",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0046",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "That is, we observed diminishing returns ondownstream performance after 100k pretraining steps, and see similar gains when pretraining onImageNet.CADDITIONAL RESULTSWe report detailed results corresponding to the \ufb01gures presented in the paper. Table 5 correspondsto Figure 3 from the paper and shows transfer performance of different ViT models pre-trainedon datasets of increasing size: ImageNet, ImageNet-21k, and JFT-300M.",
+      "token_count": 94
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0047",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "Table 5 correspondsto Figure 3 from the paper and shows transfer performance of different ViT models pre-trainedon datasets of increasing size: ImageNet, ImageNet-21k, and JFT-300M. Table 6 corresponds toPublished as a conference paper at ICLR 2021ViT-B/16ViT-B/32ViT-L/16ViT-L/32ViT-H/14ImageNetCIFAR-1098.1397.7797.8697.94-CIFAR-10087.1386.3186.3587.07-ImageNet77.9173.3876.5371.16-ImageNet ReaL83.5779.5682.1977.83-Oxford Flowers-10289.4985.4389.6686.36-Oxford-IIIT-Pets93.8192.0493.6491.35-ImageNet-21kCIFAR-1098.9598.7999.1699.1399.27CIFAR-10091.6791.9793.4493.0493.82ImageNet83.9781.2885.1580.9985.13ImageNet ReaL88.3586.6388.4085.6588.70Oxford Flowers-10299.3899.1199.6199.1999.51Oxford-IIIT-Pets94.4393.0294.7393.0994.82JFT-300MCIFAR-1099.0098.6199.3899.1999.50CIFAR-10091.8790.4994.0492.5294.55ImageNet84.1580.7387.1284.3788.04ImageNet ReaL88.8586.2789.9988.2890.33Oxford Flowers-10299.5699.2799.5699.4599.68Oxford-IIIT-Pets95.8093.4097.1195.8397.56EpochsImageNetImageNet ReaLCIFAR-10CIFAR-100PetsFlowersexaFLOPsnameViT-B/32780.7386.2798.6190.4993.4099.2755ViT-B/16784.1588.8599.0091.8795.8099.56224ViT-L/32784.3788.2899.1992.5295.8399.45196ViT-L/16786.3089.4399.3893.4696.8199.66783ViT-L/161487.1289.9999.3894.0497.1199.561567ViT-H/141488.0890.3699.5094.7197.1199.714262ResNet50x1777.5484.5697.6786.0791.1194.2650ResNet50x2782.1287.9498.2989.2093.4397.02199ResNet101x1780.6787.0798.4889.1794.0895.9596ResNet152x1781.8887.9698.8290.2294.1796.94141ResNet152x2784.9789.6999.0692.0595.3798.62563ResNet152x21485.5689.8999.2491.9295.7598.751126ResNet200x31487.2290.1599.3493.5396.3299.043306R50x1+ViT-B/32784.9089.1599.0192.2495.7599.46106R50x1+ViT-B/16785.5889.6599.1492.6396.6",
+      "token_count": 828
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0048",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "ADAM FOR RESNETSResNets are typically trained with SGD and our use of Adam as optimizer is quite unconventional.Here we show the experiments that motivated this choice. Namely, we compare the \ufb01ne-tuningPublished as a conference paper at ICLR 2021ResNet50ResNet152x2DatasetAdamSGDAdamSGDImageNet77.5478.2484.9784.37CIFAR1097.6797.4699.0699.07CIFAR10086.0785.1792.0591.06Oxford-IIIT Pets91.1191.0095.3794.79Oxford Flowers-10294.2692.0698.6299.32Average89.3388.7994.0193.720.60.8ImageNet 5shot0.5Average 5shot0.70.4ModelsAllDepthPatch sizeWidth MLPWidth0.6ModelsAllDepthPatch sizeWidth MLPWidth0.30.50.20.4100101100101Relative ComputeRelative Computeperformance of two ResNets \u2013 50x1 and 152x2 \u2013 pre-trained on JFT with SGD and Adam. ForSGD, we use the hyperparameters recommended by Kolesnikov et al. (2020). Results are presentedin Table 7.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0049",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "ForSGD, we use the hyperparameters recommended by Kolesnikov et al. (2020). Results are presentedin Table 7. Adam pre-training outperforms SGD pre-training on most datasets and on average.This justi\ufb01es the choice of Adam as the optimizer used to pre-train ResNets on JFT. Note that theabsolute numbers are lower than those reported by Kolesnikov et al. (2020), since we pre-train onlyfor 7 epochs, not 30.D.2TRANSFORMER SHAPEWe ran ablations on scaling different dimensions of the Transformer architecture to \ufb01nd out whichare best suited for scaling to very large models. Figure 8 shows 5-shot performance on ImageNetfor different con\ufb01gurations. All con\ufb01gurations are based on a ViT model with 8 layers, D = 1024,DMLP = 2048 and a patch size of 32, the intersection of all lines. We can see that scaling thedepth results in the biggest improvements which are clearly visible up until 64 layers. However,diminishing returns are already visible after 16 layers. Interestingly, scaling the width of the net-work seems to result in the smallest changes.",
+      "token_count": 257
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0050",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "However,diminishing returns are already visible after 16 layers. Interestingly, scaling the width of the net-work seems to result in the smallest changes. Decreasing the patch size and thus increasing theeffective sequence length shows surprisingly robust improvements without introducing parameters.These \ufb01ndings suggest that compute might be a better predictor of performance than the number ofparameters, and that scaling should emphasize depth over width if any. Overall, we \ufb01nd that scalingall dimensions proportionally results in robust improvements.D.3HEAD TYPE AND CLASS TOKENIn order to stay as close as possible to the original Transformer model, we made use of an additional[class] token, which is taken as image representation. The output of this token is then trans-formed into a class prediction via a small multi-layer perceptron (MLP) with tanh as non-linearityin the single hidden layer.This design is inherited from the Transformer model for text, and we use it throughout the mainpaper. An initial attempt at using only image-patch embeddings, globally average-pooling (GAP)them, followed by a linear classi\ufb01er\u2014just like ResNet\u2019s \ufb01nal feature map\u2014performed very poorly.However, we found that this is neither due to the extra token, nor to the GAP operation.",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0051",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 51,
+      "section": "preamble",
+      "text": "Instead,Published as a conference paper at ICLR 2021CLS-Token, lr=8e-4GAP, lr=8e-4GAP, lr=3e-4ImageNet linear 5-shot accuracy [%]01234567Epochs of trainingPos. Emb.Default/StemEvery LayerEvery Layer-SharedNo Pos. Emb.0.61382N/AN/A1-D Pos. Emb.0.642060.639640.642922-D Pos. Emb.0.640010.640460.64022Rel. Pos. Emb.0.64032N/AN/Athe difference in performance is fully explained by the requirement for a different learning-rate, seeFigure 9.D.4POSITIONAL EMBEDDINGWe ran ablations on different ways of encoding spatial information using positional embedding. Wetried the following cases:\u2022 Providing no positional information: Considering the inputs as a bag of patches.\u2022 1-dimensional positional embedding: Considering the inputs as a sequence of patches inthe raster order (default across all other experiments in this paper).\u2022 2-dimensional positional embedding: Considering the inputs as a grid of patches in twodimensions. In this case, two sets of embeddings are learned, each for one of the axes,X-embedding, and Y -embedding, each with size D/2.",
+      "token_count": 273
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0052",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 52,
+      "section": "preamble",
+      "text": "In this case, two sets of embeddings are learned, each for one of the axes,X-embedding, and Y -embedding, each with size D/2. Then, based on the coordinate onthe path in the input, we concatenate the X and Y embedding to get the \ufb01nal positionalembedding for that patch.\u2022 Relative positional embeddings: Considering the relative distance between patches to en-code the spatial information as instead of their absolute position. To do so, we use 1-dimensional Relative Attention, in which we de\ufb01ne the relative distance all possible pairsof patches. Thus, for every given pair (one as query, and the other as key/value in the at-tention mechanism), we have an offset pq \u2212pk, where each offset is associated with anembedding. Then, we simply run extra attention, where we use the original query (thecontent of query), but use relative positional embeddings as keys. We then use the log-its from the relative attention as a bias term and add it to the logits of the main attention(content-based attention) before applying the softmax.In addition to different ways of encoding spatial information, we also tried different ways of in-corporating this information in our model.",
+      "token_count": 247
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0053",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 53,
+      "section": "preamble",
+      "text": "For the 1-dimensional and 2-dimensional positionalembeddings, we tried three different cases: (1) add positional embeddings to the inputs right afterPublished as a conference paper at ICLR 2021ViT-L167 epochs, LR=0.0002, WD=0.01ViT-L167 epochs, LR=0.0004, WD=0.1ViT-L1614 epochs, LR=0.0004, WD=0.1Input patch rowInput patch rowInput patch rowCosine similarity12345678910 11 12 13 14Input patch column12345678910 11 12 13 14Input patch column12345678910 11 12 13 14Input patch columnthe stem of them model and before feeding the inputs to the Transformer encoder (default acrossall other experiments in this paper); (2) learn and add positional embeddings to the inputs at thebeginning of each layer; (3) add a learned positional embeddings to the inputs at the beginning ofeach layer (shared between layers).ViT-L/16R50x1 + ViT-L/16Mean attention distance (pixels)Head 1Head 2Head 3...Head 1Head 2Head 3...05101520Network depth (layer)05101520Network depth (layer)D.5EMPIRICAL COMPUTATIONAL COSTSWe are also interested in real-world speed of the architectures on our hardware, which is not alwayswell predicted by theoretical FLOPs due to details like lane widths and cache sizes.",
+      "token_count": 323
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0054",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 54,
+      "section": "preamble",
+      "text": "For this purpose,Published as a conference paper at ICLR 2021we perform timing of inference speed for the main models of interest, on a TPUv3 accelerator; thedifference between inference and backprop speed is a constant model-independent factor.Another quantity of interest is the largest batch-size each model can \ufb01t onto a core, larger beingbetter for scaling to large datasets. Figure 12 (right) shows this quantity for the same set of models.This shows that large ViT models have a clear advantage in terms of memory-ef\ufb01ciency over ResNetmodels.R50x1R50x2ViT-B/32ViT-L/32ViT-B/16ViT-L/16ViT-H/14R152x4Peak inference speed [img/sec/core]Largest per-core batch-size64128224384512Input size [px]64128224384512Input size [px]D.6AXIAL ATTENTIONAxial Attention (Huang et al., 2020; Ho et al., 2019) is a simple, yet effective technique to run self-attention on large inputs that are organized as multidimensional tensors. The general idea of axialattention is to perform multiple attention operations, each along a single axis of the input tensor,instead of applying 1-dimensional attention to the \ufb02attened version of the input.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0055",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 55,
+      "section": "preamble",
+      "text": "The general idea of axialattention is to perform multiple attention operations, each along a single axis of the input tensor,instead of applying 1-dimensional attention to the \ufb02attened version of the input. In axial attention,each attention mixes information along a particular axis, while keeping information along the otheraxes independent. Along this line, Wang et al. (2020b) proposed the AxialResNet model in whichall the convolutions with kernel size 3 \u00d7 3 in a ResNet50 are replaced by axial self-attention, i.e.a row and column attention, augmented by relative positional encoding. We have implementedAxialResNet as a baseline model.3.Moreover, we have modi\ufb01ed ViT to process inputs in the 2-dimensional shape, instead of a 1-dimensional sequence of patches, and incorporate Axial Transformer blocks, in which instead ofa self-attention followed by an MLP, we have a a row-self-attention plus an MLP followed by acolumn-self-attention plus an MLP.3Our implementation is based on the open-sourced PyTorch implementation in https://github.com/csrhddlam/axial-deeplab. In our experiments, we reproduced the scores reported in (Wang et al.,2020b) in terms of accuracy, however, our implementation, similar to the open-source implementation, is veryslow on TPUs.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0056",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 56,
+      "section": "preamble",
+      "text": "In our experiments, we reproduced the scores reported in (Wang et al.,2020b) in terms of accuracy, however, our implementation, similar to the open-source implementation, is veryslow on TPUs. Therefore, we were not able to use it for extensive large-scale experiments. These may beunlocked by a carefully optimized implementation.Published as a conference paper at ICLR 2021AxialViT-B/16AxialViT-B/160.6500.6500.625ViT-B/160.625ViT-B/16ImageNet 5-shot linear top-1 accuracyImageNet 5-shot linear top-1 accuracy0.6000.6000.575AxialViT-B/320.575AxialViT-B/32ViT-B/32ViT-B/320.550AxialResNet500.550AxialResNet500.5250.5250.500ResNet500.500ResNet50102103Peak inference speed [img/sec/core]Total compute [exaFLOPs]the cost of more compute. This is because in Axial-ViT models, each Transformer block with globalself-attention is replaced by two Axial Transformer blocks, one with row and one with column self-attention and although the sequence length that self-attention operates on is smaller in axial case,there is a extra MLP per Axial-ViT block.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0057",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 57,
+      "section": "preamble",
+      "text": "For the AxialResNet, although it looks reasonable interms of accuracy/compute trade-off (Figure 13, left), the naive implementation is extremely slowon TPUs (Figure 13, right).D.7ATTENTION DISTANCETo understand how ViT uses self-attention to integrate information across the image, we analyzedthe average distance spanned by attention weights at different layers (Figure 11). This \u201cattentiondistance\u201d is analogous to receptive \ufb01eld size in CNNs. Average attention distance is highly variableacross heads in lower layers, with some heads attending to much of the image, while others attendto small regions at or near the query location. As depth increases, attention distance increases for allheads. In the second half of the network, most heads attend widely across tokens.D.8ATTENTION MAPSTo compute maps of the attention from the output token to the input space (Figures 6 and 14), weused Attention Rollout (Abnar & Zuidema, 2020). Brie\ufb02y, we averaged attention weights of ViT-L/16 across all heads and then recursively multiplied the weight matrices of all layers.",
+      "token_count": 239
+    },
+    {
+      "chunk_id": "2010.11929_chunk_0058",
+      "arxiv_id": "2010.11929",
+      "chunk_index": 58,
+      "section": "preamble",
+      "text": "Brie\ufb02y, we averaged attention weights of ViT-L/16 across all heads and then recursively multiplied the weight matrices of all layers. This accountsfor the mixing of attention across tokens through all layers.D.9OBJECTNET RESULTSWe also evaluate our \ufb02agship ViT-H/14 model on the ObjectNet benchmark following the evaluationsetup in Kolesnikov et al. (2020), resulting in 82.1% top-5 accuracy and 61.7% top-1 accuracy.D.10VTAB BREAKDOWNPublished as a conference paper at ICLR 2021123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109110111112113114115116117118119120121122123124125126127128Published as a conference paper at ICLR 2021Caltech101CIFAR-100Flowers102RetinopathyClevr-CountKITTI-DistsNORB-AzimsNORB-ElevCamelyonEuroSATResisc45Clevr-DistDMLabdSpr-LocdSpr-OriDTDSun397SVHNMeanPetsViT-H/14 (JFT) 95.3 85.5 75.2 99.7 97.2 65.0 88.9 83.3 96.7 91.4 76.6 91.7 63.8 53.1 79.4 63.3 84.5 33.2 51.2 77.6ViT-L/16 (JFT) 95.4 81.9 74.3 99.7 96.7 63.5 87.4 83.6 96.5 89.7 77.1 86.4 63.1 49.7 74.5 60.5 82.2 36.2 51.1 76.3ViT-L/16 (I21k) 90.8 84.1 74.1 99.3 92.7 61.0 80.9 82.5 95.6 85.2 75.3 70.3 56.1 41.9 74.7 64.9 79.9 30.5 41.7 72.7",
+      "token_count": 558
+    }
+  ]
+}

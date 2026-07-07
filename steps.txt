@@ -1,0 +1,12 @@
+#Day 4
+python -m ingestion.pipeline
+
+#Day 5
+# 1. Create tables
+python scratch/setup_db.py
+
+# 2. Embed all papers + create vector index
+python scratch/run_embeddings.py
+
+# 3. Test search
+python retrieval/search.py

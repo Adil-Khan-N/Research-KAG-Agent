@@ -1,0 +1,352 @@
+{
+  "arxiv_id": "2108.01072",
+  "title": "S$^2$-MLPv2: Improved Spatial-Shift MLP Architecture for Vision",
+  "authors": [
+    "Tan Yu",
+    "Xu Li",
+    "Yunfeng Cai",
+    "Mingming Sun",
+    "Ping Li"
+  ],
+  "year": 2021,
+  "abstract": "Recently, MLP-based vision backbones emerge. MLP-based vision architectures with less inductive bias achieve competitive performance in image recognition compared with CNNs and vision Transformers. Among them, spatial-shift MLP (S$^2$-MLP), adopting the straightforward spatial-shift operation, achieves better performance than the pioneering works including MLP-mixer and ResMLP. More recently, using smaller patches with a pyramid structure, Vision Permutator (ViP) and Global Filter Network (GFNet) achieve better performance than S$^2$-MLP.   In this paper, we improve the S$^2$-MLP vision backbone. We expand the feature map along the channel dimension and split the expanded feature map into several parts. We conduct different spatial-shift operations on split parts.   Meanwhile, we exploit the split-attention operation to fuse these split parts. Moreover, like the counterparts, we adopt smaller-scale patches and use a pyramid structure for boosting the image recognition accuracy. We term the improved spatial-shift MLP vision backbone as S$^2$-MLPv2. Using 55M parameters, our medium-scale model, S$^2$-MLPv2-Medium achieves an $83.6\\%$ top-1 accuracy on the ImageNet-1K benchmark using $224\\times 224$ images without self-attention and external training data.",
+  "categories": [
+    "cs.CV"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2108.01072v1",
+  "page_count": 12,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 41,
+  "chunks": [
+    {
+      "chunk_id": "2108.01072_chunk_0000",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "S2-MLPV2: IMPROVED SPATIAL-SHIFT MLPARCHITECTURE FOR VISIONTan Yu, Xu Li, Yunfeng Cai, Mingming Sun, Ping LiCognitive Computing LabBaidu Research10900 NE 8th St. Bellevue, Washington 98004, USANo.10 Xibeiwang East Road, Beijing 100193, China{tanyu01, lixu13, caiyunfeng, sunmingming01, liping11}@baidu.comABSTRACTRecently, MLP-based vision backbones emerge. MLP-based vision architectureswith less inductive bias achieve competitive performance in image recognitioncompared with CNNs and vision Transformers. Among them, spatial-shift MLP(S2-MLP), adopting the straightforward spatial-shift operation, achieves betterperformance than the pioneering works including MLP-mixer and ResMLP. Morerecently, using smaller patches with a pyramid structure, Vision Permutator (ViP)and Global Filter Network (GFNet) achieve better performance than S2-MLP. Inthis paper, we improve the S2-MLP vision backbone. We expand the feature mapalong the channel dimension and split the expanded feature map into several parts.We conduct different spatial-shift operations on split parts. Meanwhile, we exploitthe split-attention operation to fuse these split parts.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0001",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "We expand the feature mapalong the channel dimension and split the expanded feature map into several parts.We conduct different spatial-shift operations on split parts. Meanwhile, we exploitthe split-attention operation to fuse these split parts. Moreover, like the counter-parts, we adopt smaller-scale patches and use a pyramid structure for boostingthe image recognition accuracy. We term the improved spatial-shift MLP visionbackbone as S2-MLPv2. Using 55M parameters, our medium-scale model, S2-MLPv2-Medium achieves an 83.6% top-1 accuracy on the ImageNet-1K bench-mark using 224 \u00d7 224 images without self-attention and external training data.1INTRODUCTIONRecently, extensive studies on computer vision are conducted to achieve high performance withless inductive bias. Two types of architectures emerge including vision Transformers (Dosovitskiyet al., 2021; Touvron et al., 2020) and MLP-based backbones (Tolstikhin et al., 2021; Touvronet al., 2021a). Compared with de facto vision backbone CNN (He et al., 2016) with delicatelydevised convolution kernels, both vision Transformers and MLP-based backbones have achievedcompetitive performance in image recognition without expensive hand-crafted design.",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0002",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "Compared with de facto vision backbone CNN (He et al., 2016) with delicatelydevised convolution kernels, both vision Transformers and MLP-based backbones have achievedcompetitive performance in image recognition without expensive hand-crafted design. Speci\ufb01cally,vision Transformer models stack a series of Transformer blocks, achieving the global reception \ufb01eld.MLP-based methods such as MLP-Mixer (Tolstikhin et al., 2021) and ResMLP (Touvron et al.,2021a) achieve the communication between patches through projections along different patchesimplemented by MLP. Different from MLP-Mixer and ResMLP, spatial-shift MLP (S2-MLP) (Yuet al., 2021b) adopts a very straightforward operation, spatial shifting, for communications betweenpatches, achieving higher image recognition accuracy on ImageNet1K dataset without external train-ing data. In parallel, Vision Permutator (ViP) (Hou et al., 2021) encodes the feature representationalong the height and width dimensions and meanwhile exploits the \ufb01ner patch size with a two-levelpyramid structure, achieving better performance than S2-MLP. CCS-MLP (Yu et al., 2021a) devisesa circulant token-mixing MLP for achieving the translation-invariance property.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0003",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "CCS-MLP (Yu et al., 2021a) devisesa circulant token-mixing MLP for achieving the translation-invariance property. Global Filter Net-works (GFNet) (Rao et al., 2021b) exploits 2D Fourier Transform to map the spatial patch featuresinto the frequency domain and conducts the cross-patch communications in the frequency domain.As pointed by Rao et al. (2021b), the token-mixing operation in the frequency domain is equivalentto depthwise convolution with circulant weights. To achieve a high recognition accuracy, GFNetalso utilizes patches of smaller size with a pyramid structure. More recently, AS-MLP (Lian et al.,GroupShiftwhwh(a) Spatial-shift operations in S2-MLPwhShift 1 whwhSplitAttentionwhSplitShift 2Identity(b) Spatial-shift operations in S2-MLPv22021) axially shifts channels of the feature map and devises a four-level pyramid, achieving excellentperformance. In parallel, Cycle-MLP (Chen et al., 2021a) devises several pseudo-kernels for spatialprojection and also achieves outstanding performance.",
+      "token_count": 243
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0004",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "In parallel, Cycle-MLP (Chen et al., 2021a) devises several pseudo-kernels for spatialprojection and also achieves outstanding performance. It is worth noting that, both AS-MLP (Lianet al., 2021) and Cycle-MLP (Chen et al., 2021a) are based on the well-devised four-level pyramid.In this work, we rethink the design of spatial-shift MLP (S2-MLP) (Yu et al., 2021b) and propose animproved spatial-shift MLP (S2-MLPv2). Compared with the original S2-MLP, the modi\ufb01cationsare mainly conducted on two aspects:\u2022 As visualized in Figure 1 (b), we expand the feature map along the channel dimension andsplit the expanded feature map into multiple parts. For different parts, we conduct differentspatial-shift operations.",
+      "token_count": 191
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0005",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "For different parts, we conduct differentspatial-shift operations. We exploit the split-attention operation (Zhang et al., 2020) tofuse these split parts.\u2022 We adopt smaller-scale patches and the hierarchical pyramid structure like existing MLP-based architectures such as ViP (Hou et al., 2021), GFNet (Rao et al., 2021b), AS-MLP (Lian et al., 2021) and Cycle-MLP (Chen et al., 2021a).We term the improved spatial-shift MLP architecture as S2-MLPv2. We visualize the differencebetween the original spatial-shift MLP (S2-MLP) and the improved verision, S2-MLPv2, in Figure 1.Our experiments conduct on the public benchmark, ImageNet-1K, demonstrates the state-of-the-artimage recognition accuracy of the proposed S2-MLPv2. Speci\ufb01cally, using 55M parameters, ourmedium-scale model, S2-MLPv2-Medium achieves 83.6% top-1 accuracy using 224 \u00d7 224 imageswithout self-attention and external training data.2RELATED WORKvision Transformer.vision Transformer (ViT) (Dosovitskiy et al., 2021) crops an image into16 \u00d7 16 patches, and treat each patch as a token in the input of Transformer.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0006",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "These patches/to-kens are processed by a stack of Transformer layers for communications with each other. It hasachieved competitive image recognition accuracy as CNNs using huge-scale pre-training datasets.DeiT (Touvron et al., 2020) adopts more advanced optimizer as well as data augmentation methods,achieving promising results using medium-scale pre-training datasets. Pyramid vision transformer(PvT) (Wang et al., 2021b) and PiT (Heo et al., 2021) exploit a pyramid structure which graduallyshrinks the spatial dimension and expands the hidden size, achieving better performance. Tokens-to-Token (T2T) (Yuan et al., 2021) and Transformer-in-Transformer (TNT) (Han et al., 2021) im-prove the effectiveness of modeling the local structure of each patch/token. To overcome the in-ef\ufb01ciency of the global self-attention, Swin (Liu et al., 2021b) conducts the self-attention withinlocal windows but achieves the global reception \ufb01eld through shifting the window settings. Shuf-\ufb02e Transformer (Huang et al., 2021) also exploits the local self-attention windows and achievesthe cross-window communications through switching the spatial dimension and the feature dimen-sion.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0007",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "Shuf-\ufb02e Transformer (Huang et al., 2021) also exploits the local self-attention windows and achievesthe cross-window communications through switching the spatial dimension and the feature dimen-sion. Twins (Chu et al., 2021a) enhances the self-attention within local windows by the globalsub-sampled attention. DynamicViT (Rao et al., 2021a) and SViTE (Chen et al., 2021b) exploit thesparsity for achieving high ef\ufb01ciency. CaiT (Touvron et al., 2021b) explores the extremely deeparchitecture by stacking tens of layers. Recently, PVTv2 (Wang et al., 2021a) improves PvT usingoverlapping patch embedding, convolutional feedforward networks, and linear-complexity attentionlayers. CSwin Transformer (Dong et al., 2021) improves Swin through cross-shaped windows com-puting self-attention in the horizontal and vertical stripes in parallel. Focal Transformer (Yang et al.,2021) also develops more advanced local windows which attend \ufb01ne-grain tokens only locally, butthe summarized ones globally.MLP-based architectures. MLP-mixer (Tolstikhin et al., 2021) is the pioneering work for MLP-based vision backbone.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0008",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "MLP-mixer (Tolstikhin et al., 2021) is the pioneering work for MLP-based vision backbone. It proposes a token-mixing MLP consisting of two fully-connected layersfor communications between patches. Res-MLP (Touvron et al., 2021a) simpli\ufb01es the token-mixingMLP to a single fully-connected layer and explores the deeper architecture with more layers. Spatial-shift MLP backbone (S2-MLP) (Yu et al., 2021b) adopts the spatial-shift operation for cross-patchcommunications. Vision Permutator (ViP) (Hou et al., 2021) mixes tokens along the height dimen-sion and the width dimension, separately. Meanwhile, ViP adopts a pyramid structure as PvT (Wanget al., 2021b) and achieves considerably better performance than MLP-mixer, Res-MLP and S2-MLP. CCS-MLP (Yu et al., 2021a) rethinks the design of token-mixing MLP in MLP-mixer andRes-MLP, and propose a circulant channel-speci\ufb01c MLP. Speci\ufb01cally, they devise the weight matrixof token-mixing MLP as a circulant matrix, taking fewer parameters. Meanwhile, the multiplicationbetween vector and circulant matrix can be ef\ufb01ciently computed through Fast Fourier Transform(FFT).",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0009",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "Meanwhile, the multiplicationbetween vector and circulant matrix can be ef\ufb01ciently computed through Fast Fourier Transform(FFT). Global Filter Network (GFNet) (Rao et al., 2021b) maps the patch features to the frequencydomain through 2D FFT and mixes the tokens in the frequency domain. As proved by Rao et al.(2021b), the global \ufb01lter in GFNet is equivalent to a depthwise global circular convolution with the\ufb01lter size H \u00d7 W. Meanwhile, GFNet also exploits pyramid structure for boosting the recognitionaccuracy. In this work, we rethink the design of S2-MLP and considerably improves its performancein image recognition.3PRELIMINARY3.1SPATIAL-SHIFT MLP (S2-MLP)In this section, we brie\ufb02y review the structure of S2-MLP (Yu et al., 2021b) architecture. It consistsof the patch embedding layer, a stack of S2-MLP blocks and the classi\ufb01cation head.Patch embedding layer. It \ufb01rst crops an image of W \u00d7 H \u00d7 3 size into w \u00d7 h patches. Each patchis of p \u00d7 p \u00d7 3 size and p = Wh . It then maps each patch into a d-dimensional vector througha fully-connected layer.w = HSpatial-shift MLP block.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0010",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "Each patchis of p \u00d7 p \u00d7 3 size and p = Wh . It then maps each patch into a d-dimensional vector througha fully-connected layer.w = HSpatial-shift MLP block. As visualized in Figure 2, it consists of four MLP layers for mixingchannels and a spatial shift layer for mixing patches. Below we only introduce the spatial-shiftmodule.",
+      "token_count": 74
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0011",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "As visualized in Figure 2, it consists of four MLP layers for mixingchannels and a spatial shift layer for mixing patches. Below we only introduce the spatial-shiftmodule. Given an input tensor X \u2208Rw\u00d7h\u00d7c, it \ufb01rst equally splits X into four parts {X i}4i=1 alongSkip ConnectionMLP 1MLP 2MLP 3MLP 4GELUSpatialShiftNormGELUNormSkip Connectionthe channel dimension and shifts them along four directions:X[2 : h, :, 1 : c/4] \u2190X[1 : h \u22121, :, 1 : c/4],X[1 : h \u22121, :, c/4 + 1 : c/2] \u2190X[2 : h, :, c/4 + 1 : c/2],X[:, 2 : w, c/2 : 3c/4] \u2190X[:, 1 : w \u22121, c/2 : 3c/4],X[:, 1 : w \u22121, 3c/4 : c] \u2190X[:, 2 : w, 3c/4 : c].(1)It is worth noting that, S2-MLP (Yu et al., 2021b) stacks N Spatial-shift MLP blocks with the samesettings and does not exploit pyramid structure as its MLP-backone counterparts such as VisionPermutator (Hou et al., 2021) and Global Filter Network (GFNet) (Rao et al., 2021b).3.2SPLIT ATTENTIONVision Permutator (Hou et al., 2021) adopts split attention proposed in ResNeSt (Zhang et al., 2020)for enhancing multiple feature maps from different operations.",
+      "token_count": 376
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0012",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "Speci\ufb01cally, we denote K featuresmaps of the same size n \u00d7 c by [X1, X2, \u00b7 \u00b7 \u00b7 , XK] where n is the number of patches and c is thenumber of channels, the split-attention operation \ufb01rst averages them and obtainsKXa =k=11Xk,(2)where 1 \u2208Rn is the n-dimensional row vector with all 1s. Then a \u2208Rc goes through a stack ofMLPs and generates\u02c6a = \u03c3(aW1)W2,(3)where \u03c3 is the activation function implemented by GELU, W1 \u2208Rc\u00d7\u00afc and W2 \u2208R\u00afc\u00d7Kc areweights of MLPs and the output \u02c6a \u2208RKc. Then \u02c6A is reshaped into a matrix \u02c6A \u2208RK\u00d7c, which isfurther processed by a softmax function along the \ufb01rst dimension and generates \u00afA = softmax( \u02c6A) \u2208RK\u00d7c.",
+      "token_count": 217
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0013",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "Then it generates the attended feature map \u02c6X where each row of \u02c6X, \u02c6X[i, :], is computed byKX\u02c6X[i, :] =k=1Xk[i, :] \u2299\u00afA[k, :],(4)where \u2299denotes the element-wise multiplication between two vectors.4S2-MLPV2In this section, we introduce the proposed S2-MLPv2 architecture. Similar to S2-MLP backbone,S2-MLPv2 backbone consists of the patch embedding layer, a stack of S2-MLPv2 blocks and theclassi\ufb01cation head. Since we have introduced the patch embedding layer in the previous section, weonly introduce the proposed S2-MLPv2 block below.SpatialShift 1Split AttentionSpatialShift 24.1S2V2 BLOCKThe S2-MLPv2 block consists of two parts, the S2-MLPv2 component and the channel-mixing MLP(CM-MLP) component.",
+      "token_count": 220
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0014",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "Given an input feature map X \u2208Rw\u00d7h\u00d7c, it conductsY = S2-MLPv2(LN(X)) + X,Z = CM-MLP(LN(Y)) + Y.(5)The channel-mixing MLP (CM-MLP) adopts the same structure as MLP-mixer (Tolstikhin et al.,2021) and ResMLP (Touvron et al., 2021a) and thus we skip their details here. Below we onlyintroduce the proposed S2-MLPv2 component in detail.Given an input feature map X \u2208Rw\u00d7h\u00d7c, the proposed S2-MLPv2 component \ufb01rst expands thechannels of X from c to 3c by an MLP:\u02c6X = MLP1(X) \u2208Rw\u00d7h\u00d73c.(6)Then it equally splits the expanded feature map \u02c6X along the channel dimension into three parts:X 1 = \u02c6X[:, :, 1 : c], X 2 = \u02c6X[:, :, c + 1 : 2c], X 3 = \u02c6X[:, :, 2c + 1 : 3c].(7)It shifts X 1 and X 2 through two two spatial-shift layers SS1(\u00b7) and SS2(\u00b7). SS1(\u00b7) conducts thesame spatial-shift operation as equation 1.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0015",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "SS1(\u00b7) conducts thesame spatial-shift operation as equation 1. In contrast, SS2(\u00b7) conducts an asymmetric spatial-shiftoperation with respect to SS1(\u00b7). To be speci\ufb01c, given the feature map X 2, SS2(X 2) conducts:X 2[:, 2 : w, 1 : c/4] \u2190X 2[:, 1 : w \u22121, 1 : c/4],X 2[:, 1 : w \u22121, c/4 + 1 : c/2] \u2190X 2[:, 2 : w, c/4 + 1 : c/2],X 2[2 : h, :, c/2 : 3c/4] \u2190X 2[1 : h \u22121, :, c/2 : 3c/4],X 2[1 : h \u22121, :, 3c/4 : c] \u2190X 2[2 : h, :, 3c/4 : c].(8)Note that we intentionally devise SS1(\u00b7) and SS2(\u00b7) in an asymmetric structure so that they arecomplementary to each other.",
+      "token_count": 250
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0016",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "Meanwhile, we do not shift X 3 and just keep it as well.After that, {X k}3k=1 are reshape into matrices {Xk}3k=1 where Xk \u2208Rwh\u00d7c, which are fed into asplit-attention (SA) module as equation 2, equation 3, and equation 4, to generate\u02c6X = SA({Xk}3k=1).(9)Then the attended feature map A is further fed into another MLP layer for generating the output\u00afX = MLP2( \u02c6X).(10)The structure of the proposed S2-MLP module is visualized in Figure 3 and the details are listed inAlgorithm 1.Algorithm 1 Pseudocode of our S2-MLPv2 module.def spatial_shift1(x):b,w,h,c = x.size()x[:,1:,:,:c/4] = x[:,:w-1,:,:c/4]x[:,:w-1,:,c/4:c/2] = x[:,1:,:,c/4:c/2]x[:,:,1:,c/2:c*3/4] = x[:,:,:h-1,c/2:c*3/4]x[:,:,:h-1,3*c/4:] = x[:,:,1:,3*c/4:]return xdef spatial_shift2(x):b,w,h,c = x.size()x[:,:,1:,:c/4] = x[:,:,:h-1,:c/4]x[:,:,:h-1,c/4:c/2] = x[:,:,1:,c/4:c/2]x[:,1:,:,c/2:c*3/4] = x[:,:w-1,:,c/2:c*3/4]x[:,:w-1,:,3*c/4:] = x[:,1:,:,3*c/4:]return xclass S2-MLPv2(nn.Module):def __init__(self, channels):super().__init__()self.mlp1 = nn.Linear(channels,channels*3)self.mlp2 = nn.Linear(channels,channels)self.split_attention = SplitAttention()def forward(self, x):b,w,h,c = x.size()x = self.mlp1(x)x1 = spatial_shift1(x[:,:,:,:c/3])x2 = spatial_shift2(x[:,:,:,c/3:c/3*2])x3 = x[:,:,:,c/3*2:]a = self.split_attention(x1,x2,x3)x = self.mlp2(a)return x4.2PYRAMID STRUCTUREFollowing vision Permutator (Hou et al., 2021), we also exploit the two-level pyramid structure toenhance the performance.",
+      "token_count": 570
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0017",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "To make a fair comparison with Vision Permutator (Hou et al., 2021),we adopt the exact same pyramid structure. The details are in Table 1. We notice that counterpartworks such as PVTv2 (Wang et al., 2021a), AS-MLP (Lian et al., 2021), and Cycle-MLP (Chenet al., 2021a) adopt more advanced pyramid structure with smaller patches in the early blocks.The smaller patches might be better at capturing the \ufb01ne-grained visual details and lead to higherrecognition accuracy. Nevertheless, due to the limited computing resources, it is unfeasible for us tore-implement all these pyramid structures. Moreover, we also notice that Vision Permutator devisesa large model with considerably more parameters and FLOPs. Nevertheless, due to the limitedcomputing resources, the large model is not feasible for us, either.Expa.RatioSmall/77 \u00d7 732219242 \u00d7 2162384143Medium/77 \u00d7 732225672 \u00d7 2162512173SettingsPatchSize# ofTokensHiddenSize# ofBlocksPatchSize# ofTokensHiddenSize# ofBlocks5EXPERIMENTSWe testify the proposed S2-MLPv2 on ImageNet-1K dataset (Deng et al., 2009). We do not useexternal data for training.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0018",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "We do not useexternal data for training. The implementation is based on the PaddlePaddle deep learning platform.Implementation details. Following DeiT (Touvron et al., 2020), we adopt AdamW (Loshchilov& Hutter, 2019) as optimizer. We train both the small model and the medium model using fourNVIDIA A100 GPU cards. For the small model, we set the batch size as 1024. In contrast, for themedium model, we only set the batch size as 744 due to the GPU memory limitation of four NVIDIAA100 GPU cards. We set the initial learning rate as 2e-3 and decay it to 1e-5 in 300 epochs usinga cosine function. The weight decay rate is set to be 5e-2 following previous works (Touvron et al.,2020; Hou et al., 2021). We also conduct warming up in the \ufb01rst 10 epochs following Hou et al.(2021). Moreover, as adopted by Touvron et al. (2020); Hou et al. (2021), we conduct multiple dataaugmentation methods including Rand-Augment (Cubuk et al., 2020), Mixup (Zhang et al., 2018)and CutMix (Yun et al., 2019) and CutOut (Zhong et al., 2020).",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0019",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "Like DeiT (Touvron et al., 2020) andVision Permutator (Hou et al., 2021), we adopt exponential moving average (EMA) model (Laine &Aila, 2016).",
+      "token_count": 49
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0020",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "Like DeiT (Touvron et al., 2020) andVision Permutator (Hou et al., 2021), we adopt exponential moving average (EMA) model (Laine &Aila, 2016). Meanwhile, we also use label smoothing (Szegedy et al., 2016) with a smooth ratio of0.1 and DropPath (Huang et al., 2016) with a drop ratio of 0.1 for both small and medium settings.5.1COMPARISONS WITH STATE-OF-THE-ART METHODSModelPyramidPara.FLOPsTrainSizeTestSizeTop-1Acc. (%)Small modelsEAMLP-14 (Guo et al., 2021)30M\u221222422478.9ResMLP-S24 (Touvron et al., 2021a)30M6.0B22422479.4gMLP-S (Liu et al., 2021a)20M4.5B22422479.6GFNet-S (Rao et al., 2021b)25M4.5B22422480.0GFNet-H-S (Rao et al., 2021b)\u271332M4.5B22422481.5AS-MLP-T (Lian et al., 2021)\u271328M4.4B22422481.3CycleMLP-B2 (Chen et al., 2021a)\u271327M3.9B22422481.6ViP-Small/7 (Hou et al., 2021)\u271325M6.9B22422481.5S2-MLPv2-Small/7 (ours)\u271325M6.9B22422482.0Medium modelsMLP-mixer (Tolstikhin et al., 2021)59M11.6B22422476.4EAMLP-19 (Guo et al., 2021)55M\u221222422479.4S2-MLP-deep (Yu et al., 2021b)51M10.5B22422480.7CCS-MLP-36 (Yu et al., 2021a)43M8.9B22422480.6GFNet-B (Rao et al., 2021b)43M7.9G22422480.7GFNet-H-B (Rao et al., 2021b)\u271354M8.4B22422482.9AS-MLP-S (Lian et al., 2021)\u271350M8.5B22422483.1CycleMLP-B4 (Chen et al., 2021a)\u271352M10.1B22422483.0ViP-Medium/7 (Hou et al., 2021)\u271355M16.3B22422482.7S2-MLPv2-Medium/7 (ours)\u271355M16.3B22422483.6Large modelsCycleMLP-B5 (Chen et al., 2021a)\u271376M12.3B22422483.2AS-MLP-B (Lian et al., 2021)\u271388M15.2B22422483.3ViP-Large/7 (Hou et al., 2021)\u271388M24.3B22422483.2Comparisons with existing MLP-like methods.",
+      "token_count": 753
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0021",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "In Table 2, we compare our S2-MLPv2 with exist-ing MLP-like backbones including MLP-Mixer (Tolstikhin et al., 2021), EAMLP (Guo et al., 2021),ResMLP (Touvron et al., 2021a), gMLP (Liu et al., 2021a), S2-MLP-deep (Yu et al., 2021b), CCS-MLP (Yu et al., 2021a), GFNet (Rao et al., 2021b), AS-MLP (Lian et al., 2021), CycleMLP (Chenet al., 2021a) and ViP (Hou et al., 2021) on both small and base settings. Among them, MLP-Mixer,ResMLP, gMLP, S2-MLP, CCS-MLP do not exploit the pyramid structure, and thus they cannotachieve competitive recognition accuracy compared with GFNet, AS-MLP, CycleMLP, and ViP,which are with the pyramid structure as shown in Table 2. Meanwhile, as shown in the table, ourS2-MLPv2 consistently outperforms its counterparts in both small and medium settings using a com-parable number of parameters.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0022",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "Meanwhile, as shown in the table, ourS2-MLPv2 consistently outperforms its counterparts in both small and medium settings using a com-parable number of parameters. Meanwhile, our medium model performs even better than the largemodels of AS-MLP (Lian et al., 2021), CycleMLP (Chen et al., 2021a) and ViP (Hou et al., 2021)with considerably more parameters. On the other hand, we notice that both S2-MLPv2 and ViP takemore FLOPs compared with GFNet, AS-MLP, CycleMLP. This is due to that ours and ViP use avery coarse pyramid structure, whereas GFNet, AS-MLP, CycleMLP use a more advanced pyramid.Both S2-MLPv2 and ViP might potentially reduce FLOPs by using a well-devised pyramid structurelike GFNet, AS-MLP, CycleMLP.Comparisons with CNNs and vision Transformers. We compare the proposed S2-MLPv2 withCNN models including ResNet50 (He et al., 2016), RegNet (Radosavovic et al., 2020) and Ef\ufb01-cientNet (Tan & Le, 2019).",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0023",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "Meanwhile, we also compare with vision Transformer models includingViT (Dosovitskiy et al., 2021), DeiT (Touvron et al., 2020), PVT (Wang et al., 2021b), T2T (Yuanet al., 2021), TNT (Han et al., 2021), PiT (Heo et al., 2021), MViT (Fan et al., 2021) CaiT (Tou-vron et al., 2021b), Swin (Liu et al., 2021b), Shuf\ufb02e Transformer (Huang et al., 2021), Nest Trans-former (Zhang et al., 2021), Focal Transformer (Yang et al., 2021), and CSWin (Dong et al., 2021).As shown in Table 3, our S2-MLPv2-Medium achieves comparable accuracy as its vision Trans-former counterparts using fewer parameters but more FLOPs. Using a more advanced pyramid asPvTv2, the FLOPs of our S2-MLPv2-Medium might be reduced.",
+      "token_count": 249
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0024",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "Using a more advanced pyramid asPvTv2, the FLOPs of our S2-MLPv2-Medium might be reduced. Noting that, compared with visionTransformer requiring complex self-attention operations, ours is much simpler in formulation andtakes consideraly fewer parameters, making it a competitive choice in practical deployment.ModelScaleTop-1 (%)Params (M)FLOPs (B)CNN-based modelsResNet50 (He et al., 2016)22476.225.64.1RegNetY-16GF (Radosavovic et al., 2020)22480.483.615.9Ef\ufb01cientNet-B3 (Tan & Le, 2019)30081.6121.8Ef\ufb01cientNet-B5 (Tan & Le, 2019)45684.0309.9Transformer-based modelsViT-B/16\u2217(Dosovitskiy et al., 2021)22479.786.417.6DeiT-B/16 (Touvron et al., 2020)22481.886.417.6PVT-L (Wang et al., 2021b)22482.361.49.8TNT-B (Han et al., 2021)22482.865.614.1T2T-24 (Yuan et al., 2021)22482.665.115.0CPVT-B (Chu et al., 2021b)22482.38817.6PiT-B/16 (Heo et al., 2021)22482.073.812.5MViT-B-24 (Fan et al., 2021)22483.153.510.9CaiT-S32 (Touvron et al., 2021b)22483.36813.9Swin-B (Liu et al., 2021b)22483.38815.4Shuf\ufb02e-B (Huang et al., 2021)22484.08815.6Nest-B (Zhang et al., 2021)22483.86817.9PvTv2-B4 (Wang et al., 2021a)22483.662.610.1Focal-Base (Yang et al., 2021)22483.889.816.0CSWin-B (Dong et al., 2021)22484.27815.0Our modelsS2-MLPv2-Small/722482.0256.9S2-MLPv2-Medium/722483.65516.35.2ABLATION STUDIESIn\ufb02uence of the pyramid structure.",
+      "token_count": 572
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0025",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "To evaluate the in\ufb02uence of the pyramid structure on theproposed S2-MLPv2, we compare the Small/7 settings and the Small/14 settings. The details ofSmall/7 settings and the Small/14 settings are in Table 4. Both of them are the same as that in VisionPermutator (Hou et al., 2021). Speci\ufb01cally, the initial patch size in Small/7 is 7\u00d77, which is smallerthan the 14 \u00d7 14 patches in the Small/14 settings. Intuitively, the smaller patches are bene\ufb01cial tomodeling \ufb01ne-grained details in the images and tend to achieve higher recognition accuracy. Table 5compares the performance of these two settings.",
+      "token_count": 164
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0026",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "Intuitively, the smaller patches are bene\ufb01cial tomodeling \ufb01ne-grained details in the images and tend to achieve higher recognition accuracy. Table 5compares the performance of these two settings. As shown in the table, by utilizing the pyramid,S2-MLPv2-Small/7 achieves a considerably better performance than S2-MLPv2-Small/14.Expa.RatioSmall/77 \u00d7 732219242 \u00d7 2162384143Small/1414 \u00d7 1416238442 \u00d7 2162384143SettingsPatchSize# ofTokensHiddenSize# ofBlocksPatchSize# ofTokensHiddenSize# ofBlocksSettingsPyramidTop-1 (%)# of parametersFLOPsS2-MLPv2-Small/7\u271382.025M6.9BS2-MLPv2-Small/1480.930M5.7BIn\ufb02uence of the split attention. Recall from equation 9 that, we use the split-attention (SA) forfusing the feature maps A = SA({Xk}3k=1) . An alternating fusing manner is sum-pooling themimplemented by A = P3k=1 Xk/3. We compare these two manners in Table 6. The experimentsare conducted in Small/7 settings.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0027",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "An alternating fusing manner is sum-pooling themimplemented by A = P3k=1 Xk/3. We compare these two manners in Table 6. The experimentsare conducted in Small/7 settings. As shown in Table 6, the split attention signi\ufb01cantly outperformssum pooling with a slight increase in the number of parameters and FLOPs.SettingsTop-1 (%)# of parametersFLOPsSum-pooling79.822M6.9BSplit-attention82.025M6.9BIn\ufb02uence of each split. As equation 9, we fuse three splits {Xk}3k=1 through the split attention. Inthis section, we evaluate the in\ufb02uence of removing one of them. The experiments are conducted inSmall/7 settings. As shown in Table 7, when using only X1 and X3, the top-1 accuracy drops from82.0% to 81.6%.",
+      "token_count": 207
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0028",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "The experiments are conducted inSmall/7 settings. As shown in Table 7, when using only X1 and X3, the top-1 accuracy drops from82.0% to 81.6%. Meanwhile, when removing X3, the top-1 accuracy decreases to 81.6%.X1X2X3Top-1 (%)# of parametersFLOPs\u2713\u2713\u271382.025M6.9B\u2713\u271381.622M6.2B\u2713\u271381.722M6.2B6CONCLUSIONIn this paper, we improve the spatial-shift MLP (S2-MLP) and propose an S2-MLPv2 model. Itexpands the feature map and splits the expanded feature map into three splits. It shifts each splitindividually and then fuses the split feature maps through split-attention. Meanwhile, we exploit thehierarchical pyramid to improve its capability of modeling \ufb01ne-grained details for higher recognitionaccuracy. Using 55M parameters, our S2-MLPv2-Medium model achieves 83.6% top-1 accuracy onImageNet1K dataset using 224 \u00d7 224 images without external training datasets, which is the state-of-the-art performance among MLP-based methods.",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0029",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "Meanwhile, compared with Transformer-basedmethods, our S2-MLPv2 model has achieved comparable accuracy without self-attention and fewerparameters.Compared with the pioneering MLP-based works such as MLP-mixer, ResMLP as well as re-cent MLP-like models including Vision Permutator and GFNet, another important advantage of thespatial-shift MLP is that the shapes of spatial-shift MLPs are invariant to the input scale of images.Thus, the spatial-shift MLP model pre-trained by images of a speci\ufb01c scale can be well adopted fordown-stream tasks with various-sized input images.The future work will be devoted to continuously improving the image recognition accuracy of thespatial-shift MLP architecture. A promising and straightforward direction is to attempt smaller-sizepatches and the more advanced four-level pyramid as CycleMLP and AS-MLP for further reducingthe FLOPs and shortening the recognition gap between the Transformer-based models.REFERENCESShoufa Chen, Enze Xie, Chongjian Ge, Ding Liang, and Ping Luo. Cyclemlp: A mlp-like architec-ture for dense prediction. arXiv preprint arXiv:2107.10224, 2021a.Tianlong Chen, Yu Cheng, Zhe Gan, Lu Yuan, Lei Zhang, and Zhangyang Wang.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0030",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "Chasing sparsityin vision transformers: An end-to-end exploration. arXiv preprint arXiv:2106.04533, 2021b.Xiangxiang Chu, Zhi Tian, Yuqing Wang, Bo Zhang, Haibing Ren, Xiaolin Wei, Huaxia Xia, andChunhua Shen. Twins: Revisiting the design of spatial attention in vision transformers. arXivpreprint arXiv:2104.13840, 2021a.Xiangxiang Chu, Zhi Tian, Bo Zhang, Xinlong Wang, Xiaolin Wei, Huaxia Xia, and ChunhuaShen. Conditional positional encodings for vision transformers. arXiv preprint arXiv:2102.10882,2021b.Ekin D Cubuk, Barret Zoph, Jonathon Shlens, and Quoc V Le. Randaugment: Practical automateddata augmentation with a reduced search space. In Proceedings of the IEEE/CVF Conference onComputer Vision and Pattern Recognition Workshops, pp. 702\u2013703, 2020.Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li, and Fei-Fei Li. Imagenet: A large-scalehierarchical image database.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0031",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "Imagenet: A large-scalehierarchical image database. In Proceedings of the 2009 IEEE Computer Society Conference onComputer Vision and Pattern Recognition (CVPR), pp. 248\u2013255, Miami, FL, 2009.Xiaoyi Dong, Jianmin Bao, Dongdong Chen, Weiming Zhang, Nenghai Yu, Lu Yuan, Dong Chen,and Baining Guo. Cswin transformer: A general vision transformer backbone with cross-shapedwindows. arXiv preprint arXiv:2107.00652, 2021.Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, ThomasUnterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszko-reit, and Neil Houlsby. An image is worth 16x16 words: Transformers for image recognition atscale. In Proceedings of the 9th International Conference on Learning Representations (ICLR),Virtual Event, 2021.Haoqi Fan, Bo Xiong, Karttikeya Mangalam, Yanghao Li, Zhicheng Yan, Jitendra Malik, andChristoph Feichtenhofer.",
+      "token_count": 266
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0032",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "Multiscale vision transformers. arXiv preprint arXiv:2104.11227, 2021.Meng-Hao Guo, Zheng-Ning Liu, Tai-Jiang Mu, and Shi-Min Hu. Beyond self-attention: Externalattention using two linear layers for visual tasks. arXiv preprint arXiv:2105.02358, 2021.Kai Han, An Xiao, Enhua Wu, Jianyuan Guo, Chunjing Xu, and Yunhe Wang. Transformer intransformer. arXiv preprint arXiv:2103.00112, 2021.Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recog-nition.",
+      "token_count": 159
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0033",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "Deep residual learning for image recog-nition. In Proceedings of the 2016 IEEE Conference on Computer Vision and Pattern Recognition(CVPR), pp. 770\u2013778, Las Vegas, NV, 2016.Byeongho Heo, Sangdoo Yun, Dongyoon Han, Sanghyuk Chun, Junsuk Choe, and Seong Joon Oh.Rethinking spatial dimensions of vision transformers. arXiv: 2103.16302, 2021.Qibin Hou, Zihang Jiang, Li Yuan, Ming-Ming Cheng, Shuicheng Yan, and Jiashi Feng.Vi-sion permutator: A permutable mlp-like architecture for visual recognition.arXiv preprintarXiv:2106.12368, 2021.Gao Huang, Yu Sun, Zhuang Liu, Daniel Sedra, and Kilian Q Weinberger. Deep networks withstochastic depth. In European conference on computer vision, pp. 646\u2013661. Springer, 2016.Zilong Huang, Youcheng Ben, Guozhong Luo, Pei Cheng, Gang Yu, and Bin Fu. Shuf\ufb02e trans-former: Rethinking spatial shuf\ufb02e for vision transformer. arXiv preprint arXiv:2106.03650, 2021.Samuli Laine and Timo Aila.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0034",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "Temporal ensembling for semi-supervised learning. arXiv preprintarXiv:1610.02242, 2016.Dongze Lian, Zehao Yu, Xing Sun, and Shenghua Gao. As-mlp: An axial shifted mlp architecturefor vision. arXiv preprint arXiv:2107.08391, 2021.Hanxiao Liu, Zihang Dai, David R So, and Quoc V Le. Pay attention to mlps. arXiv preprintarXiv:2105.08050, 2021a.Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and BainingGuo. Swin transformer: Hierarchical vision transformer using shifted windows. arXiv preprintarXiv:2103.14030, 2021b.Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In Proceedings of the7th International Conference on Learning Representations (ICLR), New Orleans, LA, 2019.Ilija Radosavovic, Raj Prateek Kosaraju, Ross B. Girshick, Kaiming He, and Piotr Doll\u00b4ar. Designingnetwork design spaces.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0035",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "Girshick, Kaiming He, and Piotr Doll\u00b4ar. Designingnetwork design spaces. In Proceedings of the 2020 IEEE/CVF Conference on Computer Visionand Pattern Recognition (CVPR), pp. 10425\u201310433, Seattle, WA, 2020.Yongming Rao, Wenliang Zhao, Benlin Liu, Jiwen Lu, Jie Zhou, and Cho-Jui Hsieh. Dynamicvit:Ef\ufb01cient vision transformers with dynamic token sparsi\ufb01cation. arXiv preprint arXiv:2106.02034,2021a.Yongming Rao, Wenliang Zhao, Zheng Zhu, Jiwen Lu, and Jie Zhou. Global \ufb01lter networks forimage classi\ufb01cation. arXiv preprint arXiv:2107.00645, 2021b.Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, and Zbigniew Wojna. Re-thinking the inception architecture for computer vision. In Proceedings of the 2016 IEEE Con-ference on Computer Vision and Pattern Recognition (CVPR), pp. 2818\u20132826, Las Vegas, NV,2016.Mingxing Tan and Quoc V. Le. Ef\ufb01cientnet: Rethinking model scaling for convolutional neuralnetworks.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0036",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "Le. Ef\ufb01cientnet: Rethinking model scaling for convolutional neuralnetworks. In Proceedings of the 36th International Conference on Machine Learning (ICML), pp.6105\u20136114, Long Beach, CA, 2019.Ilya Tolstikhin, Neil Houlsby, Alexander Kolesnikov, Lucas Beyer, Xiaohua Zhai, Thomas Un-terthiner, Jessica Yung, Andreas Steiner, Daniel Keysers, Jakob Uszkoreit, Mario Lucic, andAlexey Dosovitskiy.MLP-Mixer:An all-MLP architecture for vision.arXiv preprintarXiv:2105.01601, 2021.Hugo Touvron, Matthieu Cord, Matthijs Douze, Francisco Massa, Alexandre Sablayrolles, andHerv\u00b4e J\u00b4egou.",
+      "token_count": 184
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0037",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "Training data-ef\ufb01cient image transformers & distillation through attention. arXivpreprint arXiv:2012.12877, 2020.Hugo Touvron, Piotr Bojanowski, Mathilde Caron, Matthieu Cord, Alaaeldin El-Nouby, EdouardGrave, Armand Joulin, Gabriel Synnaeve, Jakob Verbeek, and Herv\u00b4e J\u00b4egou.ResMLP:Feedforward networks for image classi\ufb01cation with data-ef\ufb01cient training.arXiv preprintarXiv:2105.03404, 2021a.Hugo Touvron, Matthieu Cord, Alexandre Sablayrolles, Gabriel Synnaeve, and Herv\u00b4e J\u00b4egou. Goingdeeper with image transformers. arXiv preprint arXiv:2103.17239, 2021b.Wenhai Wang, Enze Xie, Xiang Li, Deng-Ping Fan, Kaitao Song, Ding Liang, Tong Lu, Ping Luo,and Ling Shao. Pvtv2: Improved baselines with pyramid vision transformer. arXiv preprintarXiv:2106.13797, 2021a.Wenhai Wang, Enze Xie, Xiang Li, Deng-Ping Fan, Kaitao Song, Ding Liang, Tong Lu, Ping Luo,and Ling Shao.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0038",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "Pyramid vision transformer: A versatile backbone for dense prediction withoutconvolutions. arXiv preprint arXiv:2102.12122, 2021b.Jianwei Yang, Chunyuan Li, Pengchuan Zhang, Xiyang Dai, Bin Xiao, Lu Yuan, and JianfengGao.Focal self-attention for local-global interactions in vision transformers.arXiv preprintarXiv:2107.00641, 2021.Tan Yu, Xu Li, Yunfeng Cai, Mingming Sun, and Ping Li. Rethinking token-mixing mlp for mlp-based vision backbone. arXiv preprint arXiv:2106.14882, 2021a.Tan Yu, Xu Li, Yunfeng Cai, Mingming Sun, and Ping Li. S2-MLP: Spatial-shift mlp architecturefor vision. arXiv preprint arXiv:2106.07477, 2021b.Li Yuan, Yunpeng Chen, Tao Wang, Weihao Yu, Yujun Shi, Zihang Jiang, Francis EH Tay, JiashiFeng, and Shuicheng Yan.",
+      "token_count": 248
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0039",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Tokens-to-token ViT: Training vision transformers from scratch onimagenet. arXiv preprint arXiv:2101.11986, 2021.Sangdoo Yun, Dongyoon Han, Sanghyuk Chun, Seong Joon Oh, Youngjoon Yoo, and Junsuk Choe.Cutmix: Regularization strategy to train strong classi\ufb01ers with localizable features. In Proceed-ings of the 2019 IEEE/CVF International Conference on Computer Vision (ICCV), pp. 6022\u20136031, Seoul, Korea, 2019.Hang Zhang, Chongruo Wu, Zhongyue Zhang, Yi Zhu, Zhi Zhang, Haibin Lin, Yue Sun, Tong He,Jonas Muller, R. Manmatha, Mu Li, and Alexander Smola. Resnest: Split-attention networks.arXiv preprint arXiv:2004.08955, 2020.Hongyi Zhang, Moustapha Ciss\u00b4e, Yann N. Dauphin, and David Lopez-Paz. mixup: Beyond empiri-cal risk minimization. In Proceedings of the 6th International Conference on Learning Represen-tations (ICLR), Vancouver, Canada, 2018.Zizhao Zhang, Han Zhang, Long Zhao, Ting Chen, and Tomas P\ufb01ster.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2108.01072_chunk_0040",
+      "arxiv_id": "2108.01072",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "In Proceedings of the 6th International Conference on Learning Represen-tations (ICLR), Vancouver, Canada, 2018.Zizhao Zhang, Han Zhang, Long Zhao, Ting Chen, and Tomas P\ufb01ster. Aggregating nested trans-formers. arXiv preprint arXiv:2105.12723, 2021.Zhun Zhong, Liang Zheng, Guoliang Kang, Shaozi Li, and Yi Yang. Random erasing data augmen-tation. In Proceedings of the Thirty-Fourth AAAI Conference on Arti\ufb01cial Intelligence (AAAI),pp. 13001\u201313008, New York, NY, 2020.",
+      "token_count": 148
+    }
+  ]
+}

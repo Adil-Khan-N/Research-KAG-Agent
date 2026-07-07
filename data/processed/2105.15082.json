@@ -1,0 +1,363 @@
+{
+  "arxiv_id": "2105.15082",
+  "title": "M6-T: Exploring Sparse Expert Models and Beyond",
+  "authors": [
+    "An Yang",
+    "Junyang Lin",
+    "Rui Men",
+    "Chang Zhou",
+    "Le Jiang",
+    "Xianyan Jia",
+    "Ang Wang",
+    "Jie Zhang",
+    "Jiamang Wang",
+    "Yong Li",
+    "Di Zhang",
+    "Wei Lin",
+    "Lin Qu",
+    "Jingren Zhou",
+    "Hongxia Yang"
+  ],
+  "year": 2021,
+  "abstract": "Mixture-of-Experts (MoE) models can achieve promising results with outrageous large amount of parameters but constant computation cost, and thus it has become a trend in model scaling. Still it is a mystery how MoE layers bring quality gains by leveraging the parameters with sparse activation. In this work, we investigate several key factors in sparse expert models. We observe that load imbalance may not be a significant problem affecting model quality, contrary to the perspectives of recent studies, while the number of sparsely activated experts $k$ and expert capacity $C$ in top-$k$ routing can significantly make a difference in this context. Furthermore, we take a step forward to propose a simple method called expert prototyping that splits experts into different prototypes and applies $k$ top-$1$ routing. This strategy improves the model quality but maintains constant computational costs, and our further exploration on extremely large-scale models reflects that it is more effective in training larger models. We push the model scale to over $1$ trillion parameters and implement it on solely $480$ NVIDIA V100-32GB GPUs, in comparison with the recent SOTAs on $2048$ TPU cores. The proposed giant model achieves substantial speedup in convergence over the same-size baseline.",
+  "categories": [
+    "cs.LG",
+    "cs.CL"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2105.15082v5",
+  "page_count": 16,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 41,
+  "chunks": [
+    {
+      "chunk_id": "2105.15082_chunk_0000",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "M6-T: Exploring Sparse Expert Models and BeyondAn Yang\u2217, Junyang Lin\u2217, Rui Men\u2217, Chang Zhou, Le Jiang, Xianyan JiaAng Wang, Jie Zhang, Jiamang Wang, Yong Li, Di Zhang, Wei Lin, Lin QuJingren Zhou, Hongxia Yang\u2020Alibaba Group{ya235025,junyang.ljy,menrui.mr,ericzhou.zc,jiangle.jl,xianyan.xianyanjia,wangang.wa,wanglin.zj,jiamang.wang,jiufeng.ly,di.zhangd,weilin.lw,jingren.zhou,yang.yhx}@alibaba-inc.comxide.ql@taobao.comAbstractMixture-of-Experts (MoE) models can achieve promising results with outrageouslarge amount of parameters but constant computation cost, and thus it has becomea trend in model scaling. Still it is a mystery how MoE layers bring quality gainsby leveraging the parameters with sparse activation. In this work, we investigateseveral key factors in sparse expert models. We observe that load imbalance maynot be a signi\ufb01cant problem affecting model quality, contrary to the perspectivesof recent studies [11; 6; 12], while the number of sparsely activated experts kand expert capacity C in top-k routing can signi\ufb01cantly make a difference inthis context.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0001",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "Furthermore, we take a step forward to propose a simple methodcalled expert prototyping that splits experts into different prototypes and appliesk top-1 routing. This strategy improves the model quality but maintains constantcomputational costs, and our further exploration on extremely large-scale modelsre\ufb02ects that it is more effective in training larger models. We push the modelscale to over 1 trillion parameters and implement it on solely 480 NVIDIA V100-32GB GPUs, in comparison with the recent SOTAs [11; 6] on 2048 TPU cores.The proposed giant model achieves substantial speedup in convergence over thesame-size baseline.1IntroductionLarge-scale pretraining has been demonstrating tremendous success across several \ufb01elds, especiallynatural language processing [4; 21; 32; 23; 2]. Recent studies have shown that scaling model size canbring signi\ufb01cant quality gains in downstream task performance [32; 23; 2], and the model qualityscales as a power law with the data size, model scale, and amount of computation [10]. This can beextended to the \ufb01eld of multimodal representation learning [18; 3], where models with outrageousnumbers of parameters [27; 15] can achieve outstanding performance in cross-modal understandingand generation.",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0002",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "This can beextended to the \ufb01eld of multimodal representation learning [18; 3], where models with outrageousnumbers of parameters [27; 15] can achieve outstanding performance in cross-modal understandingand generation. However, training dense models is computationally expensive and it is hard to trainthem on super-large-scale data with limited computational resources.Inspired by the success of Mixture-of-Experts (MoE) [30; 26], some recent studies have focused ontraining large-scale sparse expert models with high training ef\ufb01ciency [11; 6; 15; 8]. An MoE layerconsists of multiple experts and thus has a large model capacity. Each forward computation routesa token to k experts from N, where k \u226aN. Such a routing mechanism allows the combination ofdata parallelism and expert parallelism. Previous studies [11; 6] show that it can achieve obviousperformance speedup with the same computational resources. However, training such large-scale MoEmodels can be extremely dif\ufb01cult owing to multiple factors, e.g. system challenges of communicationand load imbalance, and algorithmic challenges of training instabilities, etc.In this work, we conduct an analysis of the recent MoE models to \ufb01gure out which factors in\ufb02uence themodel quality and training ef\ufb01ciency.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0003",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "We investigate several factors concerning sparse expert models,including load balance, top-k routing strategies, MoE attention, etc. Our analysis demonstrates thatload imbalance is not a signi\ufb01cant problem affecting model quality, while the number of sparselyactivated experts k and expert capacity C in top-k routing make a great difference in this context, andlarger values of k often contribute to better model performance. However, with the increase in thevalue of k, training models with conventional top-k routing implementation [11] becomes much lessef\ufb01cient.For further exploration, we extend the experiments to large-scale models with over 10 and 100 billionparameters respectively. Our \ufb01ndings and proposals are applicable to extremely large-scale models,and results show that expert prototyping has more signi\ufb01cant advantages in training larger models.",
+      "token_count": 169
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0004",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "Our \ufb01ndings and proposals are applicable to extremely large-scale models,and results show that expert prototyping has more signi\ufb01cant advantages in training larger models. Togo even further, we push the model scale to over 1 trillion parameters and successfully implement it onsolely 480 NVIDIA V100-32GB GPUs, compared with the recent SOTAs on 2048 TPU cores [11; 6].We show that the 1-trillion-parameter model outperforms the baseline of the identical model scale,and achieves around 5 times of speedup in training convergence.To summarize, our contributions are as follows:\u2022 We explore key factors inside MoE models, and \ufb01nd that load imbalance may not be asigni\ufb01cant problem affecting model quality in this context, while the number of sparselyactivated experts k and expert capacity C in top-k routing signi\ufb01cantly impact the modelperformance.\u2022 We propose a simple method called expert prototyping that splits experts into k prototypesand applies k top-1 activation with similar ef\ufb01ciency to top-1 routing.",
+      "token_count": 225
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0005",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "This strategy improvesthe model quality but maintains constant computational costs, and it is even more effectivein training larger-scale models.\u2022 We advance our models to 1 trillion parameters and successfully implement it on solely 480NVIDIA V100-32GB GPUs, in comparison with the recent SOTAs on 2048 TPU cores.1-trillion-parameter expert prototyping model outperforms the same-scale baseline andachieves substantial speedup in convergence.2Sparse Expert ModelsSparse expert models are regarded as a promising method for model scaling with high trainingef\ufb01ciency. Training dense models requires extremely high computational costs, while sparse expertmodels can converge signi\ufb01cantly faster as it iterates on more data with far higher ef\ufb01ciency on a timebasis. Such mode of large-scale model training is also more environmentally friendly. In this setting,a large amount of the model weights are distributed to different workers owing to the architectureof MoE layers, and MoE allows the increase in parameters while keeping constant computationalcosts [11; 6].Mixture-of-Experts is essentially a routing algorithm that routes tokens to k speci\ufb01ed experts from N(where k \u226aN) for forward computation. It enables expert parallelism so that experts process inputtokens speci\ufb01ed by gating functions simultaneously. Expert networks, each of which is a multi-layerperceptron, are distributed across workers.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0006",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "It enables expert parallelism so that experts process inputtokens speci\ufb01ed by gating functions simultaneously. Expert networks, each of which is a multi-layerperceptron, are distributed across workers. We use a gating function which speci\ufb01es k from N expertsfor an input token representation x. The chosen experts process the representation with forwardcomputation and reduce their results with weighted summation based on the gating values:kX\u02dcx =ipiEi(x),p = softmax(g),g = topk(softmax(Wgx)),(1)where Ei refers to the i-th expert. The most typical MoE algorithms for large-scale sparse expertmodels are Switch Transformer and GShard [6; 11]. Their key difference lies in their choice of top-kselection, which applies top-1 and top-2 selection respectively. Switch Transformer [6] noted thatrouting a token to 1 expert only is effective in preserving model quality and reducing computationcomplexity, contrary to the idea of Shazeer et al. [30] that k should be larger than 1 so that there arenon-trivial gradients to the routing functions.What makes a difference in the performance and model quality is the actual implementation ofdistributed experts.",
+      "token_count": 251
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0007",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "Model parallelism allows the partitioning of a large tensor across workers, and ourimplementation even enables multiple experts on an identical worker, instead of one expert per worker.Due to the dynamic nature of top-k routing, it may cause low ef\ufb01ciency if severe load imbalancehappens. A standard implementation to tackle the problem is the setting of expert capacity [11; 6; 31],which is de\ufb01ned as:C = k \u00b7 TN\u00b7 \u03b3,(2)where T refers to the number of tokens in a batch and \u03b3 refers to the capacity factor which iscommonly larger than 1.0. A larger capacity factor can provide more buffer for expert capacity.Tokens are distributed to experts with all-to-all dispatching operations. The token representationsprocessed by selected experts are combined with all-to-all communication to their original workers.On the condition of exceeded capacity, token representations skip forward computation by residualconnection. For experts still having space in their capacities after dispatching, we add padding tokensto \ufb01ll in. Thus the computations and communications costs are positively related to the number ofexperts N and the expert capacity C.",
+      "token_count": 231
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0008",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "For experts still having space in their capacities after dispatching, we add padding tokensto \ufb01ll in. Thus the computations and communications costs are positively related to the number ofexperts N and the expert capacity C. Low expert capacity can cause a signi\ufb01cant amount of droppedtokens if there is load imbalance on experts, but increasing expert capacity will correspondinglyenhance the computation and communication costs.3Exploration of MoE ModelsTo comprehensively investigate the MoE models, we conduct a series of experiments on multimodalpretraining following the practice of Lin et al. [15], and we evaluate different setups, includingthe routing methods, capacity, MoE attention, etc. Speci\ufb01cally, we pretrain the MoE model onM6-Corpus, and evaluate the model performance on zero-shot image captioning on the datasetE-commerce IC [15]. We provide more experimental details in the appendix.3.1Development of Load BalanceRecent studies pointed out the signi\ufb01cance of balanced routing [6; 11; 12], and illustrated theimportance of balancing methods such as auxiliary expert balancing loss. We \ufb01rst conduct experimentson the MoE models with and without auxiliary differentiable load balancing loss respectively.",
+      "token_count": 256
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0009",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "We \ufb01rst conduct experimentson the MoE models with and without auxiliary differentiable load balancing loss respectively. Wepretrain both models for 500k steps and compare their upstream and downstream performance.Experimental results show that the one with auxiliary loss even performs worse in both upstreamevaluation of training log perplexity (2.694 vs. 2.645) and the perplexity evaluation of downstreama. Top-k Routing b. k Top-1 Routing for Expert Prototypingtask of image captioning (9.97 vs. 9.72). These observations intrigue us to further investigate therelationship between load balance and model quality.We evaluate the degree of compute load balance of experts at every layer. Following Shazeer et al.[30], we also use the coef\ufb01cient of variation for evaluation. We de\ufb01ne the coef\ufb01cient of variationfor effective compute loads as that of the number of real tokens computed by the experts cv = \u03c3(T )\u00b5(T ),where T refers to tokens computed by experts. Note that in the implementation, experts that stillhave buffer should \ufb01ll padding tokens in their capacities. We do not include this part of computationin the evaluation of compute load balance. This metric re\ufb02ects the degree of uniformity of tokenassignment. Furthermore, we focus on the development of cv in the training process to evaluate thechange of load assignment.We demonstrate the results in Figure 1.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0010",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "This metric re\ufb02ects the degree of uniformity of tokenassignment. Furthermore, we focus on the development of cv in the training process to evaluate thechange of load assignment.We demonstrate the results in Figure 1. For all layers, signi\ufb01cant load imbalance exists at the initialstage according to the high values of cv. Notably, the value is generally higher at the top layers. Forthe model trained with auxiliary expert load balancing loss, cv at all layers drop drastically at theinitial stage to a low value around 0.3 denoting highly balanced compute loads,1 and they becomestable in the following. However, compute loads are quite different for the MoE model withoutauxiliary loss. Though cv at all layers drop at the beginning, yet they fail to reach a low one denotinghighly balancing compute loads. Except for that, some even increase to a high value afterward. Thesephenomena re\ufb02ect the existence of load imbalance.",
+      "token_count": 204
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0011",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "Except for that, some even increase to a high value afterward. Thesephenomena re\ufb02ect the existence of load imbalance. Though auxiliary loss is advantageous in expertload balancing, such an advantage has not been translated to those in upstream and downstreamperformance, as mentioned above.3.2The Effects of Top-k Sparse ActivationPrevious work [6] pointed out that top-1 is suf\ufb01cient for high model quality in comparison withtop-k selection with k > 1, while it has signi\ufb01cant advantages in computational ef\ufb01ciency, but the1We manually observe the number of tokens that experts receive and \ufb01nd that compute loads are highlybalancedTop-1Top-2 & Capacity k\u00d7Top-4 & Capacity k\u00d7Top-2 & Capacity 1\u00d7Top-4 & Capacity 1\u00d71 Top-12 Top-1 & Capacity k\u00d74 Top-1 & Capacity k\u00d72 Top-1 & Capacity 1\u00d74 Top-1 & Capacity 1\u00d7Log PerplexityTraining StepsTraining StepsN \u00b7 \u03b3,while \u201cCapacity 1\u00d7\u201d refers to the setting of expert capacity of top-1 routing for all the models, whereC = 1\u00b7TN \u00b7 \u03b3.",
+      "token_count": 257
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0012",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "Results show that in the case of limited expert capacity models with different strategieshave similar computation FLOPs.Top-1Top-2Top-42 Top-14 Top-1Capacity k\u00d72733.533614.125619.013614.005618.54Capacity 1\u00d72733.532733.602733.672733.542733.57experimental results in Lewis et al. [12] show that top-2 still outperforms the top-1 selection. Herewe conduct experiments to further investigate how top-k methods in\ufb02uence the model quality.The value of k determines the number of experts to pass through for each token. We evaluate themodel performance on the conditions of k \u2208{1, 2, 4}. Note that as mentioned in Section 2, theexpert capacity C = kTN \u00b7 \u03b3 should be different for different values of k, and thus their computationcomplexities are actually different. To evaluate the performance of different routing methods on thecondition of identical expert capacity, we experiment on top-k routing methods where k > 1 witha uniform capacity C = 1\u00b7TN \u00b7 \u03b3, denoted by \u201cCapacity 1\u00d7\u201d in the \ufb01gures and tables. In contrast,we denote the original setting of expert capacity C = kTN \u00b7 \u03b3 as \u201cCapacity k\u00d7\u201d.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0013",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "In contrast,we denote the original setting of expert capacity C = kTN \u00b7 \u03b3 as \u201cCapacity k\u00d7\u201d. We report thecomputation FLOPs of models with different top-k routing strategies on the conditions of standardand limited expert capacities.2 Table 1 demonstrates that larger values of k lead to higher computationcomplexity, unless when the expert capacity C is limited.The left plot in Figure 3 demonstrates the effects of choice of k on model convergence. We \ufb01nd thatboth top-2 and top-4 sparse activation can outperform the top-1. Even when C is limited, denotingsimilar computational complexity, routing methods with k > 1 still outperform the MoE baselinesigni\ufb01cantly. We assume that tokens can be processed by different experts that function differently.However, it is interesting to \ufb01nd the diminishing return that the gap between top-2 and top-4 is muchsmaller than that between top-1 and top-2, especially on the condition of limited expert capacity.Besides, due to the looping \u201cargmax\u201d operation in top-k routing, the ef\ufb01ciency decreases drasticallywhen k increases, as demonstrated in Table 2.",
+      "token_count": 247
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0014",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "It is possible to strike a perfect balance betweeneffectiveness and ef\ufb01ciency by selecting a proper value of k.2We report the FLOPs of a single GPU, counted by Tensor\ufb02ow pro\ufb01ler.N \u00b7 \u03b3.Top-1Top-2Top-42 Top-14 Top-1Base214.3218.2305.3220.1225.310B462.2493.0514.2466.9473.93.3k Top-1 VS. Top-kPrevious analysis indicates that k experts play different roles and outcompete a single expert. However,the looping \u201cargmax\u201d operation in top-k routing incurs computation inef\ufb01ciency. Take top-2 sparseactivation as an example. It performs the operation of \u201cargmax\u201d for two times to select the top-2experts. Larger k can incur lower ef\ufb01ciency in the computation. We evaluate the computationef\ufb01ciency of top-1, 2 and 4, as shown in Table 2. For both \u201cBase\u201d model with 1.5 billion parametersand \u201c10B\u201d model with over 10 billion parameters, top-k routing where k > 1 especially when k = 4is saliently slower than top-1.To tackle the issue of ef\ufb01ciency, we propose a simple method called expert prototyping, which splitsexperts into k prototypes.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0015",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "In each forward computation, each token is sent to the k prototypes, and ineach prototype, it is processed by the expert in each group selected by top-k\u2032 routing where in mostcases k\u2032 = 1 for analysis. The outputs of prototypes are combined linearly:kXmXy =j=1pijEij(x),(3)i=1where m refers to the number of experts inside a group. This method avoids the looping argmaxoperation, but instead, it generates k outputs in a parallel fashion. In comparison with top-k, we alsoname it k top-1. We \ufb01nd that the increase in k does not cause a signi\ufb01cant decrease in training speed,as shown in Table 2.We evaluate the model quality of k top-1 expert prototyping. The right plot of Figure 3 demonstratesthat expert grouping with k > 1 can achieve better performance compared with the top-1 sparseactivation. However, the improvement in the context of limited expert capacity is much smaller thanthat in the context of standard expert capacity. We \ufb01nd that this problem can be greatly alleviated intraining large-scale models, and we leave this issue to Section 4.3.4Expert Prototyping and MoE AttentionMost work [30; 26; 11; 6] replaced FFN with MoE.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0016",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "Fedus et al. [6] pointed out an alternative designof replacing linear transformations in attention with MoE. Note that there are 4 linear transformationsfor Q, K, V and output, and they can be viewed as one-layer FFN without non-linear activation.Thus it is possible to replace them with MoE, and we call it MoE attention in this paper. Preliminaryexperiments in Fedus et al. [6] pointed out that such attention may bring bene\ufb01ts to model quality, butit suffers from training instabilities. We implement the MoE attention to our model, and we preservethe MoE layer for FFN.Surprisingly, according to the left plot in Figure 4, we reach a different \ufb01nding that MoE attentionnegatively affects the model performance, and its training becomes more dif\ufb01cult and even causesdivergence. The incorporation of sparse-activated MoE with attention-based correlation computationmay highly increase the training dif\ufb01culty. However, k top-1 expert prototyping can bene\ufb01t thetraining of MoE attention. Expert prototyping with k > 1 helps the models converge, though thespeed of convergence is still slower than that of the MoE baseline. Furthermore, we evaluate theeffect of MoE attention in the setting of deeper models.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0017",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "Expert prototyping with k > 1 helps the models converge, though thespeed of convergence is still slower than that of the MoE baseline. Furthermore, we evaluate theeffect of MoE attention in the setting of deeper models. Speci\ufb01cally, we increase the number of layersby 4 times to 20, but we decrease the number of experts to 8, so that there is no signi\ufb01cant differencein the number of parameters between shallow and deep models. We demonstrate the results in theright plot of Figure 4. It shows that deeper models with MoE attention perform better and does notdiverge, but it still performs worse than the MoE baseline.",
+      "token_count": 141
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0018",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "We demonstrate the results in theright plot of Figure 4. It shows that deeper models with MoE attention perform better and does notdiverge, but it still performs worse than the MoE baseline. Still in this case, k top-1 expert groupingMoE Attention 1 Top-1MoE Attention 4 Top-1MoE FFN 1 Top-1MoE Attention 1 Top-1MoE Attention 4 Top-1MoE FFN 1 Top-1Log PerplexityLog PerplexityTraining StepsTraining StepsN \u00b7 \u03b3, while \u201cCapacity 1\u00d7\u201d refers to the setting of expert capacityof top-1 routing for all the models, where C = 1\u00b7TN \u00b7 \u03b3.Model SizeCapacityTop-1Top-2Top-42 Top-14 Top-1BaseCapacity k\u00d79.728.778.288.738.39BaseCapacity 1\u00d79.728.848.529.249.41greatly bene\ufb01ts the model quality, in consistency with the aforementioned observation. This showsthe effectiveness of k top-1 expert prototyping.3.5Validation on Downstream TasksWe conduct experiments on image captioning and the details of experimental setups are demonstratedin the appendix. We demonstrate the experimental results of MoE models with different setups forrouting and expert capacity in Table 3.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0019",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "We demonstrate the experimental results of MoE models with different setups forrouting and expert capacity in Table 3. It can be found that the upstream performance can generallybe translated to downstream tasks, which shows that upstream training log perplexity can be anindicator for downstream performance. With \u201cCapacity k\u00d7\u201d expert capacity, both top-k routing andk top-1 expert prototyping where k > 1 signi\ufb01cantly outperform the baseline. Yet with \u201cCapacity 1\u00d7\u201dlimited capacity, k top-1 expert prototyping has smaller advantages over the baseline compared withtop-k routing. This may attribute to the problem of network degeneration. However, this problem iseffectively alleviated in training large scale model, as illustrated in Section 4.4Rocketing to Trillion ParametersIn this section, we demonstrate that our \ufb01ndings and proposals are also applicable to large-scalepretrained models, and we \ufb01nally advance the model scale to 1 trillion parameters on solely 480NVIDIA GPUs, in comparison with the recent SOTA on 2048 TPU cores [6].We validate our \ufb01ndings on extremely large-scale models. We scale the model size up to 10 and100 billion parameters respectively. For simplicity, we validate k top-1 expert prototyping onthe 10B and 100B-parameter models. We report the training log perplexity for their upstreamperformance.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0020",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "For simplicity, we validate k top-1 expert prototyping onthe 10B and 100B-parameter models. We report the training log perplexity for their upstreamperformance. Figure 5 demonstrates their performance, and it can be found that for both 10B and100B models expert prototyping still have advantages over the MoE baseline, and similarly in bothcontexts larger k for expert prototyping can further bene\ufb01t the model quality. Besides, as to the1 Top-12 Top-14 Top-11 Top-12 Top-14 Top-1Log PerplexityLog PerplexityTraining StepsTraining StepsN \u00b7 \u03b3.Model SizeTop-1Top-22 Top-110B6.975.735.64downstream performance, Table 3 shows that for the large scale model \u201c10B\u201d, 2 Top-1 can reachsimilar performance to Top-2 routing with limited expert capacity. This shows the effectiveness ofexpert prototyping in training models of a larger scale.Based on the aforementioned \ufb01ndings and proposals, we move forward to build an extremely large-scale model with over 1 trillion parameters. Due to limited computational resources, we attempt to\ufb01gure out solutions to implement a 1-trillion-parameter model on solely 480 NVIDIA V100-32GBGPUs.To be more speci\ufb01c, we implement our model on a cluster of single-GPU workers connectedby RDMA networks with a bandwidth of 100Gb.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0021",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "To save memory usage, we instead turn toAdafactor [29] for optimization in concern of its sublinear memory costs. However, there are a seriesof sporadic issues concerning training instabilities. Through trials and errors, we \ufb01nd that such modeltraining is highly sensitive to learning rates, especially when being trained with Adafactor. We didnot use the default one 0.01 due to divergence, but instead, we use 0.005 to strike a balance betweentraining stability and convergence speed. Also, we \ufb01nd that it is essential to lower the absolute valuesof initialized weights, which is also illustrated in Fedus et al. [6]. We speci\ufb01cally reduce the BERTinitialization, a truncated normal distribution with \u00b5 = 0 and \u03c3 = 0.02, by a factor of 10.We \ufb01rst evaluate the quality of models with different parameters but similar computation FLOPs byobserving training log perplexity. We compare the performance of MoE baseline models with 100billion, 250 billion parameters, and 1 trillion parameters, and we observe that the results prove thescaling law that models with larger capacity performs better, as demonstrated in Figure 6.",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0022",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "Then weimplement both 1-trillion-parameter MoE baseline and our expert prototyping MoE model.3 Still,from Figure 6 we can \ufb01gure out the proposal has a strong advantage over the compared model with 1trillion parameters. We observe a substantial speedup in convergence, where our method is around5 times faster than the baseline. However, both models have similar computational FLOPs, whichdemonstrates that our method strikes a far better balance between computational ef\ufb01ciency and modelquality.3Due to limited computational resources and instabilities in systems and hardware, the trillion-parameterexpert prototyping model has been trained for only 30k steps.100 billion250 billion1trillion1trillion& prototypeLog Perplexity5x SpeedupTraining Steps5Related workPretraining has achieved great success in these years, and it has recently become a common practicein natural language processing [20; 4; 22; 36; 16; 5]. In the \ufb01eld of cross-representation learning,pretraining has also become signi\ufb01cant and pushed the limit of model performance in downstreamtasks [18; 33; 19; 3; 7; 14; 37; 13; 38]. Recent studies [10] demonstrate the power law of model scaleand performance.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0023",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "Recent studies [10] demonstrate the power law of model scaleand performance. With the rapid development in distributed training and parallelism [32; 24; 28; 25],we have witnessed the burst of studies in extremely large scale pretraining in both natural languageprocessing [2; 32] and multimodal pretraining [27; 15] and also new state-of-the-art performancein the recent two years. Though extremely large-scale dense models are highly effective especiallyin the context of few-shot learning [2], some researchers have turned to sparse expert models foref\ufb01cient large-scale pretraining. Inspired by the success of Mixture-of-Experts [30; 26; 31], recentstudies [11; 6] expand the model size to over trillion parameters and fully utilize the advantagesof TPUs to build sparse expert models with Mesh-Tensor\ufb02ow [31]. They demonstrate that sparseexpert models can perform much better than dense models with the same computational FLOPs buttheir computational costs are similar. A series of the following work successfully implement sparseexpert models on NVIDIA GPU [15; 12]. In this work, we follow the practice of Lin et al. [15] andimplement our models on the distributed learning framework Whale [35].6ConclusionIn this work, we explore the factors inside sparse expert models and investigate how they in\ufb02uence themodel quality and computational ef\ufb01ciency.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0024",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "We \ufb01nd out that load imbalance may not be a signi\ufb01cantissue affecting model quality, but the number of activated experts k and expert capacity C play asigni\ufb01cant role in training MoE models. A simple method called expert prototyping that splits expertsinto different prototypes and applies k top-1 routing can help the model achieve improved performancewhile keeping constant computational costs. We extend our series of experiments to extremely large-scale models with over 10 and 100 billion parameters and demonstrate the effectiveness of expertprototyping in training extremely large-scale models. Finally, we successfully implement the 1-trillion parameter model on solely 480 NVIDIA V100-32GB GPUs, compared with the recent SOTAsimplemented on 2048 TPU cores. We show that our simple method can improve the performance of1-trillion-parameter sparse expert models effectively and help them achieve substantial speedup inconvergence.References[1] M. Abadi, P. Barham, J. Chen, Z. Chen, A. Davis, J. Dean, M. Devin, S. Ghemawat, G. Irving,M. Isard, M. Kudlur, J. Levenberg, R. Monga, S. Moore, D. G. Murray, B. Steiner, P. A.Tucker, V. Vasudevan, P. Warden, M. Wicke, Y.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0025",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "Monga, S. Moore, D. G. Murray, B. Steiner, P. A.Tucker, V. Vasudevan, P. Warden, M. Wicke, Y. Yu, and X. Zheng. Tensor\ufb02ow: A system forlarge-scale machine learning. In 12th USENIX Symposium on Operating Systems Design andImplementation, OSDI 2016, pages 265\u2013283, 2016.[2] T. B. Brown, B. Mann, N. Ryder, M. Subbiah, J. Kaplan, P. Dhariwal, A. Neelakantan,P. Shyam, G. Sastry, A. Askell, et al. Language models are few-shot learners. arXiv preprintarXiv:2005.14165, 2020.[3] Y. Chen, L. Li, L. Yu, A. E. Kholy, F. Ahmed, Z. Gan, Y. Cheng, and J. Liu. UNITER: universalimage-text representation learning. In ECCV 2020, pages 104\u2013120, 2020.[4] J. Devlin, M. Chang, K. Lee, and K. Toutanova. BERT: pre-training of deep bidirectionaltransformers for language understanding.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0026",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "Devlin, M. Chang, K. Lee, and K. Toutanova. BERT: pre-training of deep bidirectionaltransformers for language understanding. In NAACL-HLT 2019, pages 4171\u20134186, 2019.[5] L. Dong, N. Yang, W. Wang, F. Wei, X. Liu, Y. Wang, J. Gao, M. Zhou, and H. Hon. Uni\ufb01edlanguage model pre-training for natural language understanding and generation. In NeurIPS2019, pages 13042\u201313054, 2019.[6] W. Fedus, B. Zoph, and N. Shazeer. Switch transformers: Scaling to trillion parameter modelswith simple and ef\ufb01cient sparsity. CoRR, abs/2101.03961, 2021. URL https://arxiv.org/abs/2101.03961.[7] Z. Gan, Y.-C. Chen, L. Li, C. Zhu, Y. Cheng, and J. Liu. Large-scale adversarial training forvision-and-language representation learning. In NeurIPS 2020, 2020.[8] J. He, J. Qiu, A. Zeng, Z. Yang, J. Zhai, and J. Tang.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0027",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "In NeurIPS 2020, 2020.[8] J. He, J. Qiu, A. Zeng, Z. Yang, J. Zhai, and J. Tang. Fastmoe: A fast mixture-of-expert trainingsystem. CoRR, abs/2103.13262, 2021.[9] K. He, X. Zhang, S. Ren, and J. Sun. Deep residual learning for image recognition. In CVPR2016, pages 770\u2013778, 2016.[10] J. Kaplan, S. McCandlish, T. Henighan, T. B. Brown, B. Chess, R. Child, S. Gray, A. Radford,J. Wu, and D. Amodei. Scaling laws for neural language models. CoRR, abs/2001.08361, 2020.[11] D. Lepikhin, H. Lee, Y. Xu, D. Chen, O. Firat, Y. Huang, M. Krikun, N. Shazeer, and Z. Chen.Gshard: Scaling giant models with conditional computation and automatic sharding. arXivpreprint arXiv:2006.16668, 2020.[12] M. Lewis, S. Bhosale, T. Dettmers, N.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0028",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "Lewis, S. Bhosale, T. Dettmers, N. Goyal, and L. Zettlemoyer. BASE layers: Simplifyingtraining of large, sparse models. CoRR, abs/2103.16716, 2021.[13] W. Li, C. Gao, G. Niu, X. Xiao, H. Liu, J. Liu, H. Wu, and H. Wang. UNIMO: towardsuni\ufb01ed-modal understanding and generation via cross-modal contrastive learning. CoRR,abs/2012.15409, 2020.[14] X. Li, X. Yin, C. Li, P. Zhang, X. Hu, L. Zhang, L. Wang, H. Hu, L. Dong, F. Wei, Y. Choi,and J. Gao. Oscar: Object-semantics aligned pre-training for vision-language tasks. CoRR,abs/2004.06165, 2020.[15] J. Lin, R. Men, A. Yang, C. Zhou, M. Ding, Y. Zhang, P. Wang, A. Wang, L. Jiang, X. Jia,J. Zhang, J. Zhang, X. Zou, Z. Li, X. Deng, J. Liu, J. Xue, H.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0029",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "Wang, L. Jiang, X. Jia,J. Zhang, J. Zhang, X. Zou, Z. Li, X. Deng, J. Liu, J. Xue, H. Zhou, J. Ma, J. Yu, Y. Li, W. Lin,J. Zhou, J. Tang, and H. Yang. M6: A chinese multimodal pretrainer. CoRR, abs/2103.00823,2021.[16] Y. Liu, M. Ott, N. Goyal, J. Du, M. Joshi, D. Chen, O. Levy, M. Lewis, L. Zettlemoyer,and V. Stoyanov.Roberta: A robustly optimized BERT pretraining approach.CoRR,abs/1907.11692, 2019.[17] I. Loshchilov and F. Hutter. Decoupled weight decay regularization. In ICLR 2019, 2019.[18] J. Lu, D. Batra, D. Parikh, and S. Lee. Vilbert: Pretraining task-agnostic visiolinguisticrepresentations for vision-and-language tasks. In NeurIPS 2019, pages 13\u201323, 2019.[19] J. Lu, V. Goswami, M.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0030",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "In NeurIPS 2019, pages 13\u201323, 2019.[19] J. Lu, V. Goswami, M. Rohrbach, D. Parikh, and S. Lee. 12-in-1: Multi-task vision and languagerepresentation learning. CoRR, abs/1912.02315, 2019.[20] M. E. Peters, M. Neumann, M. Iyyer, M. Gardner, C. Clark, K. Lee, and L. Zettlemoyer. Deepcontextualized word representations. In NAACL-HLT 2018, pages 2227\u20132237, 2018.[21] A. Radford, J. Wu, R. Child, D. Luan, D. Amodei, and I. Sutskever. Language models areunsupervised multitask learners.[22] A.Radford,K.Narasimhan,T.Salimans,andI.Sutskever.Im-provinglanguageunderstandingbygenerativepre-training.URLhttps://s3-us-west-2.amazonaws.com/openai-assets/researchcovers/languageunsupervised/language understanding paper. pdf, 2018.[23] C. Raffel, N. Shazeer, A. Roberts, K. Lee, S. Narang, M. Matena, Y. Zhou, W.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0031",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "Raffel, N. Shazeer, A. Roberts, K. Lee, S. Narang, M. Matena, Y. Zhou, W. Li, and P. J.Liu. Exploring the limits of transfer learning with a uni\ufb01ed text-to-text transformer. CoRR,abs/1910.10683, 2019.[24] S. Rajbhandari, J. Rasley, O. Ruwase, and Y. He. Zero: Memory optimization towards traininga trillion parameter models. arXiv preprint arXiv:1910.02054, 2019.[25] S. Rajbhandari, O. Ruwase, J. Rasley, S. Smith, and Y. He. Zero-in\ufb01nity: Breaking the GPUmemory wall for extreme scale deep learning. CoRR, abs/2104.07857, 2021.[26] P. Ramachandran and Q. V. Le. Diversity and depth in per-example routing models. In 7thInternational Conference on Learning Representations, ICLR 2019, 2019.[27] A. Ramesh, M. Pavlov, G. Goh, S. Gray, C. Voss, A. Radford, M. Chen, and I.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0032",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "Ramesh, M. Pavlov, G. Goh, S. Gray, C. Voss, A. Radford, M. Chen, and I. Sutskever.Zero-shot text-to-image generation, 2021.[28] J. Ren, S. Rajbhandari, R. Y. Aminabadi, O. Ruwase, S. Yang, M. Zhang, D. Li, and Y. He.Zero-of\ufb02oad: Democratizing billion-scale model training. arXiv preprint arXiv:2101.06840,2021.[29] N. Shazeer and M. Stern. Adafactor: Adaptive learning rates with sublinear memory cost.In Proceedings of the 35th International Conference on Machine Learning, ICML 2018, pages4603\u20134611, 2018.[30] N. Shazeer, A. Mirhoseini, K. Maziarz, A. Davis, Q. Le, G. Hinton, and J. Dean. Outra-geously large neural networks: The sparsely-gated mixture-of-experts layer. arXiv preprintarXiv:1701.06538, 2017.[31] N. Shazeer, Y. Cheng, N. Parmar, D. Tran, A. Vaswani, P.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0033",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "Shazeer, Y. Cheng, N. Parmar, D. Tran, A. Vaswani, P. Koanantakool, P. Hawkins, H. Lee,M. Hong, C. Young, R. Sepassi, and B. A. Hechtman. Mesh-tensor\ufb02ow: Deep learning for su-percomputers. In Advances in Neural Information Processing Systems 31: Annual Conferenceon Neural Information Processing Systems 2018, NeurIPS 2018, pages 10435\u201310444, 2018.[32] M. Shoeybi, M. Patwary, R. Puri, P. LeGresley, J. Casper, and B. Catanzaro. Megatron-lm:Training multi-billion parameter language models using model parallelism. arXiv preprintarXiv:1909.08053, 2019.[33] W. Su, X. Zhu, Y. Cao, B. Li, L. Lu, F. Wei, and J. Dai. Vl-bert: Pre-training of genericvisual-linguistic representations. arXiv preprint arXiv:1908.08530, 2019.[34] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0034",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, L. Kaiser, andI. Polosukhin. Attention is all you need. In NeurIPS 2017, pages 5998\u20136008, 2017.[35] A. Wang, X. Jia, L. Jiang, J. Zhang, Y. Li, and W. Lin. Whale: A uni\ufb01ed distributed trainingframework. arXiv preprint arXiv:2011.09208, 2020.[36] Z. Yang, Z. Dai, Y. Yang, J. G. Carbonell, R. Salakhutdinov, and Q. V. Le. Xlnet: Generalizedautoregressive pretraining for language understanding. In NeurIPS 2019, pages 5754\u20135764,2019.[37] F. Yu, J. Tang, W. Yin, Y. Sun, H. Tian, H. Wu, and H. Wang. Ernie-vil: Knowledge enhancedvision-language representations through scene graph. arXiv preprint arXiv:2006.16934, 2020.[38] P. Zhang, X. Li, X. Hu, J. Yang, L.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0035",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "Zhang, X. Li, X. Hu, J. Yang, L. Zhang, L. Wang, Y. Choi, and J. Gao. Vinvl: Making visualrepresentations matter in vision-language models. CoRR, abs/2101.00529, 2021.AAppendixA.1Multimodal Pretraining and Downstream EvaluationIn practice, we follow Lin et al. [15] that employs an extremely large-scale multimodal pretrainedmodel with MoE architecture in Chinese. Speci\ufb01cally, we pretrain a model on the image-text pairsfrom the dataset M6-Corpus [15]. In multimodal pretraining, the pretrained model receives the inputsof a pair of related image and text as the input and generates the high-level representations withlayers of Transformer [34]. In our experiments, we \ufb01rst transform an input image to patch featuresby splitting it into 4 \u00d7 4 patches and extracting patch features with a trained ResNet [9]. We \ufb02attenthe patch features of the input image to a sequence of representations and concatenate them with theword embeddings of the text sequence shorter than 128 words. Then we build a feature extractorwith multiple layers of transformer consisting of self attention and feed-forward neural networks(FFN).",
+      "token_count": 266
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0036",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "Then we build a feature extractorwith multiple layers of transformer consisting of self attention and feed-forward neural networks(FFN). Notably, in order to integrate MoE to the model architecture, we replace the FFN with MoE,where FFN as experts are distributed across workers. We pretrain the model with the task of imagecaptioning, where the model learns to generate words autoregressively based on the previous contextincluding the patch features.To comprehensively evaluate the performance of the methods, we conduct experiments on imagecaptioning in Chinese, and we follow Lin et al. [15] to use the dataset E-commerce IC. We focus onthe capability of language modeling of the pretrained model, and thus we use teacher forcing andevaluate the performance by perplexity (PPL).A.2Experimental SetupsFor the exploration, we investigate different setups for both models. Here we point out key con\ufb01g-urations of our experimental setups and we demonstrate the details in Table 5. Following BERT-Chinese [4], we use the same vocabulary with 21128 subwords. Following the practice of Raffel et al.[23], we use the same hidden size 1024 for all the models. We generally scale the model size byincreasing the number of layers, the intermediate size, as well as the number of experts. For the setupof attention, the number of attention head is 16 and the attention head size is 64.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0037",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "We generally scale the model size byincreasing the number of layers, the intermediate size, as well as the number of experts. For the setupof attention, the number of attention head is 16 and the attention head size is 64. For the initialization,we use the BERT initialization with \u00b5 = 0 and \u03c3 = 0.02 for most cases, and we use an initializationwith a smaller standard deviation of 0.002 for the 1T model. As to the expert capacity, we generallyuse a capacity factor of \u03b3 = 1.25 for more buffer. The batch size per GPU is 8 and the total batchsize is equal to the product of the batch size per GPU and the number of GPUs. We use AdamWoptimizer [17] for optimization except for the 1T model where we use Adafactor [29] instead. Thelearning rate for AdamW is 8e \u22125, and that for Adafactor is 5e \u22123. We use warmup schedule with awarmup step of 500. The dropout rate for FFN and attention is 0.1.",
+      "token_count": 232
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0038",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "We use warmup schedule with awarmup step of 500. The dropout rate for FFN and attention is 0.1. We use mixed precision trainingfor FP16 communication for all models except the 1T one due to the issue of training instability.Hparambase10B100B1THidden size1024102410241024Intermediate size40964096409621248Number of layers5102424Number of attention heads16161616Attention head size64646464Initializer range0.020.020.020.002Number of experts32128512960Number of GPUs816128480OptimizerAdamWAdamWAdamWAdafactorLearning rate8e-58e-58e-55e-3Mixed precision\u2713\u2713\u2713\u00d7FP16 communication\u2713\u2713\u2713\u00d7Params1.4B10.8B103.2B1002.7BWe implement our experiments on Tensor\ufb02ow 1.15 [1]. Different from the original implementationof Switch and GShard with Mesh-Tensor\ufb02ow [31], we implement the multimodal pretrained modelwith the framework Whale [35], which enables data, model, and expert parallelism on NVIDIA GPU.A.3Pseudo Code for Expert PrototypingThe pseudo codes for MoE layer and proposed expert prototyping in Whale are provided in Figure 7and Figure 8 respectively.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0039",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Table 6 illustrates the notations of speci\ufb01c tensor dimensions.VariableDe\ufb01nitionDNumber of workersdNumber of GPUs per worker (d=1 in this paper)ENumber of total expertseNumber of experts per worker (e*D=E)CCapacity per expertMModel size (same as hidden size, same as embedding size)IIntermediate sizeBBatch Size per GPULSequence LengthTNumber of tokens (T=B*L)ZNumber of prototypesFNumber of expert per prototype (Z*F=E)Amount of All-to-All CommunicationThere are two operations of all-to-all communication ineach MoE FFN layer in a forward propagation process (one for dispatch_inputs and the other foroutputs in the pseudo code). During the communication, each entry of the communicated tensor passesto a worker once. Thus, the total amount of communication, which is O(EdCM) + O(eDCM) =O(EdCM) = O(ECM), depends on the number of experts, capacity and model size.Amount of ComputationThe total amount of computation in the MoE FFN layer is mainlydominated by the two matrix multiplications, which transform the input tensor from the hidden size tothe intermediate size and then vice versa. The total computation of these two matrix multiplicationsis O(DeCMI) + O(DeCIM) = O(ECMI).",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2105.15082_chunk_0040",
+      "arxiv_id": "2105.15082",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "The total computation of these two matrix multiplicationsis O(DeCMI) + O(DeCIM) = O(ECMI). In our pro\ufb01ling on the 1T-scale MoE model, thesetwo operations hold around 98% total forward FLOPs of the MoE FFN layer.",
+      "token_count": 66
+    }
+  ]
+}

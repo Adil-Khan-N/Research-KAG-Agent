@@ -1,0 +1,417 @@
+{
+  "arxiv_id": "2012.12877",
+  "title": "Training data-efficient image transformers & distillation through attention",
+  "authors": [
+    "Hugo Touvron",
+    "Matthieu Cord",
+    "Matthijs Douze",
+    "Francisco Massa",
+    "Alexandre Sablayrolles",
+    "Herv\u00e9 J\u00e9gou"
+  ],
+  "year": 2020,
+  "abstract": "Recently, neural networks purely based on attention were shown to address image understanding tasks such as image classification. However, these visual transformers are pre-trained with hundreds of millions of images using an expensive infrastructure, thereby limiting their adoption.   In this work, we produce a competitive convolution-free transformer by training on Imagenet only. We train them on a single computer in less than 3 days. Our reference vision transformer (86M parameters) achieves top-1 accuracy of 83.1% (single-crop evaluation) on ImageNet with no external data.   More importantly, we introduce a teacher-student strategy specific to transformers. It relies on a distillation token ensuring that the student learns from the teacher through attention. We show the interest of this token-based distillation, especially when using a convnet as a teacher. This leads us to report results competitive with convnets for both Imagenet (where we obtain up to 85.2% accuracy) and when transferring to other tasks. We share our code and models.",
+  "categories": [
+    "cs.CV"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2012.12877v2",
+  "page_count": 22,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 49,
+  "chunks": [
+    {
+      "chunk_id": "2012.12877_chunk_0000",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "Training data-ef\ufb01cient image transformers& distillation through attentionHugo Touvron\u22c6,\u2020Matthieu Cord\u2020Matthijs Douze\u22c6Francisco Massa\u22c6Alexandre Sablayrolles\u22c6Herv\u00b4e J\u00b4egou\u22c6\u22c6Facebook AI\u2020Sorbonne UniversityAbstractRecently, neural networks purely based on attention were shown to ad-dress image understanding tasks such as image classi\ufb01cation. These high-performing vision transformers are pre-trained with hundreds of millionsof images using a large infrastructure, thereby limiting their adoption.In this work, we produce competitive convolution-free transformers bytraining on Imagenet only. We train them on a single computer in less than3 days. Our reference vision transformer (86M parameters) achieves top-1accuracy of 83.1% (single-crop) on ImageNet with no external data.More importantly, we introduce a teacher-student strategy speci\ufb01c totransformers.It relies on a distillation token ensuring that the studentlearns from the teacher through attention. We show the interest of thistoken-based distillation, especially when using a convnet as a teacher. Thisleads us to report results competitive with convnets for both Imagenet(where we obtain up to 85.2% accuracy) and when transferring to othertasks.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0001",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "Thisleads us to report results competitive with convnets for both Imagenet(where we obtain up to 85.2% accuracy) and when transferring to othertasks. We share our code and models.1IntroductionConvolutional neural networks have been the main design paradigm for imageunderstanding tasks, as initially demonstrated on image classi\ufb01cation tasks.One of the ingredient to their success was the availability of a large training set,namely Imagenet [13, 42]. Motivated by the success of attention-based mod-els in Natural Language Processing [14, 52], there has been increasing interestin architectures leveraging attention mechanisms within convnets [2, 34, 61].More recently several researchers have proposed hybrid architecture trans-planting transformer ingredients to convnets to solve vision tasks [6, 43].The vision transformer (ViT) introduced by Dosovitskiy et al. [15] is an ar-chitecture directly inherited from Natural Language Processing [52], but ap-plied to image classi\ufb01cation with raw image patches as input. Their paper pre-sented excellent results with transformers trained with a large private labelledimage dataset (JFT-300M [46], 300 millions images).",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0002",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "Their paper pre-sented excellent results with transformers trained with a large private labelledimage dataset (JFT-300M [46], 300 millions images). The paper concluded thattransformers \u201cdo not generalize well when trained on insuf\ufb01cient amounts of data\u201d,and the training of these models involved extensive computing resources.In this paper, we train a vision transformer on a single 8-GPU node in twoto three days (53 hours of pre-training, and optionally 20 hours of \ufb01ne-tuning)that is competitive with convnets having a similar number of parameters andef\ufb01ciency. It uses Imagenet as the sole training set. We build upon the vi-sual transformer architecture from Dosovitskiy et al. [15] and improvementsincluded in the timm library [55]. With our Data-ef\ufb01cient image Transformers(DeiT), we report large improvements over previous results, see Figure 1. Ourablation study details the hyper-parameters and key ingredients for a success-ful training, such as repeated augmentation.We address another question: how to distill these models?",
+      "token_count": 229
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0003",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "Ourablation study details the hyper-parameters and key ingredients for a success-ful training, such as repeated augmentation.We address another question: how to distill these models? We introducea token-based strategy, speci\ufb01c to transformers and denoted by DeiT\u2697, andshow that it advantageously replaces the usual distillation.In summary, our work makes the following contributions:\u2022 We show that our neural networks that contains no convolutional layercan achieve competitive results against the state of the art on ImageNetwith no external data. They are learned on a single node with 4 GPUs inthree days1. Our two new models DeiT-S and DeiT-Ti have fewer param-eters and can be seen as the counterpart of ResNet-50 and ResNet-18.\u2022 We introduce a new distillation procedure based on a distillation token,which plays the same role as the class token, except that it aims at re-producing the label estimated by the teacher. Both tokens interact in thetransformer through attention.",
+      "token_count": 210
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0004",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "Both tokens interact in thetransformer through attention. This transformer-speci\ufb01c strategy outper-forms vanilla distillation by a signi\ufb01cant margin.\u2022 Interestingly, with our distillation, image transformers learn more from aconvnet than from another transformer with comparable performance.\u2022 Our models pre-learned on Imagenet are competitive when transferred todifferent downstream tasks such as \ufb01ne-grained classi\ufb01cation, on severalpopular public benchmarks: CIFAR-10, CIFAR-100, Oxford-102 \ufb02owers,Stanford Cars and iNaturalist-18/19.This paper is organized as follows: we review related works in Section 2,and focus on transformers for image classi\ufb01cation in Section 3. We introduceour distillation strategy for transformers in Section 4. The experimental sec-tion 5 provides analysis and comparisons against both convnets and recenttransformers, as well as a comparative evaluation of our transformer-speci\ufb01cdistillation. Section 6 details our training scheme. It includes an extensive ab-lation of our data-ef\ufb01cient training choices, which gives some insight on thekey ingredients involved in DeiT. We conclude in Section 7.2Related workImage Classi\ufb01cationis so core to computer vision that it is often used as abenchmark to measure progress in image understanding. Any progress usu-ally translates to improvement in other related tasks such as detection or seg-mentation.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0005",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "Any progress usu-ally translates to improvement in other related tasks such as detection or seg-mentation. Since 2012\u2019s AlexNet [32], convnets have dominated this bench-mark and have become the de facto standard. The evolution of the state of theart on the ImageNet dataset [42] re\ufb02ects the progress with convolutional neuralnetwork architectures and learning [32, 44, 48, 50, 51, 57].Despite several attempts to use transformers for image classi\ufb01cation [7], un-til now their performance has been inferior to that of convnets. Neverthelesshybrid architectures that combine convnets and transformers, including theself-attention mechanism, have recently exhibited competitive results in imageclassi\ufb01cation [56], detection [6, 28], video processing [45, 53], unsupervised ob-ject discovery [35], and uni\ufb01ed text-vision tasks [8, 33, 37].1We can accelerate the learning of the larger model DeiT-B by training it on 8 GPUs in two days.Recently Vision transformers (ViT) [15] closed the gap with the state of theart on ImageNet, without using any convolution. This performance is remark-able since convnet methods for image classi\ufb01cation have bene\ufb01ted from yearsof tuning and optimization [22, 55].",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0006",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "This performance is remark-able since convnet methods for image classi\ufb01cation have bene\ufb01ted from yearsof tuning and optimization [22, 55]. Nevertheless, according to this study [15],a pre-training phase on a large volume of curated data is required for thelearned transformer to be effective. In our paper we achieve a strong perfor-mance without requiring a large training dataset, i.e., with Imagenet1k only.The Transformer architecture,introduced by Vaswani et al. [52] for machinetranslation are currently the reference model for all natural language process-ing (NLP) tasks. Many improvements of convnets for image classi\ufb01cation areinspired by transformers. For example, Squeeze and Excitation [2], SelectiveKernel [34] and Split-Attention Networks [61] exploit mechanism akin to trans-formers self-attention (SA) mechanism.Knowledge Distillation(KD), introduced by Hinton et al. [24], refers to thetraining paradigm in which a student model leverages \u201csoft\u201d labels comingfrom a strong teacher network. This is the output vector of the teacher\u2019s softmaxfunction rather than just the maximum of scores, wich gives a \u201chard\u201d label.Such a training improves the performance of the student model (alternatively,it can be regarded as a form of compression of the teacher model into a smallerone \u2013 the student).",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0007",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "On the one hand the teacher\u2019s soft labels will have a similareffect to labels smoothing [58]. On the other hand as shown by Wei et al. [54]the teacher\u2019s supervision takes into account the effects of the data augmenta-tion, which sometimes causes a misalignment between the real label and theimage. For example, let us consider image with a \u201ccat\u201d label that represents alarge landscape and a small cat in a corner. If the cat is no longer on the cropof the data augmentation it implicitly changes the label of the image. KD cantransfer inductive biases [1] in a soft way in a student model using a teachermodel where they would be incorporated in a hard way. For example, it maybe useful to induce biases due to convolutions in a transformer model by usinga convolutional model as teacher. In our paper we study the distillation of atransformer student by either a convnet or a transformer teacher. We introducea new distillation procedure speci\ufb01c to transformers and show its superiority.3Vision transformer: overviewIn this section, we brie\ufb02y recall preliminaries associated with the vision trans-former [15, 52], and further discuss positional encoding and resolution.Multi-head Self Attention layers (MSA).The attention mechanism is basedon a trainable associative memory with (key, value) vector pairs.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0008",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "A query vectorq \u2208Rd is matched against a set of k key vectors (packed together into a matrixK \u2208Rk\u00d7d) using inner products. These inner products are then scaled andnormalized with a softmax function to obtain k weights. The output of theattention is the weighted sum of a set of k value vectors (packed into V \u2208Rk\u00d7d).For a sequence of N query vectors (packed into Q \u2208RN\u00d7d), it produces anoutput matrix (of size N \u00d7 d):Attention(Q, K, V ) = Softmax(QK\u22a4/\u221ad)V,(1)where the Softmax function is applied over each row of the input matrix andthe\u221ad term provides appropriate normalization.In [52], a Self-attention layer is proposed.Query, key and values matricesare themselves computed from a sequence of N input vectors (packed intoX \u2208RN\u00d7D): Q = XWQ, K = XWK, V = XWV, using linear transformationsWQ, WK, WV with the constraint k = N, meaning that the attention is in be-tween all the input vectors.Finally, Multi-head self-attention layer (MSA) is de\ufb01ned by considering h at-tention \u201cheads\u201d, ie h self-attention functions applied to the input. Each headprovides a sequence of size N \u00d7 d.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0009",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "Each headprovides a sequence of size N \u00d7 d. These h sequences are rearranged into aN \u00d7 dh sequence that is reprojected by a linear layer into N \u00d7 D.Transformer block for images.To get a full transformer block as in [52], weadd a Feed-Forward Network (FFN) on top of the MSA layer. This FFN iscomposed of two linear layers separated by a GeLu activation [23]. The \ufb01rstlinear layer expands the dimension from D to 4D, and the second layer reducesthe dimension from 4D back to D. Both MSA and FFN are operating as residualoperators thank to skip-connections, and with a layer normalization [3].In order to get a transformer to process images, our work builds upon theViT model [15]. It is a simple and elegant architecture that processes inputimages as if they were a sequence of input tokens. The \ufb01xed-size input RGBimage is decomposed into a batch of N patches of a \ufb01xed size of 16 \u00d7 16 pixels(N = 14 \u00d7 14). Each patch is projected with a linear layer that conserves itsoverall dimension 3 \u00d7 16 \u00d7 16 = 768.The transformer block described above is invariant to the order of the patchembeddings, and thus does not consider their relative position.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0010",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "The positionalinformation is incorporated as \ufb01xed [52] or trainable [18] positional embed-dings. They are added before the \ufb01rst transformer block to the patch tokens,which are then fed to the stack of transformer blocks.The class tokenis a trainable vector, appended to the patch tokens before the\ufb01rst layer, that goes through the transformer layers, and is then projected witha linear layer to predict the class. This class token is inherited from NLP [14],and departs from the typical pooling layers used in computer vision to predictthe class. The transformer thus process batches of (N + 1) tokens of dimensionD, of which only the class vector is used to predict the output. This architectureforces the self-attention to spread information between the patch tokens andthe class token: at training time the supervision signal comes only from theclass embedding, while the patch tokens are the model\u2019s only variable input.Fixing the positional encoding across resolutions.Touvron et al. [50] showthat it is desirable to use a lower training resolution and \ufb01ne-tune the networkat the larger resolution. This speeds up the full training and improves the accu-racy under prevailing data augmentation schemes. When increasing the reso-lution of an input image, we keep the patch size the same, therefore the numberN of input patches does change.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0011",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "This speeds up the full training and improves the accu-racy under prevailing data augmentation schemes. When increasing the reso-lution of an input image, we keep the patch size the same, therefore the numberN of input patches does change. Due to the architecture of transformer blocksand the class token, the model and classi\ufb01er do not need to be modi\ufb01ed to pro-cess more tokens. In contrast, one needs to adapt the positional embeddings,because there are N of them, one for each patch. Dosovitskiy et al. [15] inter-polate the positional encoding when changing the resolution and demonstratethat this method works with the subsequent \ufb01ne-tuning stage.4Distillation through attentionIn this section we assume we have access to a strong image classi\ufb01er as ateacher model. It could be a convnet, or a mixture of classi\ufb01ers. We addressthe question of how to learn a transformer by exploiting this teacher. As wewill see in Section 5 by comparing the trade-off between accuracy and imagethroughput, it can be bene\ufb01cial to replace a convolutional neural network bya transformer.",
+      "token_count": 249
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0012",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "As wewill see in Section 5 by comparing the trade-off between accuracy and imagethroughput, it can be bene\ufb01cial to replace a convolutional neural network bya transformer. This section covers two axes of distillation: hard distillationversus soft distillation, and classical distillation versus the distillation token.Soft distillation[24, 54] minimizes the Kullback-Leibler divergence betweenthe softmax of the teacher and the softmax of the student model.Let Zt be the logits of the teacher model, Zs the logits of the student model.We denote by \u03c4 the temperature for the distillation, \u03bb the coef\ufb01cient balanc-ing the Kullback\u2013Leibler divergence loss (KL) and the cross-entropy (LCE) onground truth labels y, and \u03c8 the softmax function. The distillation objective isLglobal = (1 \u2212\u03bb)LCE(\u03c8(Zs), y) + \u03bb\u03c4 2KL(\u03c8(Zs/\u03c4), \u03c8(Zt/\u03c4)).(2)Hard-label distillation.We introduce a variant of distillation where we takethe hard decision of the teacher as a true label.",
+      "token_count": 248
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0013",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "Let yt = argmaxcZt(c) be thehard decision of the teacher, the objective associated with this hard-label distil-lation is:LhardDistillglobal= 12LCE(\u03c8(Zs), y) + 12LCE(\u03c8(Zs), yt).(3)For a given image, the hard label associated with the teacher may changedepending on the speci\ufb01c data augmentation. We will see that this choice isbetter than the traditional one, while being parameter-free and conceptuallysimpler: The teacher prediction yt plays the same role as the true label y.Note also that the hard labels can also be converted into soft labels withlabel smoothing [47], where the true label is considered to have a probabilityof 1 \u2212\u03b5, and the remaining \u03b5 is shared across the remaining classes. We \ufb01x thisparameter to \u03b5 = 0.1 in our all experiments that use true labels.FFNself-attentionclasstokentokenpatchtokensdistillationDistillation token.We now focus on our proposal, which is illustrated inFigure 2. We add a new token, the distillation token, to the initial embeddings(patches and class token). Our distillation token is used similarly as the classtoken: it interacts with other embeddings through self-attention, and is outputby the network after the last layer. Its target objective is given by the distillationcomponent of the loss.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0014",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "Our distillation token is used similarly as the classtoken: it interacts with other embeddings through self-attention, and is outputby the network after the last layer. Its target objective is given by the distillationcomponent of the loss. The distillation embedding allows our model to learnfrom the output of the teacher, as in a regular distillation, while remainingcomplementary to the class embedding.Interestingly, we observe that the learned class and distillation tokens con-verge towards different vectors: the average cosine similarity between thesetokens equal to 0.06. As the class and distillation embeddings are computedat each layer, they gradually become more similar through the network, all theway through the last layer at which their similarity is high (cos=0.93), but stilllower than 1. This is expected since as they aim at producing targets that aresimilar but not identical.We veri\ufb01ed that our distillation token adds something to the model, com-pared to simply adding an additional class token associated with the same tar-get label: instead of a teacher pseudo-label, we experimented with a trans-former with two class tokens. Even if we initialize them randomly and inde-pendently, during training they converge towards the same vector (cos=0.999),and the output embedding are also quasi-identical. This additional class tokendoes not bring anything to the classi\ufb01cation performance.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0015",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "This additional class tokendoes not bring anything to the classi\ufb01cation performance. In contrast, our dis-tillation strategy provides a signi\ufb01cant improvement over a vanilla distillationbaseline, as validated by our experiments in Section 5.2.Fine-tuning with distillation.We use both the true label and teacher predic-tion during the \ufb01ne-tuning stage at higher resolution. We use a teacher with thesame target resolution, typically obtained from the lower-resolution teacher bythe method of Touvron et al [50]. We have also tested with true labels only butthis reduces the bene\ufb01t of the teacher and leads to a lower performance.Classi\ufb01cation with our approach: joint classi\ufb01ers.At test time, both theclass or the distillation embeddings produced by the transformer are associ-ated with linear classi\ufb01ers and able to infer the image label. Yet our referentmethod is the late fusion of these two separate heads, for which we add thesoftmax output by the two classi\ufb01ers to make the prediction. We evaluate thesethree options in Section 5.5ExperimentsThis section presents a few analytical experiments and results. We \ufb01rst discussour distillation strategy.",
+      "token_count": 255
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0016",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "We evaluate thesethree options in Section 5.5ExperimentsThis section presents a few analytical experiments and results. We \ufb01rst discussour distillation strategy. Then we comparatively analyze the ef\ufb01ciency andaccuracy of convnets and vision transformers.5.1Transformer modelsAs mentioned earlier, our architecture design is identical to the one proposedby Dosovitskiy et al. [15] with no convolutions. Our only differences are thetraining strategies, and the distillation token. Also we do not use a MLP headfor the pre-training but only a linear classi\ufb01er. To avoid any confusion, we referto the results obtained in the prior work by ViT, and pre\ufb01x ours by DeiT. If notspeci\ufb01ed, DeiT refers to our referent model DeiT-B, which has the same archi-tecture as ViT-B. When we \ufb01ne-tune DeiT at a larger resolution, we append theresulting operating resolution at the end, e.g, DeiT-B\u2191384. Last, when usingour distillation procedure, we identify it with an alembic sign as DeiT\u2697.The parameters of ViT-B (and therefore of DeiT-B) are \ufb01xed as D = 768,h = 12 and d = D/h = 64.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0017",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "We introduce two smaller models, namely DeiT-Sand DeiT-Ti, for which we change the number of heads, keeping d \ufb01xed. Table 1summarizes the models that we consider in our paper.ModelViT modelembedding#heads#layers#paramstrainingthroughputdimensionresolution(im/sec)DeiT-TiN/A1923125M2242536DeiT-SN/A38461222M224940DeiT-BViT-B768121286M224292TeacherStudent: DeiT-B \u2697Modelsacc.pretrain\u2191384DeiT-B81.881.983.1RegNetY-4GF80.082.783.6RegNetY-8GF81.782.783.8RegNetY-12GF82.483.184.1RegNetY-16GF82.983.184.25.2DistillationOur distillation method produces a vision transformer that becomes on parwith the best convnets in terms of the trade-off between accuracy and through-put, see Table 5. Interestingly, the distilled model outperforms its teacher interms of the trade-off between accuracy and throughput. Our best model onImageNet-1k is 85.2% top-1 accuracy outperforms the best Vit-B model pre-trained on JFT-300M at resolution 384 (84.15%).",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0018",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "Our best model onImageNet-1k is 85.2% top-1 accuracy outperforms the best Vit-B model pre-trained on JFT-300M at resolution 384 (84.15%). For reference, the current stateof the art of 88.55% achieved with extra training data was obtained by the ViT-H model (600M parameters) trained on JFT-300M at resolution 512. Hereafterwe provide several analysis and observations.Convnets teachers.We have observed that using a convnet teacher gives bet-ter performance than using a transformer. Table 2 compares distillation resultswith different teacher architectures. The fact that the convnet is a better teacheris probably due to the inductive bias inherited by the transformers throughdistillation, as explained in Abnar et al. [1]. In all of our subsequent distilla-tion experiments the default teacher is a RegNetY-16GF [40] (84M parameters)that we trained with the same data and same data-augmentation as DeiT.",
+      "token_count": 215
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0019",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "In all of our subsequent distilla-tion experiments the default teacher is a RegNetY-16GF [40] (84M parameters)that we trained with the same data and same data-augmentation as DeiT. Thisteacher reaches 82.9% top-1 accuracy on ImageNet.SupervisionImageNet top-1 (%)method \u2193labelteacherTi 224S 224B 224B\u2191384DeiT\u2013 no distillation72.279.881.883.1DeiT\u2013 usual distillationsoft72.279.881.883.2DeiT\u2013 hard distillationhard74.380.983.084.0DeiT\u2697: class embeddinghard73.980.983.084.2DeiT\u2697: distil. embeddinghard74.681.183.184.4DeiT\u2697: class+distillationhard74.581.283.484.5Comparison of distillation methods.We compare the performance of differ-ent distillation strategies in Table 3. Hard distillation signi\ufb01cantly outperformssoft distillation for transformers, even when using only a class token: hard dis-tillation reaches 83.0% at resolution 224\u00d7224, compared to the soft distillationaccuracy of 81.8%.",
+      "token_count": 269
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0020",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "Our distillation strategy from Section 4 further improvesthe performance, showing that the two tokens provide complementary infor-mation useful for classi\ufb01cation: the classi\ufb01er on the two tokens is signi\ufb01cantlybetter than the independent class and distillation classi\ufb01ers, which by them-selves already outperform the distillation baseline.The distillation token gives slightly better results than the class token. Itis also more correlated to the convnets prediction. This difference in perfor-mance is probably due to the fact that it bene\ufb01ts more from the inductive biasof convnets. We give more details and an analysis in the next paragraph. Thedistillation token has an undeniable advantage for the initial training.Agreement with the teacher & inductive bias?As discussed above, the ar-chitecture of the teacher has an important impact. Does it inherit existing in-ductive bias that would facilitate the training? While we believe it dif\ufb01cult toformally answer this question, we analyze in Table 4 the decision agreementbetween the convnet teacher, our image transformer DeiT learned from labelsonly, and our transformer DeiT\u2697.Our distilled model is more correlated to the convnet than with a trans-former learned from scratch.",
+      "token_count": 264
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0021",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "As to be expected, the classi\ufb01er associated withthe distillation embedding is closer to the convnet that the one associated withthe class embedding, and conversely the one associated with the class embed-ding is more similar to DeiT learned without distillation. Unsurprisingly, thejoint class+distil classi\ufb01er offers a middle ground.groundtruthno distillationDeiT\u2697student (of the convnet)convnetDeiTclassdistillationDeiT\u2697groundtruth0.0000.1710.1820.1700.1690.166convnet (RegNetY)0.1710.0000.1330.1120.1000.102DeiT0.1820.1330.0000.1090.1100.107DeiT\u2697\u2013 class only0.1700.1120.1090.0000.0500.033DeiT\u2697\u2013 distil. only0.1690.1000.1100.0500.0000.019DeiT\u2697\u2013 class+distil.0.1660.1020.1070.0330.0190.000Number of epochs.Increasing the number of epochs signi\ufb01cantly improvesthe performance of training with distillation, see Figure 3.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0022",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "With 300 epochs,our distilled network DeiT-B\u2697is already better than DeiT-B. But while for thelatter the performance saturates with longer schedules, our distilled networkclearly bene\ufb01ts from a longer training time.5.3Ef\ufb01ciency vs accuracy: a comparative study with convnetsIn the literature, the image classi\ufb01caton methods are often compared as a com-promise between accuracy and another criterion, such as FLOPs, number ofparameters, size of the network, etc.We focus in Figure 1 on the tradeoff between the throughput (images pro-cessed per second) and the top-1 classi\ufb01cation accuracy on ImageNet. We focuson the popular state-of-the-art Ef\ufb01cientNet convnet, which has bene\ufb01ted fromyears of research on convnets and was optimized by architecture search on theImageNet validation set.Our method DeiT is slightly below Ef\ufb01cientNet, which shows that we havealmost closed the gap between vision transformers and convnets when trainingwith Imagenet only. These results are a major improvement (+6.3% top-1 in acomparable setting) over previous ViT models trained on Imagenet1k only [15].Furthermore, when DeiT bene\ufb01ts from the distillation from a relatively weakerRegNetY to produce DeiT\u2697, it outperforms Ef\ufb01cientNet.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0023",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "It also outperformsby 1% (top-1 acc.) the Vit-B model pre-trained on JFT300M at resolution 384(85.2% vs 84.15%), while being signi\ufb01cantly faster to train.Table 5 reports the numerical results in more details and additional evalu-ations on ImageNet V2 and ImageNet Real, that have a test set distinct fromthe ImageNet validation, which reduces over\ufb01tting on the validation set.",
+      "token_count": 101
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0024",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "Ourresults show that DeiT-B\u2697and DeiT-B\u2697\u2191384 outperform, by some margin, thestate of the art on the trade-off between accuracy and inference time on GPU.image throughputImNetRealV2Network#param.size(image/s)top-1top-1top-1ConvnetsResNet-18 [21]12M22424458.469.877.357.1ResNet-50 [21]25M22421226.176.282.563.3ResNet-101 [21]45M2242753.677.483.765.7ResNet-152 [21]60M2242526.478.384.167.0RegNetY-4GF [40]\u22c621M22421156.780.086.469.4RegNetY-8GF [40]\u22c639M2242591.681.787.470.8RegNetY-16GF [40]\u22c684M2242334.782.988.172.4Ef\ufb01cientNet-B0 [48]5M22422694.377.183.564.3Ef\ufb01cientNet-B1 [48]8M24021662.579.184.966.9Ef\ufb01cientNet-B2 [48]9M26021255.780.185.968.8Ef\ufb01cientNet-B3 [48]12M3002732.181.686.870.6Ef\ufb01cientNet-B4 [48]19M3802349.482.988.072.3Ef\ufb01cientNet-B5 [48]30M4562169.183.688.373.6Ef\ufb01cientNet-B6 [48]43M528296.984.088.873.9Ef\ufb01cientNet-B7 [48]66M600255.184.3Ef\ufb01cientNet-B5 RA [12]30M456296.983.7Ef\ufb01cientNet-B7 RA [12]66M600255.184.7KDforAA-B887M800225.285.8TransformersViT-B/16 [15]86M384285.977.983.6ViT-L/16 [15]307M384227.376.582.2DeiT-Ti5M22422536.572.280.160.4DeiT-S22M2242940.479.885.768.5DeiT-B86M2242292.381.886.771.5DeiT-B\u219138486M384285.983.187.772.4DeiT-Ti\u26976M22422529.574.582.162.9DeiT-S\u269722M2242936.281.286.870.0DeiT-B\u269787M2242290.983.488.373.2DeiT-Ti\u2697/ 1000 epochs6M22422529.576.683.965.4DeiT-S\u2697/ 1000 epochs22M2242936.282.687.871.7DeiT-B\u2697/ 1000 epochs87M2242290.984.288.773.9DeiT-B\u2697\u219138487M384285.884.589.074.8DeiT-B\u2697\u2191384 / 1000 epochs87M384285.885.289.375.2\u2697\u2191\u26975.4Transfer learning: Performance on downstr",
+      "token_count": 748
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0025",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "We evaluated this on transfer learning tasks by \ufb01ne-tuningon the datasets in Table 6. Table 7 compares DeiT transfer learning results tothose of ViT [15] and state of the art convolutional architectures [48]. DeiT ison par with competitive convnet models, which is in line with our previousconclusion on ImageNet.Comparison vs training from scratch.We investigate the performance whentraining from scratch on a small dataset, without Imagenet pre-training.",
+      "token_count": 99
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0026",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "DeiT ison par with competitive convnet models, which is in line with our previousconclusion on ImageNet.Comparison vs training from scratch.We investigate the performance whentraining from scratch on a small dataset, without Imagenet pre-training. Weget the following results on the small CIFAR-10, which is small both w.r.t. thenumber of images and labels:MethodRegNetY-16GFDeiT-BDeiT-B\u2697Top-198.097.598.5For this experiment, we tried we get as close as possible to the Imagenetpre-training counterpart, meaning that (1) we consider longer training sched-DatasetTrain sizeTest size#classesImageNet [42]1,281,16750,0001000iNaturalist 2018 [26]437,51324,4268,142iNaturalist 2019 [27]265,2403,0031,010Flowers-102 [38]2,0406,149102Stanford Cars [30]8,1448,041196CIFAR-100 [31]50,00010,000100CIFAR-10 [31]50,00010,00010ModelImageNetCIFAR-10CIFAR-100FlowersCarsiNat-18iNat-19im/secGra\ufb01t ResNet-50 [49]79.698.292.569.875.91226.1Gra\ufb01t RegNetY-8GF [49]99.094.076.880.0591.6ResNet-152 [10]69.1526.3Ef\ufb01cientNet-B7 [48]84.398.991.798.894.755.1ViT-B/32 [15]73.497.886.385.4394.5ViT-B/16 [15]77.998.187.189.585.9ViT-L/32 [15]71.297.987.186.4124.1ViT-L/16 [15]76.597.986.489.727.3DeiT-B81.899.190.898.492.173.277.7292.3DeiT-B\u219138483.199.190.898.593.379.581.485.9DeiT-B\u269783.499.191.398.892.973.778.4290.9DeiT-B\u2697\u219138484.499.291.498.993.980.183.085.9ules (up to 7200 epochs, which corresponds to 300 Imagenet epochs) so thatthe network has been fed a comparable number of images in total; (2) we re-scale images to 224 \u00d7 224 to ensure that we have the same augmentation.",
+      "token_count": 590
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0027",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "Theresults are not as good as with Imagenet pre-training (98.5% vs 99.1%), whichis expected since the network has seen a much lower diversity. However theyshow that it is possible to learn a reasonable transformer on CIFAR-10 only.6Training details & ablationIn this section we discuss the DeiT training strategy to learn vision transform-ers in a data-ef\ufb01cient manner. We build upon PyTorch [39] and the timm li-brary [55]2. We provide hyper-parameters as well as an ablation study in whichwe analyze the impact of each choice.Initialization and hyper-parameters.Transformers are relatively sensitive toinitialization. After testing several options in preliminary experiments, some2The timm implementation already included a training procedure that improved the accuracyof ViT-B from 77.91% to 79.35% top-1, and trained on Imagenet-1k with a 8xV100 GPU machine.top-1 accuracyExp. Moving Avg.Rand-AugmentRepeated Aug.pre-trained 2242\ufb01ne-tuned 3842Pre-trainingFine-tuningStoch.",
+      "token_count": 243
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0028",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "Moving Avg.Rand-AugmentRepeated Aug.pre-trained 2242\ufb01ne-tuned 3842Pre-trainingFine-tuningStoch. DepthAutoAugCutMixErasingDropoutMixupAblation on \u2193none: DeiT-Badamwadamw81.8 \u00b10.283.1 \u00b10.1optimizerSGDadamw74.577.3adamwSGD81.883.1adamwadamw79.680.4adamwadamw81.281.9adamwadamw78.779.8adamwadamw80.080.6adamwadamw75.876.7dataaugmentationadamwadamw4.3*0.1adamwadamw3.4*0.1adamwadamw76.577.4adamwadamw81.383.1adamwadamw81.983.1regularizationof them not converging, we follow the recommendation of Hanin and Rol-nick [20] to initialize the weights with a truncated normal distribution.Table 9 indicates the hyper-parameters that we use by default at trainingtime for all our experiments, unless stated otherwise. For distillation we followthe recommendations from Cho et al. [9] to select the parameters \u03c4 and \u03bb.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0029",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "For distillation we followthe recommendations from Cho et al. [9] to select the parameters \u03c4 and \u03bb. Wetake the typical values \u03c4 = 3.0 and \u03bb = 0.1 for the usual (soft) distillation.Data-Augmentation.Compared to models that integrate more priors (suchas convolutions), transformers require a larger amount of data. Thus, in orderto train with datasets of the same size, we rely on extensive data augmentation.We evaluate different types of strong data augmentation, with the objective toreach a data-ef\ufb01cient training regime.Auto-Augment [11], Rand-Augment[12], and random erasing [62] im-prove the results. For the two latter we use the timm [55] customizations, andafter ablation we choose Rand-Augment instead of AutoAugment. Overall ourexperiments con\ufb01rm that transformers require a strong data augmentation: al-most all the data-augmentation methods that we evaluate prove to be useful.One exception is dropout, which we exclude from our training procedure.MethodsViT-B [15]DeiT-BEpochs300300Batch size40961024OptimizerAdamWAdamWlearning rate0.0030.0005 \u00d7 batchsize512Learning rate decaycosinecosineWeight decay0.30.05Warmup epochs3.45Label smoothing \u03b50.1Dropout0.1Stoch.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0030",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "Depth0.1Repeated AugGradient Clip.Rand Augment9/0.5Mixup prob.0.8Cutmix prob.1.0Erasing prob.0.25Regularization & Optimizers.We have considered different optimizers andcross-validated different learning rates and weight decays. Transformers aresensitive to the setting of optimization hyper-parameters. Therefore, duringcross-validation, we tried 3 different learning rates (5.10\u22124, 3.10\u22124, 5.10\u22125) and3 weight decay (0.03, 0.04, 0.05). We scale the learning rate according to thebatch size with the formula: lrscaled =lr512 \u00d7 batchsize, similarly to Goyal etal. [19] except that we use 512 instead of 256 as the base value.The best results use the AdamW optimizer with the same learning rates asViT [15] but with a much smaller weight decay, as the weight decay reportedin the paper hurts the convergence in our setting.We have employed stochastic depth [29], which facilitates the convergenceof transformers, especially deep ones [16, 17]. For vision transformers, theywere \ufb01rst adopted in the training procedure by Wightman [55]. Regularizationlike Mixup [60] and Cutmix [59] improve performance.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0031",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "For vision transformers, theywere \ufb01rst adopted in the training procedure by Wightman [55]. Regularizationlike Mixup [60] and Cutmix [59] improve performance. We also use repeatedaugmentation [4, 25], which provides a signi\ufb01cant boost in performance and isone of the key ingredients of our proposed training procedure.Exponential Moving Average (EMA).We evaluate the EMA of our networkobtained after training.",
+      "token_count": 94
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0032",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "There are small gains, which vanish after \ufb01ne-tuning:the EMA model has an edge of is 0.1 accuracy points, but when \ufb01ne-tuned thetwo models reach the same (improved) performance.Fine-tuning at different resolution.We adopt the \ufb01ne-tuning procedure fromTouvron et al. [51]: our schedule, regularization and optimization procedureare identical to that of FixEf\ufb01cientNet but we keep the training-time data aug-image throughputImagenet [42]Real [5]V2 [41]size(image/s)acc. top-1acc. top-1acc. top-11602609.3179.984.867.62242291.0581.886.771.53202134.1382.787.271.9384285.8783.187.772.4mentation (contrary to the dampened data augmentation of Touvron et al. [51]).We also interpolate the positional embeddings: In principle any classical imagescaling technique, like bilinear interpolation, could be used. However, a bilin-ear interpolation of a vector from its neighbors reduces its \u21132-norm comparedto its neighbors. These low-norm vectors are not adapted to the pre-trainedtransformers and we observe a signi\ufb01cant drop in accuracy if we employ usedirectly without any form of \ufb01ne-tuning.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0033",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "These low-norm vectors are not adapted to the pre-trainedtransformers and we observe a signi\ufb01cant drop in accuracy if we employ usedirectly without any form of \ufb01ne-tuning. Therefore we adopt a bicubic interpo-lation that approximately preserves the norm of the vectors, before \ufb01ne-tuningthe network with either AdamW [36] or SGD. These optimizers have a similarperformance for the \ufb01ne-tuning stage, see Table 8.By default and similar to ViT [15] we train DeiT models with at resolution224 and we \ufb01ne-tune at resolution 384. We detail how to do this interpolationin Section 3. However, in order to measure the in\ufb02uence of the resolution wehave \ufb01netuned DeiT at different resolutions. We report these results in Table 10.Training time.A typical training of 300 epochs takes 37 hours with 2 nodesor 53 hours on a single node for the DeiT-B.As a comparison point, a similartraining with a RegNetY-16GF [40] (84M parameters) is 20% slower. DeiT-S andDeiT-Ti are trained in less than 3 days on 4 GPU. Then, optionally we \ufb01ne-tunethe model at a larger resolution.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0034",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "DeiT-S andDeiT-Ti are trained in less than 3 days on 4 GPU. Then, optionally we \ufb01ne-tunethe model at a larger resolution. This takes 20 hours on a single node (8 GPU)to produce a FixDeiT-B model at resolution 384\u00d7384, which corresponds to 25epochs. Not having to rely on batch-norm allows one to reduce the batch sizewithout impacting performance, which makes it easier to train larger models.Note that, since we use repeated augmentation [4, 25] with 3 repetitions, weonly see one third of the images during a single epoch3.7ConclusionIn this paper, we have introduced DeiT, which are image transformers thatdo not require very large amount of data to be trained, thanks to improved3Formally it means that we have 100 epochs, but each is 3x longer because of the repeatedaugmentations. We prefer to refer to this as 300 epochs in order to have a direct comparison on theeffective training time with and without repeated augmentation.training and in particular a novel distillation procedure. Convolutional neu-ral networks have optimized, both in terms of architecture and optimizationduring almost a decade, including through extensive architecture search thatis prone to over\ufb01ting, as it is the case for instance for Ef\ufb01cientNets [51].",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0035",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "ForDeiT we have started the existing data augmentation and regularization strate-gies pre-existing for convnets, not introducing any signi\ufb01cant architectural be-yond our novel distillation token. Therefore it is likely that research on data-augmentation more adapted or learned for transformers will bring further gains.Therefore, considering our results, where image transformers are on parwith convnets already, we believe that they will rapidly become a method ofchoice considering their lower memory footprint for a given accuracy.We provide an open-source implementation of our method. It is availableat https://github.com/facebookresearch/deit.AcknowledgementsMany thanks to Ross Wightman for sharing his ViT code and bootstrappingtraining method with the community, as well as for valuable feedback thathelped us to \ufb01x different aspects of this paper. Thanks to Vinicius Reis, MannatSingh, Ari Morcos, Mark Tygert, Gabriel Synnaeve, and other colleagues atFacebook for brainstorming and some exploration on this axis. Thanks to RossGirshick and Piotr Dollar for constructive comments.References[1] Samira Abnar, Mostafa Dehghani, and Willem Zuidema. Transferring inductivebiases through knowledge distillation. arXiv preprint arXiv:2006.00555, 2020.[2] Jie Hu andLi Shen and Gang Sun.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0036",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "Transferring inductivebiases through knowledge distillation. arXiv preprint arXiv:2006.00555, 2020.[2] Jie Hu andLi Shen and Gang Sun. Squeeze-and-excitation networks. arXiv preprintarXiv:1709.01507, 2017.[3] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton. Layer normalization.arXiv preprint arXiv:1607.06450, 2016.[4] Maxim Berman, Herv\u00b4e J\u00b4egou, Andrea Vedaldi, Iasonas Kokkinos, and MatthijsDouze. Multigrain: a uni\ufb01ed image embedding for classes and instances. arXivpreprint arXiv:1902.05509, 2019.[5] Lucas Beyer, Olivier J. H\u00b4enaff, Alexander Kolesnikov, Xiaohua Zhai, and Aaronvan den Oord. Are we done with imagenet? arXiv preprint arXiv:2006.07159, 2020.[6] Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, AlexanderKirillov, and Sergey Zagoruyko. End-to-end object detection with transformers.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0037",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "End-to-end object detection with transformers. InEuropean Conference on Computer Vision, 2020.[7] Mark Chen, Alec Radford, Rewon Child, Jeffrey Wu, Heewoo Jun, David Luan,and Ilya Sutskever. Generative pretraining from pixels. In International Conferenceon Machine Learning, 2020.[8] Yen-Chun Chen, Linjie Li, Licheng Yu, A. E. Kholy, Faisal Ahmed, Zhe Gan, Y.Cheng, and Jing jing Liu. Uniter: Universal image-text representation learning. InEuropean Conference on Computer Vision, 2020.[9] J. H. Cho and B. Hariharan. On the ef\ufb01cacy of knowledge distillation. InternationalConference on Computer Vision, 2019.[10] P. Chu, Xiao Bian, Shaopeng Liu, and Haibin Ling. Feature space augmentationfor long-tailed data. arXiv preprint arXiv:2008.03673, 2020.[11] Ekin Dogus Cubuk, Barret Zoph, Dandelion Man\u00b4e, Vijay Vasudevan, and Quoc V.Le.Autoaugment: Learning augmentation policies from data.arXiv preprintarXiv:1805.09501, 2018.[12] Ekin D.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0038",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "Cubuk, Barret Zoph, Jonathon Shlens, and Quoc V. Le. Randaugment:Practical automated data augmentation with a reduced search space. arXiv preprintarXiv:1909.13719, 2019.[13] Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li, and Li Fei-Fei. Imagenet:A large-scale hierarchical image database. In Conference on Computer Vision andPattern Recognition, pages 248\u2013255, 2009.[14] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. Bert: Pre-training of deep bidirectional transformers for language understanding.arXivpreprint arXiv:1810.04805, 2018.[15] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xi-aohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, GeorgHeigold, Sylvain Gelly, et al. An image is worth 16x16 words: Transformers forimage recognition at scale. arXiv preprint arXiv:2010.11929, 2020.[16] Angela Fan, Edouard Grave, and Armand Joulin.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0039",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Reducing transformer depthon demand with structured dropout. arXiv preprint arXiv:1909.11556, 2019. ICLR2020.[17] Angela Fan, Pierre Stock, Benjamin Graham, Edouard Grave, R\u00b4emi Gribonval,Herv\u00b4e J\u00b4egou, and Armand Joulin. Training with quantization noise for extrememodel compression. arXiv preprint arXiv:2004.07320, 2020.[18] Jonas Gehring, Michael Auli, David Grangier, Denis Yarats, and Yann N. Dauphin.Convolutional sequence to sequence learning.arXiv preprint arXiv:1705.03122,2017.[19] Priya Goyal, Piotr Doll\u00b4ar, Ross B. Girshick, Pieter Noordhuis, Lukasz Wesolowski,Aapo Kyrola, Andrew Tulloch, Yangqing Jia, and Kaiming He. Accurate, largeminibatch sgd: Training imagenet in 1 hour. arXiv preprint arXiv:1706.02677, 2017.[20] Boris Hanin and David Rolnick. How to start training: The effect of initializationand architecture. NIPS, 31, 2018.[21] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0040",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "How to start training: The effect of initializationand architecture. NIPS, 31, 2018.[21] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learningfor image recognition. In Conference on Computer Vision and Pattern Recognition,June 2016.[22] Tong He, Zhi Zhang, Hang Zhang, Zhongyue Zhang, Junyuan Xie, and Mu Li. Bagof tricks for image classi\ufb01cation with convolutional neural networks. In Conferenceon Computer Vision and Pattern Recognition, 2019.[23] Dan Hendrycks and Kevin Gimpel.Gaussian error linear units (gelus).arXivpreprint arXiv:1606.08415, 2016.[24] Geoffrey E. Hinton, Oriol Vinyals, and J. Dean. Distilling the knowledge in a neuralnetwork. arXiv preprint arXiv:1503.02531, 2015.[25] Elad Hoffer, Tal Ben-Nun, Itay Hubara, Niv Giladi, Torsten Hoe\ufb02er, and DanielSoudry. Augment your batch: Improving generalization through instance repeti-tion.",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0041",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "Augment your batch: Improving generalization through instance repeti-tion. In Conference on Computer Vision and Pattern Recognition, 2020.[26] Grant Van Horn, Oisin Mac Aodha, Yang Song, Alexander Shepard, HartwigAdam, Pietro Perona, and Serge J. Belongie. The inaturalist challenge 2018 dataset.arXiv preprint arXiv:1707.06642, 2018.[27] Grant Van Horn, Oisin Mac Aodha, Yang Song, Alexander Shepard, HartwigAdam, Pietro Perona, and Serge J. Belongie. The inaturalist challenge 2019 dataset.arXiv preprint arXiv:1707.06642, 2019.[28] H. Hu, Jiayuan Gu, Zheng Zhang, Jifeng Dai, and Y. Wei. Relation networks forobject detection. Conference on Computer Vision and Pattern Recognition, 2018.[29] Gao Huang, Yu Sun, Zhuang Liu, Daniel Sedra, and Kilian Q. Weinberger. Deepnetworks with stochastic depth. In European Conference on Computer Vision, 2016.[30] Jonathan Krause, Michael Stark, Jia Deng, and Li Fei-Fei. 3d object representationsfor \ufb01ne-grained categorization.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0042",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "In European Conference on Computer Vision, 2016.[30] Jonathan Krause, Michael Stark, Jia Deng, and Li Fei-Fei. 3d object representationsfor \ufb01ne-grained categorization. In 4th International IEEE Workshop on 3D Represen-tation and Recognition (3dRR-13), 2013.[31] Alex Krizhevsky. Learning multiple layers of features from tiny images. Technicalreport, CIFAR, 2009.[32] Alex Krizhevsky, Ilya Sutskever, and Geoffrey E. Hinton. Imagenet classi\ufb01cationwith deep convolutional neural networks. In NIPS, 2012.[33] Liunian Harold Li, Mark Yatskar, Da Yin, Cho-Jui Hsieh, and Kai-Wei Chang. Visu-alBERT: a simple and performant baseline for vision and language. arXiv preprintarXiv:1908.03557, 2019.[34] Xiang Li, Wenhai Wang, Xiaolin Hu, and Jian Yang. Selective kernel networks.Conference on Computer Vision and Pattern Recognition, 2019.[35] Francesco Locatello, Dirk Weissenborn, Thomas Unterthiner, Aravindh Mahen-dran, Georg Heigold, Jakob Uszkoreit, A. Dosovitskiy, and Thomas Kipf.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0043",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "Dosovitskiy, and Thomas Kipf. Object-centric learning with slot attention. arXiv preprint arXiv:2006.15055, 2020.[36] I. Loshchilov and F. Hutter. Fixing weight decay regularization in adam. arXivpreprint arXiv:1711.05101, 2017.[37] Jiasen Lu, Dhruv Batra, D. Parikh, and Stefan Lee.Vilbert: Pretraining task-agnostic visiolinguistic representations for vision-and-language tasks. In NIPS,2019.[38] M-E. Nilsback and A. Zisserman. Automated \ufb02ower classi\ufb01cation over a largenumber of classes. In Proceedings of the Indian Conference on Computer Vision, Graph-ics and Image Processing, 2008.[39] Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, GregoryChanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, et al. Py-torch: An imperative style, high-performance deep learning library. In Advances inneural information processing systems, pages 8026\u20138037, 2019.[40] Ilija Radosavovic, Raj Prateek Kosaraju, Ross B.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0044",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "In Advances inneural information processing systems, pages 8026\u20138037, 2019.[40] Ilija Radosavovic, Raj Prateek Kosaraju, Ross B. Girshick, Kaiming He, and PiotrDoll\u00b4ar. Designing network design spaces. Conference on Computer Vision and PatternRecognition, 2020.[41] B. Recht, Rebecca Roelofs, L. Schmidt, and V. Shankar. Do imagenet classi\ufb01ersgeneralize to imagenet? arXiv preprint arXiv:1902.10811, 2019.[42] Olga Russakovsky, Jia Deng, Hao Su, Jonathan Krause, Sanjeev Satheesh, SeanMa, Zhiheng Huang, Andrej Karpathy, Aditya Khosla, Michael Bernstein, Alexan-der C. Berg, and Li Fei-Fei. Imagenet large scale visual recognition challenge. In-ternational journal of Computer Vision, 2015.[43] Zhuoran Shen, Irwan Bello, Raviteja Vemulapalli, Xuhui Jia, and Ching-HuiChen.Global self-attention networks for image recognition.arXiv preprintarXiv:2010.03019, 2020.[44] K. Simonyan and A. Zisserman.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0045",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "Simonyan and A. Zisserman. Very deep convolutional networks for large-scaleimage recognition. In International Conference on Learning Representations, 2015.[45] C. Sun, A. Myers, Carl Vondrick, Kevin Murphy, and C. Schmid. Videobert: Ajoint model for video and language representation learning. Conference on ComputerVision and Pattern Recognition, 2019.[46] Chen Sun, Abhinav Shrivastava, Saurabh Singh, and Abhinav Gupta. Revisitingunreasonable effectiveness of data in deep learning era. In Proceedings of the IEEEinternational conference on computer vision, pages 843\u2013852, 2017.[47] Christian Szegedy, V. Vanhoucke, S. Ioffe, Jon Shlens, and Z. Wojna. Rethinkingthe inception architecture for computer vision. Conference on Computer Vision andPattern Recognition, 2016.[48] Mingxing Tan and Quoc V. Le. Ef\ufb01cientnet: Rethinking model scaling for convo-lutional neural networks. arXiv preprint arXiv:1905.11946, 2019.[49] Hugo Touvron, Alexandre Sablayrolles, M. Douze, M. Cord, and H. J\u00b4egou.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0046",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "Douze, M. Cord, and H. J\u00b4egou. Gra\ufb01t:Learning \ufb01ne-grained image representations with coarse labels.arXiv preprintarXiv:2011.12982, 2020.[50] Hugo Touvron, Andrea Vedaldi, Matthijs Douze, and Herve Jegou.Fixing thetrain-test resolution discrepancy. NIPS, 2019.[51] Hugo Touvron, Andrea Vedaldi, Matthijs Douze, and Herv\u00b4e J\u00b4egou.Fixing thetrain-test resolution discrepancy: Fixef\ufb01cientnet. arXiv preprint arXiv:2003.08237,2020.[52] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin. Attention is all you need.In NIPS, 2017.[53] X. Wang, Ross B. Girshick, A. Gupta, and Kaiming He. Non-local neural networks.Conference on Computer Vision and Pattern Recognition, 2018.[54] Longhui Wei, An Xiao, Lingxi Xie, Xin Chen, Xiaopeng Zhang, and Qi Tian. Cir-cumventing outliers of autoaugment with knowledge distillation.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0047",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "Cir-cumventing outliers of autoaugment with knowledge distillation. European Con-ference on Computer Vision, 2020.[55] Ross Wightman. Pytorch image models. https://github.com/rwightman/pytorch-image-models, 2019.[56] Bichen Wu, Chenfeng Xu, Xiaoliang Dai, Alvin Wan, Peizhao Zhang, MasayoshiTomizuka, Kurt Keutzer, and Peter Vajda. Visual transformers: Token-based imagerepresentation and processing for computer vision. arXiv preprint arXiv:2006.03677,2020.[57] Qizhe Xie, Eduard H. Hovy, Minh-Thang Luong, and Quoc V. Le.Self-training with noisy student improves imagenet classi\ufb01cation.arXiv preprintarXiv:1911.04252, 2019.[58] L. Yuan, F. Tay, G. Li, T. Wang, and Jiashi Feng. Revisit knowledge distillation:a teacher-free framework. Conference on Computer Vision and Pattern Recognition,2020.[59] Sangdoo Yun, Dongyoon Han, Seong Joon Oh, Sanghyuk Chun, Junsuk Choe, andYoungjoon Yoo.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2012.12877_chunk_0048",
+      "arxiv_id": "2012.12877",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "Conference on Computer Vision and Pattern Recognition,2020.[59] Sangdoo Yun, Dongyoon Han, Seong Joon Oh, Sanghyuk Chun, Junsuk Choe, andYoungjoon Yoo. Cutmix: Regularization strategy to train strong classi\ufb01ers withlocalizable features. arXiv preprint arXiv:1905.04899, 2019.[60] Hongyi Zhang, Moustapha Ciss\u00b4e, Yann N. Dauphin, and David Lopez-Paz. mixup:Beyond empirical risk minimization. arXiv preprint arXiv:1710.09412, 2017.[61] Hang Zhang, Chongruo Wu, Zhongyue Zhang, Yi Zhu, Zhi Zhang, Haibin Lin, YueSun, Tong He, Jonas Muller, R. Manmatha, Mu Li, and Alexander Smola. Resnest:Split-attention networks. arXiv preprint arXiv:2004.08955, 2020.[62] Zhun Zhong, Liang Zheng, Guoliang Kang, Shaozi Li, and Yi Yang. Random eras-ing data augmentation. In AAAI, 2020.",
+      "token_count": 262
+    }
+  ]
+}

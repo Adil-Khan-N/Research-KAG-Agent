@@ -1,0 +1,465 @@
+{
+  "arxiv_id": "2106.04560",
+  "title": "Scaling Vision Transformers",
+  "authors": [
+    "Xiaohua Zhai",
+    "Alexander Kolesnikov",
+    "Neil Houlsby",
+    "Lucas Beyer"
+  ],
+  "year": 2021,
+  "abstract": "Attention-based neural networks such as the Vision Transformer (ViT) have recently attained state-of-the-art results on many computer vision benchmarks. Scale is a primary ingredient in attaining excellent results, therefore, understanding a model's scaling properties is a key to designing future generations effectively. While the laws for scaling Transformer language models have been studied, it is unknown how Vision Transformers scale. To address this, we scale ViT models and data, both up and down, and characterize the relationships between error rate, data, and compute. Along the way, we refine the architecture and training of ViT, reducing memory consumption and increasing accuracy of the resulting models. As a result, we successfully train a ViT model with two billion parameters, which attains a new state-of-the-art on ImageNet of 90.45% top-1 accuracy. The model also performs well for few-shot transfer, for example, reaching 84.86% top-1 accuracy on ImageNet with only 10 examples per class.",
+  "categories": [
+    "cs.CV",
+    "cs.AI",
+    "cs.LG"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2106.04560v2",
+  "page_count": 31,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 55,
+  "chunks": [
+    {
+      "chunk_id": "2106.04560_chunk_0000",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "Scaling Vision TransformersXiaohua Zhai\u22c6, Alexander Kolesnikov\u22c6, Neil Houlsby, Lucas Beyer\u22c6Google Research, Brain Team, Z\u00fcrich{xzhai, akolesnikov, neilhoulsby, lbeyer}@google.comAbstractImageNet top-1 accuracyAttention-based neural networks such as the Vision Trans-former (ViT) have recently attained state-of-the-art resultson many computer vision benchmarks. Scale is a primaryingredient in attaining excellent results, therefore, under-standing a model\u2019s scaling properties is a key to designingfuture generations effectively. While the laws for scalingTransformer language models have been studied, it is un-known how Vision Transformers scale. To address this, wescale ViT models and data, both up and down, and character-ize the relationships between error rate, data, and compute.Along the way, we re\ufb01ne the architecture and training of ViT,reducing memory consumption and increasing accuracy ofthe resulting models. As a result, we successfully train aViT model with two billion parameters, which attains a newstate-of-the-art on ImageNet of 90.45% top-1 accuracy.",
+      "token_count": 248
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0001",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "As a result, we successfully train aViT model with two billion parameters, which attains a newstate-of-the-art on ImageNet of 90.45% top-1 accuracy. Themodel also performs well for few-shot transfer, for example,reaching 84.86% top-1 accuracy on ImageNet with only 10examples per class.Our ViT-GViT-HSimCLR v2BYOLDINO110525Examples per classtion tasks. In particular, we experiment with models rangingfrom \ufb01ve million to two billion parameters, datasets rangingfrom one million to three billion training images and com-pute budgets ranging from below one TPUv3 core-day tobeyond 10 000 core-days. Our main contribution is a char-acterization of the performance-compute frontier for ViTmodels, on two datasets.Along the way, we create an improved large-scale train-ing recipe. We investigate training hyper-parameters anddiscover subtle choices that make drastic improvements infew-shot transfer performance. The few-shot transfer evalua-tion protocol has also been adopted by previous large-scalepre-training efforts in NLP domain [6]. Speci\ufb01cally, wediscover that very strong L2 regularization, applied to the\ufb01nal linear prediction layer only, results in a learned visualrepresentation that has very strong few-shot transfer capabili-ties.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0002",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "Speci\ufb01cally, wediscover that very strong L2 regularization, applied to the\ufb01nal linear prediction layer only, results in a learned visualrepresentation that has very strong few-shot transfer capabili-ties. For example, with just a single example per class on theImageNet dataset (which has 1 000 classes), our best modelachieves 69.52% accuracy; and with 10 examples per classit attains 84.86%. In addition, we substantially reduce thememory footprint of the original ViT model proposed in [16].We achieve this by hardware-speci\ufb01c architecture changesand a different optimizer. As a result, we train a modelwith two billion parameters and attain a new state-of-the-art90.45% accuracy on ImageNet.1. IntroductionAttention-based Transformer architectures [45] havetaken computer vision domain by storm [8,16] and are be-coming an increasingly popular choice in research and prac-tice. Previously, Transformers have been widely adopted inthe natural language processing (NLP) domain [7,15]. Opti-mal scaling of Transformers in NLP was carefully studiedin [22], with the main conclusion that large models not onlyperform better, but do use large computational budgets moreef\ufb01ciently. However, it remains unclear to what extent these\ufb01ndings transfer to the vision domain, which has severalimportant differences.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0003",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "However, it remains unclear to what extent these\ufb01ndings transfer to the vision domain, which has severalimportant differences. For example, the most successfulpre-training schemes in vision are supervised, as opposed tounsupervised pre-training in the NLP domain.In this paper we concentrate on scaling laws for transferperformance of ViT models pre-trained on image classi\ufb01ca-\u22c6equal contribution30M300M1B3Bs/28S/32s/16Ti/16S/16B/32B/28B/16L/16g/14G/14708090ImageNet finetune error rate [%]ImageNet 10-shot error rate [%]101103Model Size (Gflops)E=0.09+0.26(C+0.01) 0.35E=0.12+0.63(C+0.52) 0.32100101102103104Compute (TPUv3 core days)100101102103104Compute (TPUv3 core days)102103Dataset Size (M)2. Core Resultsrelationship on the log-log plot in Figure 2).Second, representation quality can be bottlenecked bymodel size. The top-right plot shows the best attained perfor-mance for each model size. Due to limited capacity, smallmodels are not able to bene\ufb01t from either the largest dataset,or compute resources.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0004",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "The top-right plot shows the best attained perfor-mance for each model size. Due to limited capacity, smallmodels are not able to bene\ufb01t from either the largest dataset,or compute resources. Figure 2, left and center, show theTi/16 model tending towards a high error rate, even whentrained on a large number of images.Third, large models bene\ufb01t from additional data, evenbeyond 1B images. When scaling up the model size, therepresentation quality can be limited by smaller datasets;even 30-300M images is not suf\ufb01cient to saturate the largestmodels. In Figure 2, center, the error rate of L/16 modelon the the 30M dataset does not improve past 27%. Onthe larger datasets, this model attains 19%. Further, whenincreasing the dataset size, we observe a performance boostwith big models, but not small ones. The largest modelseven obtain a performance improvement the training set sizegrows from 1B to 3B images (Figure 2, bottom right). Forsmall models, however, such as Ti/16 or B/32, increasingthe dataset size does not help.",
+      "token_count": 250
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0005",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "Forsmall models, however, such as Ti/16 or B/32, increasingthe dataset size does not help. For example, in Figure 2, leftand center, all of the curves for Ti/16 overlap, showing thatthis model achieves the same performance irrespective ofthe dataset size.We \ufb01rst present our main results on scaling trends, beforepresenting detailed architecture and training protocol im-provements in Section 3. In the following experiments, wetrain several ViT models on both public ImageNet-21k [14]dataset and privately gathered images, up to three billionweakly-labelled images. We vary the architecture size, num-ber of training images, and training duration. All modelsare trained on TPUv3, thus total compute is measured inTPUv3 core-days. To evaluate the quality of the representa-tion learned by the models, we measure (i) few-shot transfervia training a linear classi\ufb01er on frozen weights, (ii) transfervia \ufb01ne-tuning the whole model on all data, both to multiplebenchmark tasks.2.1. Scaling up compute, model and data together2.2.",
+      "token_count": 241
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0006",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "Scaling up compute, model and data together2.2. Double-saturating power lawImageNet 10-shot error rate [%]ImageNet finetune error rate [%]ImageNet finetune V2 error rate [%]7080Ti/16B/32L/16Ti/16B/32L/16Ti/16B/32L/16102103104Images Seen (M)102103104Images Seen (M)102103104Images Seen (M)ship between compute and performance follows a power-law(E = aCb), resulting in a straight line on the log-log plot.However, we observe \u201csaturation\u201d at both ends of the com-pute spectrum. At the higher end of compute, the largestmodels do not tend towards zero error-rate. If we extrapolatefrom our observations, an in\ufb01nite capacity model will obtaina non-zero error. This effect has also been observed for gen-erative models [19]. The authors of [19] refer to this residualerror as the \u201cirreducible entropy\u201d of the task. Since we ploterror rate, the information-theoretic interpretation does notapply, but our observations support the notion of fundamen-tal performance ceilings for ImageNet [4].",
+      "token_count": 256
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0007",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "Since we ploterror rate, the information-theoretic interpretation does notapply, but our observations support the notion of fundamen-tal performance ceilings for ImageNet [4]. In terms of thelaw, this saturation corresponds to an additive constant to theerror rate: c in E = aC\u2212b + c.At the lower end of the compute spectrum, we see a satu-ration for smaller models; the performance of the smallestmodel is better than that would be predicted by a power-law.This saturation occurs because even trivial solutions canachieve non-zero error. For example, predicting the majorityclass (almost zero compute) will achieve an accuracy relatedto its occurence frequency in the test set. This lower boundis not observed in [19], either because their smallest modelis large enough to avoid this region, or because log-loss satu-rates at worse performances than accuracy (it will saturateeventually). This saturation corresponds to a shift in the x-axis: d in E = a(C + d)\u2212b + c. This constant indicates thatthe zero-compute model will still obtain non-zero accuracy.images are presented in this plot.We observe that bigger models are more sample ef\ufb01cient,reaching the same level of error rate with fewer seen im-ages. For 10-shot, the Ti/16 model needs to see nearly 100times more images to match the representation quality ofthe L/16 model.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0008",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "For 10-shot, the Ti/16 model needs to see nearly 100times more images to match the representation quality ofthe L/16 model. When \ufb01ne-tuning, this factor reduces from100 to about 20. Our results suggest that with suf\ufb01cientdata, training a larger model for fewer steps is preferable.This observation mirrors results in language modelling andmachine translation [22,26].2.4. Do scaling laws still apply on fewer images?We extend the study to much fewer images, rangingfrom one million to 13 millions on the public ImageNet-21kTi/16S/16B/32B/161.3M2.6M5.1M10.2M13MImageNet 10-shot error rate [%]101Model Size (Gflops)2.3.",
+      "token_count": 171
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0009",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "Big models are more sample ef\ufb01cientE=0.24+0.96(C+1.57) 0.61100101102Compute (TPUv3 core days)101Dataset Size (M)BenchmarkImageNetINet V2INet ReaLObjectNetVTAB (light)NS (Eff.-L2) [49]88.380.2-68.5-MPL (Eff.-L2) [29]90.2-91.02--CLIP (ViT-L/14) [31]85.475.9-72.3-ALIGN (Eff.-L2) [21]88.670.1---BiT-L (ResNet) [23]87.54-90.5458.776.29ViT-H/14 [16]88.55-90.72-77.63Our ViT-G/1490.45\u00b10.0383.33\u00b10.0390.81\u00b10.0170.53\u00b10.5278.29\u00b10.53dataset. In Figure 4 left, we found that the double-saturationpower law still applies, when varying model sizes, datasetsizes and compute resources. This indicates that the conclu-sions from the study generalizes well, and can guide futuredesign choices for vision transformer architectures.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0010",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "This indicates that the conclu-sions from the study generalizes well, and can guide futuredesign choices for vision transformer architectures. In Fig-ure 4 right, we observe similar behaviors that the modelperformance are bottlenecked by the dataset size. Whenscaling up compute, model and data together, one gets thebest representation quality.dicates again that the ImageNet classi\ufb01cation task is likelyreaching its saturation point. For ObjectNet, ViT-G/14 out-performs BiT-L [23] by a large margin, and is 2% betterthan Noisy Student, but is about 2% behind CLIP [31]. Notethat, unlike the other methods, CLIP does not \ufb01ne-tune onImageNet, and evaluates directly on ObjectNet, this likelyimproves its robustness. Finally, when transferring the ViT-G/14 model to VTAB, it gets consistently better results withjust a single hyper parameter across all tasks. The state-of-the-art on VTAB using a heavyweight per-task hyperparam-eter sweep is 79.99 [21], we leave running a heavy sweepwith ViT-G/14 to future work.2.5. ViT-G/14 resultsWe trained a large Vision Transformer, ViT-G/14, whichcontains nearly two billion parameters. Section 3.6 detailsthe architecture\u2019s shape.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0011",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "ViT-G/14 resultsWe trained a large Vision Transformer, ViT-G/14, whichcontains nearly two billion parameters. Section 3.6 detailsthe architecture\u2019s shape. We evaluate the ViT-G/14 model ona range of downstream tasks, and compare it to recent state-of-the-art results. We \ufb01ne-tune on ImaegNet, and report Im-ageNet [34], ImageNet-v2 [33], ReaL [4], and ObjectNet [2]accuracies. In addition, we report transfer learning result onthe VTAB-1k benchmark consisting of 19 tasks [53].Figure 1 shows the few-shot transfer results on Ima-geNet. ViT-G/14 outperforms the previous best ViT-H/14model [16] by a large margin (more than 5%), attaining84.86% accuracy with 10 examples per class. Ten imagesper class is less than 1% of ImageNet data (13 examplesper class), as commonly used in self-supervised and semi-supervised learning [52]. For reference, Figure 1 showsthree state-of-the-art self-supervised learning models, Sim-CLR v2 [10] and BYOL [17], using 1% of ImageNet data,DINO [9] using 20 examples per class.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0012",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "Note, however, thatthese approaches are quite different: ViT-G/14 uses largesource of weakly-supervised data, and is pre-trained onlyonce and transferred to different tasks. Meanwhile, the self-supervised learning models use unlabeled but in-domain datafor pre-training, and target a single task.Table 1 shows the results on the remaining benchmarks.ViT-G/14 achieves 90.45% top-1 accuracy on ImageNet, set-ting the new state-of-the art. On ImageNet-v2, ViT-G/14improves 3% over the Noisy Student model [49] basedon Ef\ufb01cientNet-L2. For ReaL, ViT-G/14 outperforms ViT-H [16] and BiT-L [23] by only a small margin, which in-3. Method detailsWe present a number of improvements to the ViT modeland training. These improvements are mostly simple to im-plement, and can signi\ufb01cantly improve memory-utilizationand model quality. They allow us to train ViT-G/14 usingdata-parallelism alone, with the entire model \ufb01tting on asingle TPUv3 core.3.1. Decoupled weight decay for the \u201chead\u201dWeight decay has a drastic effect on model adaptation inthe low-data regime.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0013",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "Decoupled weight decay for the \u201chead\u201dWeight decay has a drastic effect on model adaptation inthe low-data regime. We conduct an study of this phenomenaat a mid-size scale.We \ufb01nd that one can bene\ufb01t from decoupling weight de-cay strength for the \ufb01nal linear layer (\u201chead\u201d), and for theremaining weights (\u201cbody\u201d) in the model. Figure 5 demon-strates this effect: we train a collection ViT-B/32 modelson JFT-300M, each cell corresponds to the performance ofdifferent head/body weight decay values. The diagonal cor-responds to using the same value for both decays. One canobserve that the best performance appears off-diagonal (i.e.with a decoupled weight decay for the head and body).",
+      "token_count": 163
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0014",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "The diagonal cor-responds to using the same value for both decays. One canobserve that the best performance appears off-diagonal (i.e.with a decoupled weight decay for the head and body). In-terestingly, we observe that high weight decay in the headdecreases performance on the pre-training (upstream) task(not shown), despite improving transfer performance.We do not have a complete explanation of this phenomena.However, we hypothesize that a stronger weight decay in theLinear 5-shot ImageNet accuracy [%]Upstream performance10.0585961605649371810.0Linear 5-shot ImageNet accuracyToken (ICLR'21)Token (linear)Token + head-wdGAP + head-wdMAP + head-wd3.059606160564837203.060%\"Head\" weight decay1.059606160554836191.059595958544734180.30.30.156575757534532160.150%0.0154545553504330180.0153535453504430170.0010.001535454545043311740%0200k400kSteps00.001 0.010.10.31.03.010.0\"Body\" Weight decay00.001 0.010.10.31.03.010.0\"Body\" Weight decayhead results in representations with larger margin betweenclasses, and thus better few-shot adaptation.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0015",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "This is similarto the main idea behind SVMs [12]. This large decay makesit harder to get high accuracy during upstream pre-training,but our main goal is high quality transfer.3.3. Scaling up dataFor this study, we use the proprietary JFT-3B dataset, alarger version of the JFT-300M dataset used in many previ-ous works on large-scale computer vision models [16,23,37].This dataset consists of nearly 3 billion images, annotatedwith a class-hierarchy of around 30k labels via a semi-automatic pipeline. Thus, the data and associated labelsare noisy. We ignore the hierarchical aspect of the labels anduse only the assigned labels as targets for multi-label classi-\ufb01cation via a sigmoid cross-entropy loss, following [16,23].We have conducted sensitive category association analy-sis as described in [1]. We measured (per label) the distribu-tion of sensitive categories across the raw data, the cleaneddata, the models trained on this data, and labels that wereveri\ufb01ed by human raters. Human raters additionally assistedin removing offensive content from the dataset.Figure 6 shows an ablation of the effect of changing fromJFT-300M to JFT-3B on model performance, even whenscale is not increased. Figure 6, left shows linear 10-shot Im-ageNet performance evaluated throughout.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0016",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "Figure 6, left shows linear 10-shot Im-ageNet performance evaluated throughout. We observe thatJFT-3B results in a better model, even before the model hascompletely one epoch of JFT-300M. Therefore, over\ufb01ttingJFT-300M is not the sole cause of the improvement. This dif-ference can be seen even for the small B/32 model as well asthe larger L/16. We \ufb01ne-tune the models to the full ImageNetdataset (right), and con\ufb01rm that these improvements transferto a full \ufb01ne-tuning setup. Overall, the change in datasetimproves transfer to ImageNet by about 1% for both smalland large models. Other than the performance improvement,training behavior is similar on JFT-300M and JFT-3B. Mostimportantly, JFT-3B allows us to scale up further with fewerconcerns about over\ufb01tting and regularization.Deduplication. We remove all images from the JFT-3B3.2. Saving memory by removing [class] tokenThe largest VIT model from [16] uses 14 \u00d7 14 patcheswith 224 \u00d7 224 images. This results in 256 visual \u201ctokens\u201d,where each one corresponds to an image patch.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0017",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "Saving memory by removing [class] tokenThe largest VIT model from [16] uses 14 \u00d7 14 patcheswith 224 \u00d7 224 images. This results in 256 visual \u201ctokens\u201d,where each one corresponds to an image patch. On top ofthis, ViT models have an extra [class] token, which isused to produce the \ufb01nal representation, bringing the totalnumber of tokens to 257.For ViT models, current TPU hardware pads the tokendimension to a multiple of 128, which may result in upto a 50% memory overhead. To overcome this issue weinvestigate alternatives to using the extra [class] token.In particular, we evaluate global average pooling (GAP)and multihead attention pooling (MAP) [25] to aggregaterepresentation from all patch tokens. We set the number ofheads in MAP to be equal to the number of attention heads inthe rest of the model. To further simplify the head design weremove \ufb01nal non-linear projection before the \ufb01nal predictionlayer, which was present in the original ViT paper.To choose the best head, we perform a side-by-side com-parison of a [class] token and GAP/MAP heads. Resultsare summarized in Figure 5 (right). We \ufb01nd that all headsperform similarly, while GAP and MAP are much morememory ef\ufb01cient due to the aforementioned padding consid-erations.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0018",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "Resultsare summarized in Figure 5 (right). We \ufb01nd that all headsperform similarly, while GAP and MAP are much morememory ef\ufb01cient due to the aforementioned padding consid-erations. We also observe that non-linear projection can besafely removed. Thus, we opt for the MAP head, since it isthe most expressive and results in the most uniform architec-ture. MAP head has also been explored in [42], in a differentcontext for better quality rather than saving memory.90%Linear 10-shot ImageNet accuracy75%ImageNet top-1 accuracy85%80%50%75%B/32, JFT-300mB/32, JFT-3bL/16, JFT-300mL/16, JFT-3b25%70%01234567JFT-300m epochs02.5k5k7.5k10k12.5k15k17.5k20kFine-tuning stepsdataset that are near-duplicates of images from both train setand test set of datasets we evaluate on. Overall we identi\ufb01edand removed 927k duplicate images from JFT-3B.our preliminary experiments, we found that clippingthe second momentum at 0.999 (Adam\u2019s default value)results in better convergence, so we adopt it.3.4.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0019",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "Memory-ef\ufb01cient optimizersThe resulting optimizer introduces only a 50% memory over-head on top the space needed to store model\u2019s parameters.We observe that both proposed optimizers perform on parwith or slightly better than the original Adam optimizer. Weare aware of other memory-ef\ufb01cient optimizers [32,40], weleave the exploration to future work.When training large models, storage required for modelparameters becomes a bottleneck. Our largest model, ViT-G,has roughly two billion parameters, which occupies 8 GiBof device memory. To make things much worse, the Adamoptimizer that is commonly used for training Transformers,stores two additional \ufb02oating point scalars per each parame-ter, which results in an additional two-fold overhead (extra16 GiB). To tackle the overhead introduced by the Adamoptimizer we explore two modi\ufb01cations.Adam with half-precision momentum.We empir-ically observe that storing momentum in half-precision(bfloat16 type) does not affect training dynamics andhas no effect on the outcome. This allows to reduce opti-mizer overhead from 2-fold to 1.5-fold. Notably, storingthe second momentum using half-precision resulted in asigni\ufb01cant performance deterioration.Adafactor optimizer. The above optimizer still inducesa large memory overhead. Thus, we turn our attention to theAdafactor optimizer [35], which stores second momentumusing rank 1 factorization.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0020",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "The above optimizer still inducesa large memory overhead. Thus, we turn our attention to theAdafactor optimizer [35], which stores second momentumusing rank 1 factorization. From practical point of view, thisresults in the negligible memory overhead. However, theAdafactor optimizer did not work out of the box, so we makethe following modi\ufb01cations:3.5. Learning-rate scheduleIn our study we want to train each of the models forseveral different durations in order to measure the trade-off between model size and training duration. When usinglinear decay, as in [16], each training duration requires itsown training run starting from scratch, which would be aninef\ufb01cient protocol.Inspired by [27], we address this issue by exploringlearning-rate schedules that, similar to the warmup phasein the beginning, include a cooldown phase at the end oftraining, where the learning-rate is linearly annealed towardzero. Between the warmup and the cooldown phases, thelearning-rate should not decay too quickly to zero. This canbe achieved by using either a constant, or a reciprocal square-root schedule for the main part of training. Figure 7 (bottom)depicts several of these options, with a cooldown after ap-proximately 200 k, 400 k, and 500 k steps.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0021",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "Figure 7 (bottom)depicts several of these options, with a cooldown after ap-proximately 200 k, 400 k, and 500 k steps. The upper half ofFigure 7 shows the validation score (higher is better) for eachof these options and their cooldowns, together with two lin-ear schedules for reference. While the linear schedule is stillpreferable when one knows the training duration in advanceand does not intend to train any longer, all three alternativescome reasonably close, with the advantage of allowing in-de\ufb01nite training and evaluating multiple training durationsfrom just one run. For each of the schedules, we optimizedthe learning-rate and the exact shape. We have also brie\ufb02y\u2022 We re-introduce the \ufb01rst momentum in half-precision,whereas the recommended setting does not use the \ufb01rstmomentum at all.\u2022 We disable scaling of learning rate relative to weightnorms, a feature that is part of Adafactor.\u2022 Adafactor gradually increases the second momentumfrom 0.0 to 1.0 throughout the course of training.",
+      "token_count": 227
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0022",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "InValidation scoreNameWidthDepthMLPHeadsMio.ParamGFLOPs22423842Reciprocal-TrapezoidalConstantLinears/282566102485.40.72.0s/162566102485.02.27.8S/323841215366222.36.9Ti/161921276835.52.59.5B/3276812307212878.726.0S/163841215366229.231.2B/28768123072128711.330.5B/16768123072128635.1111.3L/16102424409616303122.9382.8g/141408406144161011533.11596.4G/141664488192161843965.32859.9Learning rate0100k200k300k400k500k0100k200k300k400k500kStepstried cyclic learning-rate schedules, however they seemed toperform much worse and we have not investigated further.We therefore opt for the reciprocal square-root schedule.presented, but note that with our modi\ufb01cations we were ableto \ufb01t thin ViT models of a depth up to 100 encoder blocks.The original Vision Transformer publication contains astudy in Appendix D2 about the trade-offs between scalingthe different components, concluding that it is most effectiveto scale all aspects (depth, width, MLP-width, and patch-size) simultaneously and by a similar amount.",
+      "token_count": 305
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0023",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "We followthis recommendation, and select shapes for ViT-g and ViT-Gat the limit of what \ufb01ts in memory accordingly, as shown inFigure 8 and summarized in Table 2.3.6. Selecting model dimensionsViT models have many parameters that control themodel\u2019s shape, and we refer to the original publication forfull details. Brie\ufb02y, these include the patch-size, the num-ber of encoder blocks (depth), the dimensionality of patchembeddings and self-attention (width), the number of at-tention heads, and the hidden dimension of MLP blocks(MLP-width). On top of this, we rely on the XLA compilerto optimize our models for runtime speed and memory foot-print. Behind the scenes, XLA uses complex heuristics tocompile a model into code for a speci\ufb01c hardware that tradesoff memory and speed optimally. As a result, it is hard topredict which model con\ufb01gurations will \ufb01t into memory ona single device.Therefore we run an extensive simulation, where we in-stantiate a large amount of ViTs of various shapes, and at-tempt to train them for a few steps, without considering thequality. We vary the depth, width, heads, and MLP-width,but keep the patch-size at 14 px. In this way, we measuretheir speed and whether or not a given model \ufb01ts into thedevice\u2019s memory.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0024",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "We vary the depth, width, heads, and MLP-width,but keep the patch-size at 14 px. In this way, we measuretheir speed and whether or not a given model \ufb01ts into thedevice\u2019s memory. Figure 8 summarizes the result of thissimulation. Each block corresponds to one model con\ufb01g-uration, the shade of the block corresponds to its trainingspeed (brighter is faster). Orange blocks show which origi-nal ViT models, without any of our modi\ufb01cations, \ufb01t. Greenblocks then further include the memory savings described inSection 3.2 coupled with the half-precision Adam describedin Section 3.4. Finally, blue blocks are with our modi\ufb01edAdaFactor optimizer. The shapes in the white area were notable to \ufb01t into memory in any setting. For space reasons,we show here only the models pertaining to the experiments4. Related WorkSmaller Vision Transformers Early work on Trans-formers for vision focused on small networks for CIFAR-10 [11].",
+      "token_count": 219
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0025",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "For space reasons,we show here only the models pertaining to the experiments4. Related WorkSmaller Vision Transformers Early work on Trans-formers for vision focused on small networks for CIFAR-10 [11]. The Vision Transformer [16], however, was pro-posed in the context of state-of-the-art medium and large-scale image recognition; the smallest model (ViT-B) con-taining 86M parameters. [41] present smaller ViT sizes fortraining from-scratch, down to ViT-Ti, with 5M parameters.New variants of ViT introduce smaller and cheaper archi-tectures. For example, T2T-ViT [51] reduces the numberof parameters and compute using a new tokenization andnarrower networks. Pyramidal ViTs [46], designed for denseprediction tasks, follow a CNN-like pyramidal structure,that also reduces the size of the model. Hybrids of CNNsand Transformers typically allow smaller models to performwell, such as the ViT-CNN hybrid in [16], BoTNet [36], andHaloNet [44]. However, the other direction, increasing thescale of ViT, is less explored. While language Transformersare still much larger than Vision Transformers, understand-ing the scaling properties and the improvements introducedin this paper represent a step in this direction.Scaling Laws [22] present a thorough study of the em-pirical scaling laws of neural language models.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0026",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "The authors24 layers32 layers40 layers48 layers56 layers1024//16ViT-L1024//81280//201280//161280//101408//221408//161408//111536//241536//161536//121664//261664//161664//131792//281792//161792//141920//301920//241920//161920//152048//322048//16ViT-HSA-width // num headsViT-gViT-GOriginal ViTSavings + Adam-HPSavings + AdaFactorMLP-width\ufb01t power laws that describe the relationships between com-pute, data size, model size, and performance. Followingthese laws, GPT-3, a 175B parameter language model wassuccessfully trained [7]. [19] presents laws for autoregres-sive generative modelling in other modalities, including thegeneration of images. Our paper contains the \ufb01rst study ofscaling laws for the discriminative modelling of images.Scaling-up Vision Models Many papers scale up CNNsto attain improved performance.Ef\ufb01cientNets [38, 39]present a scaling strategy that balances compute betweendepth, width, and resolution and apply it to MobileNets. Thisstrategy is revisited in [3,48] to further improve the perfor-mance of ResNets [18].",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0027",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "Thisstrategy is revisited in [3,48] to further improve the perfor-mance of ResNets [18]. Large CNNs have attained excel-lent performance in visual recognition, such as AmoebaNet-B(18, 512) (557M parameters) trained using GPipe pipelineparallelism [20], ResNeXt-101 32\u00d748d (829M parame-ters) pre-trained on weakly-labelled Instagram images [27],Ef\ufb01cientNet-L2 (480M parameters) trained with ImageNetpseudo-labels on JFT-300M [50], and BiT-L-ResNet152x4(928M parameters) pre-trained on JFT-300M [23]. Recently,[42,54] explore strategies to scale the depth of ViTs. We arethe \ufb01rst to scale Vision Transformers to even larger size andreache new state-of-the-art results doing so. The concurrentwork [13] focuses on CNN and ViT hybrid architectures.ever, this cost may be amortized in two ways. First, suchstudies of scaling laws need only be performed once; Wehope future developers of ViT models may use our resultsto design models that can be trained with fewer compute re-sources. Second, the models trained are designed primarilyfor transfer learning. Transfer of pre-trained weights is muchless expensive than training from scratch on a downstreamtask, and typically reaches higher accuracy.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0028",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "Second, the models trained are designed primarilyfor transfer learning. Transfer of pre-trained weights is muchless expensive than training from scratch on a downstreamtask, and typically reaches higher accuracy. Therefore, bytransferring our models to many tasks, the pre-training com-pute is further amortized.6. ConclusionWe demonstrate that the performance-compute frontierfor ViT models with enough training data roughly followsa (saturating) power law. Crucially, in order to stay on thisfrontier one has to simultaneously scale compute and modelsize; that is, not increasing a model\u2019s size when extra com-pute becomes available is suboptimal. We also demonstratethat larger models are much more sample ef\ufb01cient and aregreat few-shot learners. Finally, we present a new trainingrecipe, which allows one to ef\ufb01ciently train large and high-performing ViT models. Note, that our conclusions may notnecessarily generalize beyond the scale we have studied andthey may not generalize beyond the ViT family of models.5. DiscussionLimitations. This work uses the proprietary JFT-3Bdataset for the scaling laws study. To make our insightsmore reliable and generalizable, we verify that the scalinglaws also apply on the public ImageNet-21k dataset.Societal impact. A potential broader cost of this work isthe energy required to perform the experiments in our scalingstudy, especially in training the largest ViT-G model.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0029",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "A potential broader cost of this work isthe energy required to perform the experiments in our scalingstudy, especially in training the largest ViT-G model. How-AcknowledgementsWe thank James Bradbury and VivekSharma for their help on using large-scale infrastructure;Alexey Dosovitskiy, Joan Puigcerver, Basil Mustafa, CarlosRiquelme for insightful discussions; Tom Duerig, AustinTarango, Daniel Keysers, Howard Zhou, Wenlei Zhou,Yanan Bao for discussions on JFT; the Google Brain team atlarge for providing a supportive research environment.References[15] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and KristinaToutanova.Bert:Pre-training of deep bidirectionaltransformers for language understanding.arXiv preprintarXiv:1810.04805, 2018. 1[16] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov,Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner,Mostafa Dehghani, Matthias Minderer, Georg Heigold, Syl-vain Gelly, Jakob Uszkoreit, and Neil Houlsby. An Image isWorth 16x16 Words: Transformers for Image Recognition atScale.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0030",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "An Image isWorth 16x16 Words: Transformers for Image Recognition atScale. In ICLR, 2021. 1, 4, 5, 6, 7, 11[17] Jean-Bastien Grill, Florian Strub, Florent Altch\u00e9, CorentinTallec, Pierre H. Richemond, Elena Buchatskaya, Carl Do-ersch, Bernardo Avila Pires, Zhaohan Daniel Guo, Moham-mad Gheshlaghi Azar, Bilal Piot, Koray Kavukcuoglu, R\u00e9miMunos, and Michal Valko. Bootstrap your own latent: Anew approach to self-supervised learning. arXiv preprintarXiv:2006.07733, 2020. 4[18] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.Deep residual learning for image recognition. In CVPR, 2016.8[19] Tom Henighan, Jared Kaplan, Mor Katz, Mark Chen, Christo-pher Hesse, Jacob Jackson, Heewoo Jun, Tom B Brown, Pra-fulla Dhariwal, Scott Gray, et al.",
+      "token_count": 258
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0031",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "Scaling laws for autoregres-sive generative modeling. arXiv preprint arXiv:2010.14701,2020. 3, 8[20] Yanping Huang, Youlong Cheng, Ankur Bapna, Orhan Firat,Dehao Chen, Mia Chen, HyoukJoong Lee, Jiquan Ngiam,Quoc V Le, Yonghui Wu, and zhifeng Chen. Gpipe: Ef\ufb01cienttraining of giant neural networks using pipeline parallelism.In NeurIPS, 2019. 8[21] Chao Jia, Yinfei Yang, Ye Xia, Yi-Ting Chen, Zarana Parekh,Hieu Pham, Quoc V. Le, Yunhsuan Sung, Zhen Li, and TomDuerig. Scaling up visual and vision-language representa-tion learning with noisy text supervision. arXiv preprintarXiv:2102.05918, 2021. 4[22] Jared Kaplan, Sam McCandlish, Tom Henighan, Tom BBrown, Benjamin Chess, Rewon Child, Scott Gray, AlecRadford, Jeffrey Wu, and Dario Amodei.",
+      "token_count": 252
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0032",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "Scaling laws forneural language models. arXiv preprint arXiv:2001.08361,2020. 1, 3, 7[23] Alexander Kolesnikov, Lucas Beyer, Xiaohua Zhai, J.Puigcerver, Jessica Yung, S. Gelly, and N. Houlsby. BigTransfer (BiT): General Visual Representation Learning. InECCV, 2020. 4, 5, 8, 11[24] Alex Krizhevsky. Learning multiple layers of features fromtiny images. Technical report, 2009. 2, 11[25] Juho Lee, Yoonho Lee, Jungtaek Kim, Adam Kosiorek, Se-ungjin Choi, and Yee Whye Teh. Set transformer: A frame-work for attention-based permutation-invariant neural net-works. In ICML, 2019. 5[26] Dmitry Lepikhin, HyoukJoong Lee, Yuanzhong Xu, DehaoChen, Orhan Firat, Yanping Huang, Maxim Krikun, NoamShazeer, and Zhifeng Chen.",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0033",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "Gshard: Scaling giant modelswith conditional computation and automatic sharding. arXivpreprint arXiv:2006.16668, 2020. 3[27] Dhruv Mahajan, Ross Girshick, Vignesh Ramanathan, Kaim-ing He, Manohar Paluri, Yixuan Li, Ashwin Bharambe, and[1] Osman Aka, Ken Burke, Alex B\u00e4uerle, Christina Greer, andMargaret Mitchell. Measuring model biases in the absence ofground truth. arXiv preprint arXiv:2103.03417, 2021. 5[2] Andrei Barbu, D. Mayo, Julian Alverio, William Luo, Christo-pher Wang, Dan Gutfreund, J. Tenenbaum, and Boris Katz.Objectnet: A large-scale bias-controlled dataset for pushingthe limits of object recognition models.",
+      "token_count": 197
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0034",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "Mayo, Julian Alverio, William Luo, Christo-pher Wang, Dan Gutfreund, J. Tenenbaum, and Boris Katz.Objectnet: A large-scale bias-controlled dataset for pushingthe limits of object recognition models. In NeurIPS, 2019. 4[3] Irwan Bello, William Fedus, Xianzhi Du, Ekin D Cubuk,Aravind Srinivas, Tsung-Yi Lin, Jonathon Shlens, and BarretZoph.Revisiting resnets: Improved training and scalingstrategies. arXiv preprint arXiv:2103.07579, 2021. 8[4] Lucas Beyer, Olivier J. H\u00e9naff, Alexander Kolesnikov, Xi-aohua Zhai, and A\u00e4ron van den Oord. Are we done withimagenet? arXiv preprint arXiv:2006.07159, 2020. 3, 4[5] Lucas Beyer, Xiaohua Zhai, and Alexander Kolesnikov.",
+      "token_count": 230
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0035",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "Bigvision. https://github.com/google-research/big_vision, 2022. 11[6] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Sub-biah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakan-tan, Pranav Shyam, Girish Sastry, Amanda Askell, Sand-hini Agarwal, Ariel Herbert-Voss, Gretchen Krueger, TomHenighan, Rewon Child, Aditya Ramesh, Daniel Ziegler, Jef-frey Wu, Clemens Winter, Chris Hesse, Mark Chen, EricSigler, Mateusz Litwin, Scott Gray, Benjamin Chess, JackClark, Christopher Berner, Sam McCandlish, Alec Radford,Ilya Sutskever, and Dario Amodei. Language models arefew-shot learners.",
+      "token_count": 180
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0036",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "Language models arefew-shot learners. In NeurIPS, 2020. 1[7] Tom B Brown, Benjamin Mann, Nick Ryder, Melanie Sub-biah, Jared Kaplan, Prafulla Dhariwal, Arvind Neelakan-tan, Pranav Shyam, Girish Sastry, Amanda Askell, et al.Language models are few-shot learners.arXiv preprintarXiv:2005.14165, 2020. 1, 8[8] Nicolas Carion, Francisco Massa, Gabriel Synnaeve, NicolasUsunier, Alexander Kirillov, and Sergey Zagoruyko. End-to-end object detection with transformers. arXiv preprintarXiv:2005.12872, 2020. 1[9] Mathilde Caron, Hugo Touvron, Ishan Misra, Herv\u00e9 J\u00e9gou,Julien Mairal, Piotr Bojanowski, and Armand Joulin. Emerg-ing properties in self-supervised vision transformers. CoRR,abs/2104.14294, 2021. 4[10] Ting Chen, Simon Kornblith, Kevin Swersky, MohammadNorouzi, and Geoffrey Hinton.",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0037",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "CoRR,abs/2104.14294, 2021. 4[10] Ting Chen, Simon Kornblith, Kevin Swersky, MohammadNorouzi, and Geoffrey Hinton. Big self-supervised mod-els are strong semi-supervised learners.arXiv preprintarXiv:2006.10029, 2020. 4[11] Jean-Baptiste Cordonnier, Andreas Loukas, and Martin Jaggi.On the relationship between self-attention and convolutionallayers. In ICLR, 2020. 7[12] Corinna Cortes and Vladimir Vapnik. Support-vector net-works. Machine learning, 1995. 5[13] Zihang Dai, Hanxiao Liu, Quoc V. Le, and Mingxing Tan.Coatnet: Marrying convolution and attention for all data sizes.CoRR, abs/2106.04803, 2021. 8[14] J. Deng, W. Dong, R. Socher, L. Li, Kai Li, and Li Fei-Fei.Imagenet: A large-scale hierarchical image database.InCVPR, 2009. 2Laurens van der Maaten. Exploring the limits of weaklysupervised pretraining. In ECCV, September 2018. 6, 8[28] Omkar M.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0038",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "Exploring the limits of weaklysupervised pretraining. In ECCV, September 2018. 6, 8[28] Omkar M. Parkhi, Andrea Vedaldi, Andrew Zisserman, andC. V. Jawahar. Cats and dogs. In CVPR, 2012. 2, 11[29] Hieu Pham, Zihang Dai, Qizhe Xie, Minh-Thang Luong,and Quoc V. Le.Meta pseudo labels.arXiv preprintarXiv:2003.10580, 2020. 4[30] B. T. Polyak and A. B. Juditsky. Acceleration of stochasticapproximation by averaging. SIAM Journal on Control andOptimization, 30(4):838\u2013855, 1992. 11[31] Alec Radford, Jong Wook Kim, Chris Hallacy, AdityaRamesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry,Amanda Askell, Pamela Mishkin, Jack Clark, GretchenKrueger, and Ilya Sutskever.",
+      "token_count": 240
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0039",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "Learning transferable visualmodels from natural language supervision. arXiv preprintarXiv:2103.00020, 2021. 4[32] Samyam Rajbhandari, Jeff Rasley, Olatunji Ruwase, and Yux-iong He. Zero: memory optimizations toward training trillionparameter models. In Christine Cuicchi, Irene Qualters, andWilliam T. Kramer, editors, Proceedings of the InternationalConference for High Performance Computing, Networking,Storage and Analysis, SC 2020, Virtual Event / Atlanta, Geor-gia, USA, November 9-19, 2020, page 20. IEEE/ACM, 2020.6[33] Benjamin Recht, Rebecca Roelofs, Ludwig Schmidt, andVaishaal Shankar. Do imagenet classi\ufb01ers generalize to ima-genet? arXiv preprint arXiv:1902.10811, 2019. 3, 4[34] Olga Russakovsky, Jia Deng, Hao Su, Jonathan Krause, San-jeev Satheesh, Sean Ma, Zhiheng Huang, Andrej Karpathy,Aditya Khosla, Michael Bernstein, Alexander C. Berg, and LiFei-Fei.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0040",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "Berg, and LiFei-Fei. ImageNet Large Scale Visual Recognition Challenge.IJCV, 115(3):211\u2013252, 2015. 4[35] Noam Shazeer and Mitchell Stern.Adafactor: Adaptivelearning rates with sublinear memory cost. In ICML, 2018. 6[36] Aravind Srinivas, Tsung-Yi Lin, Niki Parmar, JonathonShlens, Pieter Abbeel, and Ashish Vaswani.Bottle-neck transformers for visual recognition.arXiv preprintarXiv:2101.11605, 2021. 7[37] Chen Sun, Abhinav Shrivastava, Saurabh Singh, and AbhinavGupta. Revisiting Unreasonable Effectiveness of Data inDeep Learning Era. ICCV, Oct 2017. 5[38] Mingxing Tan and Quoc Le. Ef\ufb01cientNet: Rethinking modelscaling for convolutional neural networks. In ICML, 2019. 8[39] Mingxing Tan and Quoc V. Le. Ef\ufb01cientnetv2: Smaller mod-els and faster training.",
+      "token_count": 257
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0041",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "In ICML, 2019. 8[39] Mingxing Tan and Quoc V. Le. Ef\ufb01cientnetv2: Smaller mod-els and faster training. In Marina Meila and Tong Zhang,editors, Proceedings of the 38th International Conferenceon Machine Learning, ICML 2021, 18-24 July 2021, Vir-tual Event, volume 139 of Proceedings of Machine LearningResearch, pages 10096\u201310106. PMLR, 2021. 8[40] Hanlin Tang, Shaoduo Gan, Ammar Ahmad Awan, SamyamRajbhandari, Conglong Li, Xiangru Lian, Ji Liu, Ce Zhang,and Yuxiong He. 1-bit adam: Communication ef\ufb01cient large-scale training with adam\u2019s convergence speed. In MarinaMeila and Tong Zhang, editors, Proceedings of the 38th In-ternational Conference on Machine Learning, ICML 2021,18-24 July 2021, Virtual Event, volume 139 of Proceedingsof Machine Learning Research, pages 10118\u201310129. PMLR,2021. 6[41] Hugo Touvron, Matthieu Cord, Matthijs Douze, FranciscoMassa, Alexandre Sablayrolles, and Herv\u00e9 J\u00e9gou.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0042",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "PMLR,2021. 6[41] Hugo Touvron, Matthieu Cord, Matthijs Douze, FranciscoMassa, Alexandre Sablayrolles, and Herv\u00e9 J\u00e9gou. Trainingdata-ef\ufb01cient image transformers & distillation through atten-tion. arXiv preprint arXiv:2012.12877, 2020. 7[42] Hugo Touvron, Matthieu Cord, Alexandre Sablayrolles,Gabriel Synnaeve, and Herv\u00e9 J\u00e9gou.Going deeper withimage transformers. CoRR, abs/2103.17239, 2021. 5, 8[43] Hugo Touvron, Andrea Vedaldi, Matthijs Douze, and Herv\u00e9J\u00e9gou. Fixing the train-test resolution discrepancy. arXivpreprint arXiv:1906.06423, 2020. 11[44] Ashish Vaswani, Prajit Ramachandran, Aravind Srinivas, NikiParmar, Blake Hechtman, and Jonathon Shlens.",
+      "token_count": 234
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0043",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "Scaling localself-attention for parameter ef\ufb01cient visual backbones. arXivpreprint arXiv:2103.12731, 2021. 7[45] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszko-reit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Il-lia Polosukhin. Attention is all you need. arXiv preprintarXiv:1706.03762, 2017. 1[46] Wenhai Wang, Enze Xie, Xiang Li, Deng-Ping Fan, KaitaoSong, Ding Liang, Tong Lu, Ping Luo, and Ling Shao. Pyra-mid vision transformer: A versatile backbone for dense predic-tion without convolutions. arXiv preprint arXiv:2102.12122,2021. 7[47] P. Welinder, S. Branson, T. Mita, C. Wah, F. Schroff, S. Be-longie, and P. Perona. Caltech-UCSD Birds 200. TechnicalReport CNS-TR-2010-001, California Institute of Technol-ogy, 2010. 2, 11[48] Ross Wightman, Hugo Touvron, and Herv\u00e9 J\u00e9gou.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0044",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "TechnicalReport CNS-TR-2010-001, California Institute of Technol-ogy, 2010. 2, 11[48] Ross Wightman, Hugo Touvron, and Herv\u00e9 J\u00e9gou. Resnetstrikes back: An improved training procedure in timm. CoRR,abs/2110.00476, 2021. 8[49] Qizhe Xie, Minh-Thang Luong, Eduard Hovy, and Quoc V.Le. Self-training with noisy student improves imagenet clas-si\ufb01cation. arXiv preprint arXiv:1911.04252, 2019. 4[50] Qizhe Xie, Minh-Thang Luong, Eduard Hovy, and Quoc V.Le. Self-training with noisy student improves imagenet clas-si\ufb01cation. In CVPR, June 2020. 8[51] Li Yuan, Yunpeng Chen, Tao Wang, Weihao Yu, Yujun Shi,Zihang Jiang, Francis EH Tay, Jiashi Feng, and ShuichengYan. Tokens-to-token vit: Training vision transformers fromscratch on imagenet. arXiv preprint arXiv:2101.11986, 2021.7[52] Xiaohua Zhai, Avital Oliver, Alexander Kolesnikov, and Lu-cas Beyer.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0045",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "S4l: Self-supervised semi-supervised learning. InICCV, pages 1476\u20131485, 2019. 4[53] Xiaohua Zhai, Joan Puigcerver, Alexander Kolesnikov, PierreRuyssen, Carlos Riquelme, Mario Lucic, Josip Djolonga,Andre Susano Pinto, Maxim Neumann, Alexey Dosovitskiy,Lucas Beyer, Olivier Bachem, Michael Tschannen, MarcinMichalski, Olivier Bousquet, Sylvain Gelly, and Neil Houlsby.A large-scale study of representation learning with the visualtask adaptation benchmark. arXiv preprint arXiv:1910.04867,2019. 4[54] Daquan Zhou, Bingyi Kang, Xiaojie Jin, Linjie Yang, Xi-aochen Lian, Qibin Hou, and Jiashi Feng. Deepvit: Towardsdeeper vision transformer. CoRR, abs/2103.11886, 2021. 8A. More few-shot transfer results33config.model.variant = 'g/14'34config.model.pool_type = 'map'We observe similar scaling laws on more datasets, includ-ing Oxford IIIT Pets [28], CIFAR-100 [24], and Caltech-UCSD Birds [47].",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0046",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "The results are presented in Figure 9.36# Optimizer section37config.optax_name = 'big_vision.scale_by_adafactor'38config.grad_clip_norm = 1.0B. Pre-training details39config.lr = 8e-440config.wd = 0.03 * 8e-4We pre-train all the ViT models using adafactor optimizerwith half-precision momentum. We use the default \u03b21 = 0.9and \u03b22 = 0.999 (clipping threshold) for adafactor. Weuse batch size 4096 for all the models smaller than ViT-g.For models ViT-g and ViT-G, to speed up the training, wescale up the batch size at most to 32 768 and distribute thetraining to 2048 TPUv3 chips. We set weight decay to 3.0 forthe \u201chead\u201d and 0.03 for the \u201cbody\u201d. All the models are pre-trained at resolution 224\u00d7224, with inception crop followedby random horizontal \ufb02ip pre-process. We use reciprocalsquare-root schedule with a linear learning rate warmup of10k steps.",
+      "token_count": 247
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0047",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "All the models are pre-trained at resolution 224\u00d7224, with inception crop followedby random horizontal \ufb02ip pre-process. We use reciprocalsquare-root schedule with a linear learning rate warmup of10k steps. We cooldown the training at multiple steps asnoted in Tables from Section G.41config.wd_mults = [42('.*head/kernel', 100.0),43('.*/kernel', 1.0),44]45config.schedule = dict(46decay_type='rsqrt', timescale=10_000,warmup_steps=10_000,47cooldown_steps=50_000)48config.total_steps = 1_000_00050# Few-shot eval section51config.fewshot = get_fewshot()52config.fewshot.log_steps = 10_00054return configListing 1. Full con\ufb01g for ViT-g/14 pre-training.C. Con\ufb01guration \ufb01le for pre-training ViT-gD. Adaptation detailsWe present the full con\ufb01guration for training the ViT-g/14model. It follows the big_vision codebase [5] conven-tions.We report both the few-shot linear regression and \ufb01netuneresults on mutiple datasets.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0048",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "It follows the big_vision codebase [5] conven-tions.We report both the few-shot linear regression and \ufb01netuneresults on mutiple datasets. For few-shot linear regression,we simply solve the l2\u2212regularized linear regression prob-lem, using the frozen embeddings extracted from 224 \u00d7 224resolution images.For \ufb01netune evaluation, we use SGD optimizer with mo-mentum. We use batch size 512 and gradient clipping atglobal norm 1. We do not use weight decay for \ufb01netuning.Following [23,43], we use higher resolution for \ufb01netuning.More speci\ufb01cally, we use 384 \u00d7 384 resolution for ViT mod-els smaller than ViT-g, and 518 \u00d7 518 resolution for bothViT-g and ViT-G. We use Polyak averaging [30] only for theViT-G model during \ufb01ne-tuning, similar to [16]. We use acosine learning rate schedule for 20k steps by default, excepta \ufb02at learning rate for ViT-G with Polyak averaging. Welinearly warm up the learning rate for 500 steps. We sweepover two learning rates {0.03, 0.01} and choose the betterone using a held-out 2% training split.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0049",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "Welinearly warm up the learning rate for 500 steps. We sweepover two learning rates {0.03, 0.01} and choose the betterone using a held-out 2% training split. On VTAB tasks, weuse a \ufb01xed 0.01 learning rate with a cosine learning rateschedule. We train for 2 500 steps in total.2 def get_config():3config = mlc.ConfigDict()5config.dataset = 'jft_3b'6config.val_split = 'val'7config.train_split = 'train'8config.num_classes = 29_5939config.init_head_bias = -10.011# Fits 32 images per TPUv3 core with ViT-g/14.12config.batch_size = 4096*414pp_common = '|value_range(-1, 1)'15pp_common += f'|onehot({config.num_classes})'16pp_common += '|keep(\"image\", \"labels\")'17config.pp_train = 'inception_crop(224)|flip_lr'+ pp_common18config.pp_eval = 'resize_small(256)|central_crop(224)' + pp_common19config.shuffle_buffer_size = 250_00021config.log_training_steps = 5022config.log_eval_steps = 1000E.",
+      "token_count": 271
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0050",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "Impact of resolution and patch size24config.checkpoint_steps = 1000In this section, we answer the question of \u201cwhat happensif we scale up the resolution, while keeping number of tokens\ufb01xed?\". We perform experiments on ImageNet-21K to verifythis point, by scaling the resolution and patch size linearlytogether.",
+      "token_count": 70
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0051",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 51,
+      "section": "preamble",
+      "text": "We perform experiments on ImageNet-21K to verifythis point, by scaling the resolution and patch size linearlytogether. We observed in Table 3 that the quality differenceis pretty subtle if we increase patch and resolution together.What matters for ViT architecture is the total number of25config.keep_checkpoint_steps = 10_00027config.prefetch_to_device = 128config.trial = 030# Model section31config.model_name = 'vit'32config.model = mlc.ConfigDict()s/28S/32s/16Ti/16S/16B/32B/28B/16L/16g/14G/1430M300M1B3B60708090607080906070607080ImageNet 10-shotImageNet 5-shotCifar100 10-shotCifar100 5-shotE=0.12+0.63(C+0.52) 0.32E=0.14+0.68(C+0.67) 0.32E=0.06+0.48(C+0.03) 0.21E=0.08+0.53(C+0.07) 0.20100101102103104Compute (TPUv3 core days)100101102103104Compute (TPUv3 core days)100101102103104Compute (TPUv3 core days)100101102103104Compute (TPUv3 core days)30405060708030405060705060708060708090Pets 10-shotPets 5-shotBirds 10-shotBirds 5-shot34567893456789E=0.03+0.60(C+0.75) 0.77E=0.04+0.72(C+0.97) 0.72E=0.10+0.62(C+0.55) 0.43E=0.11+0.68(C+0.65) 0.37100101102103104Compute (TPUv3 core days)100101102103104Compute (TPUv3 core days)100101102103104Compute (TPUv3 core days)100101102103104Compute (TPUv3 core days)patches, which has already been covered in Table 2 withdifferent patch sizes: 32, 28, 16, and 14.a few missing rows, which do not affect the trend for thescaling laws plot.",
+      "token_count": 519
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0052",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 52,
+      "section": "preamble",
+      "text": "We show the total steps and the cooldownsteps for each model, as well as the best \ufb01netune learningrate selected on ImageNet held-out 2% training split.ModelB/32B/48B/64S/16S/24S/32Res.224336448224336448INet1064.4364.6564.6763.4263.7963.50F. Full table of few-shot resultsWe provide the 5-shot learning and 10-shot learning re-sults, on the four datasets from Figure 9. Both ViT-g/14 andViT-G/14 are summarized in Table 4. Note that we use atmost 32 768 batch size for ViT-g/14 and ViT-G/14. To makethe following tables more readable, we normalize the num-ber of steps in Table 4 assuming the batch size is always4096, i.e. Images Seen/4096. All the other smaller ViTmodels are summarized in Table 5, Table 6, Table 7, Table 8,Table 9, Table 10, Table 11, Table 12, Table 13. We areaware of a few missing rows, which do not affect the trendfor the scaling laws plot.G.",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0053",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 53,
+      "section": "preamble",
+      "text": "We areaware of a few missing rows, which do not affect the trendfor the scaling laws plot.G. Full table of \ufb01netune resultsWe provide the \ufb01netune results on ImageNet, as well asthe results evaluated on the other two ImageNet V2 and Ima-geNet ReaL test splits. Results for all the models could befound from Table 14, Table 15, Table 16, Table 17, Table 18,Table 19, Table 20, Table 21, Table 22.",
+      "token_count": 113
+    },
+    {
+      "chunk_id": "2106.04560_chunk_0054",
+      "arxiv_id": "2106.04560",
+      "chunk_index": 54,
+      "section": "preamble",
+      "text": "Results for all the models could befound from Table 14, Table 15, Table 16, Table 17, Table 18,Table 19, Table 20, Table 21, Table 22. We are aware ofData SizeStepsINet5INet10Cifar5Cifar10Pets5Pets10Birds5Birds10ViT-g/143B120K74.076.475.379.293.494.779.684.03B400K79.181.379.182.996.196.884.287.73B1.2M81.383.382.885.397.197.585.688.93B2M82.083.982.786.197.297.386.689.13B4M82.484.383.086.597.097.687.089.23B6.3M82.784.584.686.597.397.786.789.8ViT-G/143B5M83.084.984.787.597.097.587.688.8Data SizeStepsINet5INet10Cifar5Cifar10Pets5Pets10Birds5Birds1030M20K45.549.652.358.074.481.155.163.030M30K53.357.458.864.582.887.061.168.330M60K62.666.066.271.390.391.668.674.630M120K66.569.367.272.891.292.770.877.130M400K69.572.270.274.892.893.972.578.630M1.2M67.170.669.273.691.392.669.875.230M2M65.168.768.773.988.291.167.773.730M4M63.167.266.671.788.690.666.072.6300M20K45.049.752.157.374.479.155.563.2300M30K54.057.460.565.583.187.561.368.3300M60K63.066.568.072.890.292.268.774.7300M120K68.571.470.975.492.193.774.179.5300M400K74.677.071.577.194.295.178.883.3300M1.2M76.078.074.879.095.495.279.883.5300M2M77.579.577.081.595.896.382.584.8300M4M77.078.777.481.195.195.980.083.51B20K45.950.652.658.975.880.255.863.41B30K54.758.460.866.084.588.062.469.51B60K63.466.968.272.191.092.369.375.01B120K68.571.370.775.792.594.273.578.41B400K74.676.974.777.494.194.978.582.41B1.2M77.179.276.379.894.695.480.784.51B2M78.580.077.680.895.796.282.985.81B4M79.181.077.582.396.596.982.485.03B20K45.749.751.958.174.679.254.962.63B30K54.157.759.764.984.087.662.469.43B60K63.666.967.271.589.892.169.975.53B120K68.971.570.876.092.093.874.879.23B400K74.576.874.878.",
+      "token_count": 839
+    }
+  ]
+}

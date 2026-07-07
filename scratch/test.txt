@@ -1,0 +1,471 @@
+
+(fresh_env) (base) PS C:\Users\Adil\Desktop\Research KAG Assistant> python -m scratch.test_agents
+======================================================================
+DAY 12 — MULTI-AGENT PIPELINE TESTS
+======================================================================
+
+[TEST 1] PlannerAgent
+C:\Users\Adil\Desktop\Research KAG Assistant\agents\planner.py:10: FutureWarning: 
+
+All support for the `google.generativeai` package has ended. It will no longer be receiving 
+updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+
+  import google.generativeai as genai
+
+[PlannerAgent] Topic: 'vision transformers for image classification'
+ERROR:agents.planner:PlannerAgent failed: Expecting ',' delimiter: line 4 column 47 (char 133)
+
+  sub_queries (5):
+    - vision transformers for image classification
+    - vision transformers for image classification architecture
+    - vision transformers for image classification evaluation benchmarks
+    - vision transformers for image classification improvements extensions
+    - vision transformers for image classification comparison survey
+  reasoning: Fallback due to error: Expecting ',' delimiter: line 4 column 47 (char 133)
+  ✓ PASSED
+
+[TEST 2] PaperSearchAgent
+
+[PaperSearchAgent] Running 2 queries...
+  [1/2] 'vision transformers for image classification'...
+Loading weights: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████| 103/103 [00:00<00:00, 1794.53it/s]
+Loading weights: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████| 201/201 [00:00<00:00, 2187.16it/s]
+     Found 5 chunks from 5 papers
+  [2/2] 'vision transformers for image classification archi'...
+     Found 5 chunks from 5 papers
+
+[PaperSearchAgent] Found 5 unique papers
+  [2020] An Image is Worth 16x16 Words: Transformers for Image R (2 chunks)
+  [2021] Multiscale Vision Transformers (2 chunks)
+  [2021] ConViT: Improving Vision Transformers with Soft Convolu (2 chunks)
+  [2021] Scaling Vision Transformers (2 chunks)
+  [2021] Swin Transformer: Hierarchical Vision Transformer using (2 chunks)
+
+  Papers found: 5
+  Chunks found: 10
+  ✓ PASSED
+
+[TEST 3] SummaryAgent (first 3 papers only)
+
+[SummaryAgent] Summarizing 3 papers...
+
+[SummaryAgent] Generated 3 summaries
+
+  Summaries generated: 3
+  [2020] An Image is Worth 16x16 Words: Transformers for Im
+    No content available for this paper....
+  [2021] Multiscale Vision Transformers
+    No content available for this paper....
+  ✓ PASSED
+
+[TEST 4] GraphAgent
+
+[GraphAgent] Analyzing 3 papers...
+  EXTENDS relationships: 1
+  Shared method relationships: 0
+
+[GraphAgent] Timeline (3 papers):
+  [2020] An Image is Worth 16x16 Words: Transformers for Im
+           Methods: ['Convolutional Networks', 'Vision Transformer (ViT)']
+  [2021] Multiscale Vision Transformers
+           Methods: ['backpropagation', 'Neocognitron']
+  [2021] ConViT: Improving Vision Transformers with Soft Co
+           Methods: ['AlexNet', 'attention head']
+
+[GraphAgent] Relationships: 1
+
+  Relationships: 1
+  Timeline entries: 3
+  Multiscale Vision Transformers → EXTENDS → ConViT: Improving Vision Trans
+  ✓ PASSED
+
+[TEST 5] WriterAgent
+
+[WriterAgent] Writing review for 3 papers...
+ERROR:agents.writer:WriterAgent failed: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 40.029964711s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 40
+}
+]
+
+  Review length: 399 chars
+  Citations: 0
+
+  --- REVIEW PREVIEW ---
+# Literature Review: vision transformers for image classification
+
+## An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (2020)
+
+No content available for this paper.
+
+## Multiscale Vision Transformers (2021)
+
+No content available for this paper.
+
+## ConViT: Improving Vision Transformers with Soft Convolutional Inductive Biases (2021)
+
+No content available for this paper.
+
+
+  --- END PREVIEW ---
+
+  ✓ PASSED
+
+[TEST 6] Full pipeline end-to-end
+  Topic: 'masked autoencoder pretraining for vision'
+  (This takes 3-5 minutes)
+
+
+======================================================================
+LITERATURE REVIEW AGENT PIPELINE
+Topic: masked autoencoder pretraining for vision transformers
+======================================================================
+
+[PlannerAgent] Topic: 'masked autoencoder pretraining for vision transformers'
+ERROR:agents.planner:PlannerAgent failed: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 35.776193672s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 35
+}
+]
+
+[PaperSearchAgent] Running 5 queries...
+  [1/5] 'masked autoencoder pretraining for vision transfor'...
+     Found 5 chunks from 3 papers
+  [2/5] 'masked autoencoder pretraining for vision transfor'...
+     Found 5 chunks from 3 papers
+  [3/5] 'masked autoencoder pretraining for vision transfor'...
+     Found 5 chunks from 3 papers
+  [4/5] 'masked autoencoder pretraining for vision transfor'...
+     Found 5 chunks from 2 papers
+  [5/5] 'masked autoencoder pretraining for vision transfor'...
+     Found 5 chunks from 3 papers
+
+[PaperSearchAgent] Found 3 unique papers
+  [2021] BEiT: BERT Pre-Training of Image Transformers (16 chunks)
+  [2021] Masked Autoencoders Are Scalable Vision Learners (5 chunks)
+  [2022] A Survey on Masked Autoencoder for Self-supervised Lear (4 chunks)
+
+[SummaryAgent] Summarizing 3 papers...
+
+[SummaryAgent] Generated 3 summaries
+
+[GraphAgent] Analyzing 3 papers...
+  EXTENDS relationships: 1
+  Shared method relationships: 0
+
+[GraphAgent] Timeline (3 papers):
+  [2021] BEiT: BERT Pre-Training of Image Transformers
+           Methods: ['randomly mask some image patches', 'Transformer']
+  [2021] Masked Autoencoders Are Scalable Vision Learners
+           Methods: ['encoder that operates only on the visible subset of patches', 'masking a high proportion of the input image']
+  [2022] A Survey on Masked Autoencoder for Self-supervised
+           Methods: ['Denoising autoencoder', 'Mask image modeling']
+
+[GraphAgent] Relationships: 1
+
+[WriterAgent] Writing review for 3 papers...
+ERROR:agents.writer:WriterAgent failed: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 59.529415589s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 59
+}
+]
+
+======================================================================
+PIPELINE COMPLETE — 38s
+  Papers found:     3
+  Summaries:        3
+  Relationships:    1
+  Citations:        0
+  Errors:           2
+    - PlannerAgent: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 35.776193672s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 35
+}
+]
+    - WriterAgent: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 59.529415589s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 59
+}
+]
+======================================================================
+
+  Papers: 3
+  Summaries: 3
+  Relationships: 1
+  Review chars: 400
+  Errors: ['PlannerAgent: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 35.776193672s. [links {\n  description: "Learn more about Gemini API quotas"\n  url: "https://ai.google.dev/gemini-api/docs/rate-limits"\n}\n, violations {\n  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"\n  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"\n  quota_dimensions {\n    key: "model"\n    value: "gemini-2.5-flash"\n  }\n  quota_dimensions {\n    key: "location"\n    value: "global"\n  }\n  quota_value: 20\n}\n, retry_delay {\n  seconds: 35\n}\n]', 'WriterAgent: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash\nPlease retry in 59.529415589s. [links {\n  description: "Learn more about Gemini API quotas"\n  url: "https://ai.google.dev/gemini-api/docs/rate-limits"\n}\n, violations {\n  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"\n  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"\n  quota_dimensions {\n    key: "model"\n    value: "gemini-2.5-flash"\n  }\n  quota_dimensions {\n    key: "location"\n    value: "global"\n  }\n  quota_value: 20\n}\n, retry_delay {\n  seconds: 59\n}\n]']
+
+✓ Saved to docs/lit_review_masked_autoencoder_pretraining_for_visio.md
+  Saved: docs/lit_review_masked_autoencoder_pretraining_for_visio.md
+  ✓ PASSED
+
+[TEST 7] Second topic — Swin Transformer
+
+======================================================================
+LITERATURE REVIEW AGENT PIPELINE
+Topic: Swin Transformer hierarchical vision
+======================================================================
+
+[PlannerAgent] Topic: 'Swin Transformer hierarchical vision'
+ERROR:agents.planner:PlannerAgent failed: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 47.348589341s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 47
+}
+]
+
+[PaperSearchAgent] Running 5 queries...
+  [1/5] 'Swin Transformer hierarchical vision'...
+     Found 5 chunks from 5 papers
+  [2/5] 'Swin Transformer hierarchical vision architecture'...
+     Found 5 chunks from 5 papers
+  [3/5] 'Swin Transformer hierarchical vision evaluation be'...
+     Found 5 chunks from 5 papers
+  [4/5] 'Swin Transformer hierarchical vision improvements '...
+     Found 5 chunks from 5 papers
+  [5/5] 'Swin Transformer hierarchical vision comparison su'...
+     Found 5 chunks from 4 papers
+
+[PaperSearchAgent] Found 7 unique papers
+  [2020] An Image is Worth 16x16 Words: Transformers for Image R (1 chunks)
+  [2021] Swin Transformer: Hierarchical Vision Transformer using (5 chunks)
+  [2021] ConViT: Improving Vision Transformers with Soft Convolu (5 chunks)
+  [2021] Pyramid Vision Transformer: A Versatile Backbone for De (5 chunks)
+  [2021] Multiscale Vision Transformers (6 chunks)
+  [2021] MobileViT: Light-weight, General-purpose, and Mobile-fr (1 chunks)
+  [2021] Scaling Vision Transformers (2 chunks)
+
+[SummaryAgent] Summarizing 7 papers...
+
+[SummaryAgent] Generated 7 summaries
+
+[GraphAgent] Analyzing 7 papers...
+  EXTENDS relationships: 5
+  Shared method relationships: 4
+
+[GraphAgent] Timeline (7 papers):
+  [2020] An Image is Worth 16x16 Words: Transformers for Im
+           Methods: ['Convolutional Networks', 'Vision Transformer (ViT)']
+  [2021] Swin Transformer: Hierarchical Vision Transformer 
+           Methods: ['Non-overlapping local windows', 'Hierarchical architecture']
+  [2021] ConViT: Improving Vision Transformers with Soft Co
+           Methods: ['AlexNet', 'attention head']
+  [2021] Pyramid Vision Transformer: A Versatile Backbone f
+           Methods: ['RetinaNet', 'Transformer']
+  [2021] Multiscale Vision Transformers
+           Methods: ['backpropagation', 'Neocognitron']
+  [2021] MobileViT: Light-weight, General-purpose, and Mobi
+           Methods: ['Vision Transformers (ViTs)', 'Convolutional Neural Networks (CNNs)']
+  [2021] Scaling Vision Transformers
+           Methods: ['Transformer', 'Vision Transformer']
+
+[GraphAgent] Relationships: 9
+
+[WriterAgent] Writing review for 7 papers...
+ERROR:agents.writer:WriterAgent failed: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 13.580826704s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 13
+}
+]
+
+======================================================================
+PIPELINE COMPLETE — 35s
+  Papers found:     7
+  Summaries:        7
+  Relationships:    9
+  Citations:        0
+  Errors:           2
+    - PlannerAgent: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 47.348589341s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 47
+}
+]
+    - WriterAgent: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 13.580826704s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 13
+}
+]
+======================================================================
+
+✓ Saved to docs/lit_review_swin_transformer_hierarchical_vision.md
+
+  Papers: 7
+  Review length: 859 chars
+  Saved: docs/lit_review_swin_transformer_hierarchical_vision.md
+  ✓ PASSED
+
+======================================================================
+DAY 12 SUMMARY
+======================================================================
+  ✓ PlannerAgent: topic → 5 specific queries
+  ✓ PaperSearchAgent: queries → deduplicated papers
+  ✓ SummaryAgent: papers → individual summaries
+  ✓ GraphAgent: relationships + timeline from Neo4j
+  ✓ WriterAgent: synthesized literature review
+  ✓ Full pipeline: end-to-end in ~3-5 minutes
+  ✓ Reviews saved to docs/
+======================================================================

@@ -1,0 +1,470 @@
+{
+  "arxiv_id": "2204.07118",
+  "title": "DeiT III: Revenge of the ViT",
+  "authors": [
+    "Hugo Touvron",
+    "Matthieu Cord",
+    "Herv\u00e9 J\u00e9gou"
+  ],
+  "year": 2022,
+  "abstract": "A Vision Transformer (ViT) is a simple neural architecture amenable to serve several computer vision tasks. It has limited built-in architectural priors, in contrast to more recent architectures that incorporate priors either about the input data or of specific tasks. Recent works show that ViTs benefit from self-supervised pre-training, in particular BerT-like pre-training like BeiT. In this paper, we revisit the supervised training of ViTs. Our procedure builds upon and simplifies a recipe introduced for training ResNet-50. It includes a new simple data-augmentation procedure with only 3 augmentations, closer to the practice in self-supervised learning. Our evaluations on Image classification (ImageNet-1k with and without pre-training on ImageNet-21k), transfer learning and semantic segmentation show that our procedure outperforms by a large margin previous fully supervised training recipes for ViT. It also reveals that the performance of our ViT trained with supervision is comparable to that of more recent architectures. Our results could serve as better baselines for recent self-supervised approaches demonstrated on ViT.",
+  "categories": [
+    "cs.CV"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2204.07118v1",
+  "page_count": 27,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 56,
+  "chunks": [
+    {
+      "chunk_id": "2204.07118_chunk_0000",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "DeiT III: Revenge of the ViTHugo Touvron\u22c6,\u2020Matthieu Cord\u2020Herv\u00b4e J\u00b4egou\u22c6\u22c6Meta AI\u2020Sorbonne UniversityAbstractA Vision Transformer (ViT) is a simple neural architecture amenable to serveseveral computer vision tasks. It has limited built-in architectural priors, incontrast to more recent architectures that incorporate priors either about theinput data or of specific tasks. Recent works show that ViTs benefit from self-supervised pre-training, in particular BerT-like pre-training like BeiT.In this paper, we revisit the supervised training of ViTs. Our procedurebuilds upon and simplifies a recipe introduced for training ResNet-50. It in-cludes a new simple data-augmentation procedure with only 3 augmentations,closer to the practice in self-supervised learning. Our evaluations on Imageclassification (ImageNet-1k with and without pre-training on ImageNet-21k),transfer learning and semantic segmentation show that our procedure outper-forms by a large margin previous fully supervised training recipes for ViT. Italso reveals that the performance of our ViT trained with supervision is com-parable to that of more recent architectures.",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0001",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "Italso reveals that the performance of our ViT trained with supervision is com-parable to that of more recent architectures. Our results could serve as betterbaselines for recent self-supervised approaches demonstrated on ViT.ImageNet-1kImageNet-21kViT-LViT-HViT-L@384ViT-L@224ViT-Btop-1 accuracy (%)ViT-Stop-1 accuracy (%)ViT-B@224Ours DeiTHe et al.He et al. + EMASteiner et al.Ours Dosovitskiy et al.Steiner et al.48163264128flops (x109)48163264128flops (x109)1IntroductionAfter their vast success in NLP, transformers models [55] and their derivativesare increasingly popular in computer vision. They are increasingly used in imageclassification [13], detection & segmentation [3], video analysis, etc. In particular,the vision transformers (ViT) of Dosovistky et al. [13] are a reasonable alternativeto convolutional architectures. This supports the adoption of transformers as ageneral architecture able to learn convolutions as well as longer range operationsthrough the attention process [5, 8]. In contrast, convolutional networks [20, 27, 29,41] implicitly offer built-in translation invariance. As a result their training doesnot have to learn this prior.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0002",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "In contrast, convolutional networks [20, 27, 29,41] implicitly offer built-in translation invariance. As a result their training doesnot have to learn this prior. It is therefore not surprising that hybrid architecturesthat include convolution converge faster than vanilla transformers [18].Because they incorporate as priors only the co-localisation of pixels in patches,transformers have to learn about the structure of images while optimizing themodel such that it processes the input with the objective of solving a given task.This can be either reproducing labels in the supervised case, or other proxy tasksin the case of self-supervised approaches. Nevertheless, despite their huge suc-cess, there has been only few works in computer vision studying how to efficientlytrain vision transformers, and in particular on a midsize dataset like ImageNet-1k. Since the work of Dosovistky et al. [13], the training procedures are mostlyvariants from the proposal of Touvron et al. [48] and Steiner et al. [42]. In con-trast, multiple works have proposed alternative architectures by introducing pool-ing, more efficient attention, or hybrid architectures re-incorporating convolutionsand a pyramid structure. These new designs, while being particularly effectivefor some tasks, are less general.",
+      "token_count": 260
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0003",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "In con-trast, multiple works have proposed alternative architectures by introducing pool-ing, more efficient attention, or hybrid architectures re-incorporating convolutionsand a pyramid structure. These new designs, while being particularly effectivefor some tasks, are less general. One difficult question to address is whether theimproved performance is due to a specific architectural design, or because it facil-itates the optimization as suggested it is the case for convolutions with ViTs [60].Recently, self-supervised approaches inspired by the popular BerT pre-traininghave raised hopes for a BerT moment in computer vision. There are some analo-gies between the fields of NLP and computer vision, starting with the transformerarchitecture itself. However these fields are not identical in every way: The modal-ities processed are of different nature (continuous versus discrete).",
+      "token_count": 166
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0004",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "There are some analo-gies between the fields of NLP and computer vision, starting with the transformerarchitecture itself. However these fields are not identical in every way: The modal-ities processed are of different nature (continuous versus discrete). Computer vi-sion offer large annotated databases like ImageNet [40], and fully supervised pre-training on ImageNet is effective for handling different downstream tasks such astransfer learning [37] or semantic segmentation.Without further work on fully supervised approaches on ImageNet it is diffi-cult to conclude if the intriguing performance of self-supervised approaches likeBeiT [2] is due to the training, e.g. data augmentation, regularization, optimiza-tion, or to an underlying mechanism that is capable of learning more generalimplicit representations.In this paper, we do not pretend to answer this dif-ficult question, but we want to feed this debate by renewing the training pro-cedure for vanilla ViT architectures.We hope to contribute to a better under-standing on how to fully exploit the potential of transformers and of the impor-tance of BerT-like pre-training. Our work builds upon the recent state of the arton fully supervised and self-supervised approaches, with new insights regardingdata-augmentation. We propose new training recipes for vision transformers onImageNet-1k and ImageNet-21k.",
+      "token_count": 273
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0005",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "Our work builds upon the recent state of the arton fully supervised and self-supervised approaches, with new insights regardingdata-augmentation. We propose new training recipes for vision transformers onImageNet-1k and ImageNet-21k. The main ingredients are as follows:\u2022 We build upon the work of Wightman et al. [57] introduced for ResNet50. Inparticular we adopt a binary cross entropy loss for Imagenet1k only training.We adapt this method by including ingredients that significantly improve thetraining of large ViT [51], namely stochastic depth [24] and LayerScale [51].\u2022 3-Augment: is a simple data augmentation inspired by that employed forself-supervised learning. Surprisingly, with ViT we observe that it works bet-ter than the usual automatic/learned data-augmentation employed to trainvision transformers like RandAugment [6].\u2022 Simple Random Cropping is more effective than Random Resize Croppingwhen pre-training on a larger set like ImageNet-21k.\u2022 A lower resolution at training time. This choice reduces the train-test dis-crepancy [53] but has not been much exploited with ViT.",
+      "token_count": 243
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0006",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "This choice reduces the train-test dis-crepancy [53] but has not been much exploited with ViT. We observe that italso has a regularizing effect for the largest models by preventing overfitting.For instance, for a target resolution of 224 \u00d7 224, a ViT-H pre-trained at res-olution 126 \u00d7 126 (81 tokens) achieves a better performance on ImageNet-1kthan when pre-training at resolution 224 \u00d7 224 (256 tokens). This is also lessdemanding at pre-training time, as there are 70% fewer tokens. From thisperspective it offers similar scaling properties as mask-autoencoders [19].Our \u201cnew\u201d training strategies do not saturate with the largest models, makinganother step beyond the Data-Efficient Image Transformer (DeiT) by Touvron etal. [48]. As a result, we obtain a competitive performance in image classificationand segmentation, even when compared to recent popular architectures such asSwinTransformers [31] or modern convnet architectures like ConvNext [32]. Belowwe point out a few interesting outcomes.\u2022 We leverage models with more capacity even on midsize datasets.",
+      "token_count": 240
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0007",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "Belowwe point out a few interesting outcomes.\u2022 We leverage models with more capacity even on midsize datasets. For in-stance we reach 85.2% in top-1 accuracy when training a ViT-H on Ima-geNet1k only, which is an improvement of +5.1% over the best ViT-H withsupervised training procedure reported in the literature at resolution 224\u00d7224.\u2022 Our training procedure for ImageNet-1k allow us to train a billion-parameterViT-H (52 layers) without any hyper-parameter adaptation, just using thesame stochastic depth drop-rate as for the ViT-H. It attains 84.9% at 224\u00d7224,i.e., +0.2% higher than the corresponding ViT-H trained in the same setting.\u2022 Without sacrificing performance, we divide by more than 2 the number ofGPUs required and the training time for ViT-H, making it effectively possibleto train such models without a reduced amount of resources.",
+      "token_count": 204
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0008",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "This is thanksto our pre-training at lower resolution, which reduces the peak memory.\u2022 For ViT-B and Vit-L models, our supervised training approach is on par withBerT-like self-supervised approaches [2, 19] with their default setting andwhen using the same level of annotations and less epochs, both for the tasksof image classification and of semantic segmentation.\u2022 With this improved training procedure, a vanilla ViT closes the gap with re-cent state-of-the art architectures, often offering better compute/performancetrade-offs. Our models are also comparatively better on the additional test setImageNet-V2 [39], which indicates that our trained models generalize betterto another validation set than most prior works.\u2022 An ablation on the effect of the crop ratio employed in transfer learning clas-sification tasks. We observe that it has a noticeable impact on the perfor-mance but that the best value depends a lot on the target dataset/task.2Related workVision Transformerswere introduced by Dosovitskiy et al. [13]. This architec-ture, which derives from the transformer by Vaswani et al. [55], is now used as analternative to convnets in many tasks: image classification [13, 48], detection [3, 31],semantic segmentation [2, 31] video analysis [17, 35], to name only a few.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0009",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "Thisgreater flexibility typically comes with the downside that they need larger datasets,or the training must be adapted when the data is scarcer [14, 48]. Many vari-ants have been introduced to reduce the cost of attention by introducing for ex-ample more efficient attention [16, 17, 31] or pooling layers [21, 31, 56]. Somepapers re-introduce spatial biases specific to convolutions within hybrid architec-tures [18, 58, 60]. These models are less general than vanilla transformers but gen-erally perform well in certain computer vision tasks, because their architecturalpriors reduce the need to learn from scratch the task biases. This is especially im-portant for smaller models, where specialized models do not have to devote somecapacity to reproduce known priors such as translation invariance. The models areformally less flexible but they do not require sophisticated training procedures.Training procedures:The first procedure proposed in the ViT paper [13] wasmostly effective for larger models trained on large datasets. In particular the ViTwere not competitive with convnets when trained from scratch on ImageNet. Tou-vron et al. [48] showed that by adapting the training procedure, it is possible toachieve a performance comparable to that of convnets with Imagenet training only.After this Data Efficient Image Transformer procedure (DeiT), only few adapta-tions have been proposed to improve the training vision transformers.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0010",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "Steiner etal. [42] published a complete study on how to train vision transformers on dif-ferent datasets by doing a complete ablation of the different training components.Their results on ImageNet [40] are slightly inferior to those of DeiT but they re-port improvements on ImageNet-21k compared to Dosovitskiy et al. [13]. The self-supervised approach referred to as masked auto-encoder (MAE) [19] proposes animproved supervised baseline for the larger ViT models.BerT pre-training:In the absence of a strong fully supervised training procedure,BerT [10]-like approaches that train ViT with a self-supervised proxy objective, fol-lowed by full finetuning on the target dataset, seem to be the best paradigm to fullyexploit the potential of vision transformers. Indeed, BeiT [2] or MAE [19] signifi-cantly outperform the fully-supervised approach, especially for the largest models.Nevertheless, to date these approaches have mostly shown their interest in the con-text of mid-size datasets. For example MAE [19] report its most impressive resultswhen pre-training on ImageNet-1k with a full finetuning on ImageNet-1k.",
+      "token_count": 256
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0011",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "For example MAE [19] report its most impressive resultswhen pre-training on ImageNet-1k with a full finetuning on ImageNet-1k. Whenpre-training on ImageNet-21k and finetuning on ImageNet-1k, BeiT [2] requires afull 90-epochs finetuning on ImageNet-21k followed by another full finetuning onImageNet-1k to reach its best performance, suggesting that a large labeled datasetis needed so that BeiT realizes its best potential. A recent work suggests that suchauto-encoders are mostly interesting in a data starving context [15], but this ques-tions their advantage in the case where more labelled data is actually available.Data-augmentation:For supervised training, the community commonly employsdata-augmentations offered by automatic design procedures such as RandAug-ment [6] or Auto-Augment [7]. These data-augmentations seem to be essential fortraining vision transformers [48]. Nevertheless, papers like TrivialAugment [34]and Uniform Augment [30] have shown that it is possible to reach interestingperformance levels when simplifying the approaches. However these approacheswere initially optimized for convnets. In our work we propose to go further in thisdirection and drastically limit and simplify data-augmentation: we introduce adata-augmentation policy that employs only 3 different transformations randomlydrawn with uniform probability.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0012",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "In our work we propose to go further in thisdirection and drastically limit and simplify data-augmentation: we introduce adata-augmentation policy that employs only 3 different transformations randomlydrawn with uniform probability. That\u2019s it.3Revisit training & pre-training for Vision TransformersIn this section, we present our training procedure for vision transformers and com-pare it with existing approaches. We detail the different ingredients in Table 1.Building upon Wightman et al. [57] and Touvron et al. [48], we introduce severalchanges that have a significant impact on the final model accuracy.3.1Regularization & lossStochastic depthis a regularization method that is especially useful for trainingdeep networks. We use a uniform drop rate across all layers and adapt it accordingto the model size [51]. Table 13 (A) gives the stochastic depth drop-rate per model.LayerScale.We use LayerScale [51]. This method was introduced to facilitate theconvergence of deep transformers. With our training procedure, we do not haveconvergence problems, however we observe that LayerScale allows our modelsto attain a higher accuracy for the largest models. In the original paper [51], theinitialization of LayerScale is adapted according to the depth.",
+      "token_count": 254
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0013",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "In the original paper [51], theinitialization of LayerScale is adapted according to the depth. In order to simplifythe method we use the same initialization (10\u22124) for all our models.Binary Cross entropy.Wigthman et al. [57] adopt a binary cross-entropy (BCE)loss instead of the more common cross-entropy (CE) to train ResNet-50. They con-clude that the gains are limited compared to the CE loss but that this choice is moreconvenient when employed with Mixup [64] and CutMix [63]. For larger ViTs andwith our training procedure on ImageNet-1k, the BCE loss provides us a significantimprovement in performance, see an ablation in Table 4.",
+      "token_count": 155
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0014",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "For larger ViTs andwith our training procedure on ImageNet-1k, the BCE loss provides us a significantimprovement in performance, see an ablation in Table 4. We did not achieve com-pelling results during our exploration phase on Imagenet21k, and therefore keepCE when pre-training with this dataset as well as for the subsequent fine-tuning.Previous approachesOursProcedure \u2192ViTSteinerDeiTWightmanImNet-1kImNet-21kReference[13]et al. [42][48]et al. [57]Pretrain.Finetune.Batch size4096409610242048204820482048OptimizerAdamWAdamWAdamWLAMBLAMBLAMBLAMBLR3.10\u221233.10\u221231.10\u221235.10\u221233.10\u221233.10\u221233.10\u22124LR decaycosinecosinecosinecosinecosinecosinecosineWeight decay0.10.30.050.020.020.020.02Warmup epochs3.43.455555Label smoothing \u03b50.10.10.1\u2717\u27170.10.1Dropout\u2713\u2713\u2717\u2717\u2717\u2717\u2717Stoch.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0015",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "Depth\u2717\u2713\u2713\u2713\u2713\u2713\u2713Repeated Aug\u2717\u2717\u2713\u2713\u2713\u2717\u2717Gradient Clip.1.01.0\u27171.01.01.01.0H. flip\u2713\u2713\u2713\u2713\u2713\u2713\u2713RRC\u2713\u2713\u2713\u2713\u2713\u2717\u2717Rand Augment\u2717Adapt.9/0.57/0.5\u2717\u2717\u27173 Augment (ours)\u2717\u2717\u2717\u2717\u2713\u2713\u2713LayerScale\u2717\u2717\u2717\u2717\u2713\u2713\u2713Mixup alpha\u2717Adapt.0.80.20.8\u2717\u2717Cutmix alpha\u2717\u27171.01.01.01.01.0Erasing prob.\u2717\u27170.25\u2717\u2717\u2717\u2717ColorJitter\u2717\u2717\u2717\u27170.30.30.3Test crop ratio0.8750.8750.8750.951.01.01.0LossCECECEBCEBCECECEThe optimizeris LAMB [61], a derivative of AdamW [33].",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0016",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "It includes gradientclipping by default in Apex\u2019s [1] implementation.3.2Data-augmentationSince the advent of AlexNet, there has been significant modifications to the data-augmentation procedures employed to train neural networks. Interestingly, thesame data augmentation, like RandAugment [6], is widely employed for ViT whiletheir policy was initially learned for convnets. Given that the architectural priorsand biases are quite different in these architectures, the augmentation policy maynot be adapted, and possibly overfitted considering the large amount of choicesinvolved in their selection. We therefore revisit this prior choice.3-Augment:We propose a simple data augmentation inspired by what is used inself-supervised learning (SSL). We consider the following transformations:\u2022 Grayscale: This favors color invariance and give more focus on shapes.\u2022 Solarization: This adds strong noise on the colour to be more robust to thevariation of colour intensity and so focus more on shape.Data-AugmentationImageNet-1kColorJitterGrayscaleGaussian BlurSolarizationValRealV20.3\u2717\u2717\u271781.486.170.30.3\u2713\u2717\u271781.086.069.70.3\u2713\u2713\u271782.787.672.70.3\u2713\u2713\u271383.187.772.60.0\u2713\u2713\u271383.187.772.0OriginalGauss.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0017",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "BlurrGrayscaleSolarization\u2022 Gaussian Blur: In order to slightly alter details in the image.For each image, we select only one of this data-augmentation with a uniform prob-ability over 3 different ones. In addition to these 3 aumgnentations choices, weinclude the common color-jitter and horizontal flip. Figure 2 illustrates the differ-ent augmentations used in our 3-Augment approach. In Table 2 we provide anablation on our different data-augmentation components.3.3CroppingRandom Resized Crop (RRC)was introduced in the GoogleNet [43] paper. Itserves as a regularisation to limit model overfitting, while favoring that the deci-sion done by the model is invariant to a certain class of transformations. This dataaugmentation was deemed important on Imagenet1k to prevent overfitting, whichhappens to occur rapidly with modern large models.RRCSRCThis cropping strategy however introduces some discrepancy between trainand test images in terms of the aspect ratio and the apparent size of objects [53].Since ImageNet-21k includes significantly more images, it is less prone to overfit-ting. Therefore we question whether the benefit of the strong RRC regularizationcompensates for its drawback when training on larger sets.Simple Random Crop (SRC)is a much simpler way to extract crops.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0018",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "Therefore we question whether the benefit of the strong RRC regularizationcompensates for its drawback when training on larger sets.Simple Random Crop (SRC)is a much simpler way to extract crops. It is similarto the original cropping choice proposed in AlexNet [27]: We resize the image suchthat the smallest side matches the training resolution. Then we apply a reflectpadding of 4 pixels on all sides, and finally we apply a square Crop of training sizerandomly selected along the x-axis of the image.Figure 3 vizualizes cropping boxes sampled for RRC and SRC. RRC provides alot of diversity and very different sizes for crops. In contrast SRC covers a muchlarger fraction of the image overall and preserve the aspect ratio, but offers less di-versity: The crops overlaps significantly. As a result, when training on ImageNet-1k the performance is better with the commonly used RRC. For instance a ViT-Sreduces its top-1 accuracy by \u22120.9% if we do not use RRC.However, in the case of ImageNet-21k (\u00d710 bigger than ImageNet-1k), there isless risk of overfitting and increasing the regularisation and diversity offered byRRC is less important. In this context, SRC offers the advantage of reducing thediscrepancy in apparent size and aspect ratio.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0019",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "In this context, SRC offers the advantage of reducing thediscrepancy in apparent size and aspect ratio. More importantly, it gives a higherchance that the actual label of the image matches that of the crop: RRC is relativelyaggressive in terms of cropping and in many cases the labelled object is not evenpresent in the crop, as shown in Figure 4 where some of the crops do not contain thelabelled object. For instance, with RRC there is a crop no zebra in the left example,or no train in three of the crops from the middle example. This is more unlikelyto happen with SRC, which covers a much larger fraction of the image pixels. InTable 5 we provide an ablation of random resized crop on ImageNet-21k, wherewe see that these observations translate as a significant gain in performance.SRCRRCSRCRRCSRCRRC4ExperimentsThis section includes multiple experiments in image classification, with a specialemphasis on Imagenet1k [9, 39, 40]. We also report results for downstream tasksin fine-grained classification and segmentation. We include a large number of ab-lations to better analyze different effects, such as the importance of the trainingresolution and longer training schedules. We provide additional results in the ap-pendices.4.1Baselines and default settingsThe main task that we consider in this paper for the evaluation of our trainingprocedure is image classification.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0020",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "We provide additional results in the ap-pendices.4.1Baselines and default settingsThe main task that we consider in this paper for the evaluation of our trainingprocedure is image classification. We train on Imagenet1k-train and evaluate onImagenet1k-val, with results on ImageNet-V2 to control overfitting. We also con-sider the case where we can pretrain on ImageNet-21k, Finally, we report transferlearning results on 6 different datasets/benchmarks.Default setting.When training on ImageNet-1k only, by default we train during400 epochs with a batch size 2048, following prior works [51, 60].",
+      "token_count": 141
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0021",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "Unless specifiedotherwise, both the training and evaluation are carried out at resolution 224 \u00d7 224(even though we recommend to train at a lower resolution when targeting 224\u00d7224at inference time).When pre-training on ImageNet-21k, we pre-train by default during 90 epochsat resolution 224 \u00d7 224, followed by a finetuning of 50 epochs on on ImageNet-1k.In this context we consider two fine-tuning resolutions: 224 \u00d7 224 and 384 \u00d7 384.4.2Ablations4.2.1Impact of training durationIn Figure 5 we provide an ablation on the number of epochs, which show that ViTmodels do not saturate as rapidly as the DeiT training procedure [48] when weincrease the number of epochs beyond the 400 epochs adopted for our baseline.For ImageNet-21k pre-training, we use 90 epochs for pre-training as in a fewworks [31, 49]. We finetune during 50 epochs on ImageNet-1k [49] and marginallyadapt the stochastic depth parameter. We point out that this choice is mostly forthe sake of consistency across models: we observe that training 30 epochs alsoprovides similar results.4.2.2Data-AugmentationIn Table 3 we compare our handcrafted data-augmentation 3-Augment with exist-ing learned augmentation methods.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0022",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "With the ViT architecture, our data-augmentationis the most effective while being simpler than the other approaches. Since previ-ous augmentations were introduced on convnets, we also provide results for aResNet-50.",
+      "token_count": 47
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0023",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "With the ViT architecture, our data-augmentationis the most effective while being simpler than the other approaches. Since previ-ous augmentations were introduced on convnets, we also provide results for aResNet-50. In this case previous augmentation policies have similar (RandAug-ment, Trivial-Augment) or better results (Auto-Augment) on the validation set.imageNet top-1(%)top-1(%)CARSCIFAR-10CIFAR-100FlowersINAT-18INAT-19Ours: ViT-LOurs: ViT-BOurs: ViT-SDeiT: ViT-B400600800training epochs0.50.60.70.80.91.0crop-ratioMethodLearned augm.# Nb ofModelImageNet-1kmethodsDAValRealV2ResNet5079.785.667.9ViT-B82.887.571.9ViT-L84.088.674.0Auto-Augment [7]\u271314RandAugment [6]\u271314ResNet5079.585.567.6ViT-B82.787.472.2ViT-L84.088.373.8ResNet5079.585.467.6ViT-B82.387.071.2ViT-L83.688.173.7Trivial-Augment [34]\u271314ResNet5079.485.567.8ViT-B83.187.772.63-Augment (Ours)\u27173ViT-L84.288.674.3This is no longer the case when evaluating on the independent set V2, for whichthe Auto-Augment better accuracy is not significant.4.2.3Impact of training resolutionIn Table 6 we report the evolution of the performance according to the trainingresolution.",
+      "token_count": 386
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0024",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "We observe that we benefit from the FixRes [53] effect. By training atresolution 192\u00d7192 (or 160\u00d7160) we get a better performance at 224 after a slightfine-tuning than when training from scratch at 224\u00d7224.We observe that the resolution has a regularization effect. While it is knownthat it is best to use a smaller resolution at training time [53], we also observe inthe training curves that this show reduces the overfitting of the larger models. Thisis also illustrated by our results Table 6 with ViT-H and ViT-L. This is especiallyimportant with longer training, where models overfit without a stronger regulari-sation.",
+      "token_count": 141
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0025",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "Thisis also illustrated by our results Table 6 with ViT-H and ViT-L. This is especiallyimportant with longer training, where models overfit without a stronger regulari-sation. This smaller resolution implies that there are less patches to be processed,ModelLossLayerScaleData Aug.EpochsImageNet-1kvalrealv2CE\u2717RandAugment30079.885.368.1BCE\u2717RandAugment30079.885.968.2BCE\u2713RandAugment30080.186.169.1BCE\u2713RandAugment40080.786.069.3BCE\u27133-Augment40080.486.169.7ViT-SCE\u2717RandAugment30080.985.568.5BCE\u2717RandAugment30082.287.271.4BCE\u2713RandAugment30082.587.571.4BCE\u2713RandAugment40082.787.472.2BCE\u27133-Augment40083.187.772.6ViT-BBCE\u2717RandAugment30083.087.972.4BCE\u2717RandAugment40083.387.772.5BCE\u2713RandAugment40084.088.373.8BCE\u27133-Augment40084.288.674.3ViT-LCrop.LSMixupAug.#Imnet21kfinetuningImagenet-1k val top-1Imagenet-1k v2 top-1policyepochsresolutionViT-SViT-BViT-LViT-SViT-BViT-LRRC\u27170.8RA90224281.684.686.070.774.776.4SRC\u27170.8RA90224282.184.886.371.875.076.7SRC\u27130.8RA90224282.485.086.472.475.777.4SRC\u2713\u2717RA90224282.385.186.572.475.677.2SRC\u2713\u27173A90224282.685.286.872.676.178.3SRC\u2713\u27173A240224283.185.787.073.876.578.6SRC\u2713\u27173A240384284.886.787.775.177.979.1ModelepochsResolutionImageNet top-1 accTrain.FTTrain.FTvalrealv2128 \u00d7 12883.288.173.2160 \u00d7 16083.388.073.4192 \u00d7 19283.588.072.8224 \u00d7 22483.187.772.640020224 \u00d7 224ViT-B128 \u00d7 1288002083.588.373.4160 \u00d7 16083.688.273.5192 \u00d7 19283.888.273.6224 \u00d7 22483.788.173.1224 \u00d7 224128 \u00d7 12883.988.874.3160 \u00d7 16084.488.874.3192 \u00d7 19284.588.875.1224 \u00d7 22484.288.674.340020224 \u00d7 224ViT-L128 \u00d7 12884.588.974.7160 \u00d7 16084.788.975.2192 \u00d7 19284.988.775.1224 \u00d7 22484.588.875.080020224 \u00d7 224126 \u00d7 12684.789.275.2154 \u00d7 15485.189.375.3182 \u00d7 18285.189.275.4224 \u00d7 22484.889.175",
+      "token_count": 762
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0026",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "In that re-spect it effect is comparable to that of MAE [19]. We also report results with ViT-H52 layers and ViT-H 26 layers parallel [50] models with 1B parameters. Due to thelower resolution training it is easier to train these models.4.2.4Comparison with previous training recipes for ViTIn Figure 1, we compare training procedures used to pre-train the ViT architec-ture either on ImageNet-1k and ImageNet-21k. Our procedure outperforms ex-isting recipes with a large margin. For instance, with ImageNet-21k pre-trainingwe have an improvement of +3.0% with ViT-L in comparison to the best approach.Similarly, when training from scratch on ImageNet-1k we improve the accuracy by+2.1% for ViT-H compared to the previous best approach, and by +4.3% with thebest approach that does not use EMA.",
+      "token_count": 206
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0027",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "See also detailed results in our appendices.ImageNet-1kImageNet-21kOurs: ViTConvNeXtDeiT: ViTEfficientNetEfficientNet-V2RSB: ResNetSwinOurs: ViTConvNeXtEfficientNet-V2SwinImageNet-v2 Top-1(%)ImageNet-v2 Top-1(%)818283848586ImageNet Top-1(%)85868788ImageNet Top-1(%)4.3Image ClassificationImageNet-1k.In Table 7 we compare ViT architectures trained with our trainingrecipes on ImageNet-1k with other architectures. We include a comparison withthe recent SwinTransformers [31] and ConvNeXts [32].Overfitting evaluation.The comparison between Imagenet-val and -v2 is a wayto quantify overfitting [54], or at least the better capability to generalize in a nearbysetting without any fine-tuning1. In Figure 7 we plot ImageNet-val top-1 accuracyvs ImageNet-v2 top-1 accuracy in order to evaluate how the models performedwhen evaluated on a test set never seen at validation time. Our models overfitsignificantly than all other models considered, especially on ImageNet-21k.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0028",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "Our models overfitsignificantly than all other models considered, especially on ImageNet-21k. Thisis a good behaviour that validates the fact that our restricted choice of hyper-parameters and variants in our recipe does not lead to (too much) overfitting.ImageNet-21k.In Table 8 we compare ViT architecture pre-trained on ImageNet-21k with our training recipe then finetuned on ImageNet-1k. We can observe thatthe findings are similar to what we obtained on ImageNet-1k only.Comparison with BerT-like pre-training.In Table 9 we compare ViT modelstrained with our training recipes with ViT trained with different BerT-like ap-proaches. We observe that for an equivalent number of epochs our approach givescomparable performance on ImageNet-1k and better on ImageNet-v2 as well asin segmentation on Ade. For BerT like pre-training we compare our method withMAE [19] and BeiT [2] because they remain relatively simple approaches with verygood performance. As our approach does not use distillation or multi-crops we1Caveat: The measures are less robust with -V2 as the number of test images is 10000 instead of50000 for Imagenet-val.",
+      "token_count": 260
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0029",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "As our approach does not use distillation or multi-crops we1Caveat: The measures are less robust with -V2 as the number of test images is 10000 instead of50000 for Imagenet-val. This translates to a higher standard deviation (0.2%).Architecturenb params throughput FLOPs Peak MemTop-1V2(\u00d7106)(im/s)(\u00d7109)(MB)Acc.Acc.\u201cTraditional\u201d ConvNetsResNet-50 [20, 57]25.625874.1218280.468.7ResNet-101 [20, 57]44.515867.9226981.570.3ResNet-152 [20, 57]60.2112211.6235982.070.6RegNetY-4GF [38, 57]20.617794.0304181.570.7RegNetY-8GF [38, 57]39.211588.0393982.271.1RegNetY-16GF [38, 48]83.671416.0520482.972.4EfficientNet-B4 [44]19.05734.21000682.972.3EfficientNet-B5 [44]30.02689.91104683.673.6EfficientNetV2-S [45]21.58748.5451583.974.0EfficientNetV2-M [45]54.131225.0712785.175.5EfficientNetV2-L [45]118.517953.0954085.776.3Vision Transformers derivativePiT-S-224 [21]23.518092.9329380.9PiT-B-224 [21]73.861512.5756482.0Swin-T-224 [31]28.311094.5334581.369.5Swin-S-224 [31]49.67188.7347083.071.8Swin-B-224 [31]87.853215.4469583.5Swin-B-384 [31]87.916047.21938584.5Vision MLP & Patch-based ConvNetsMixer-B/16 [46]59.999312.6144876.463.2ResMLP-B24 [47]116.0112023.093081.069.0PatchConvNet-S60-224 [49]25.211254.0132182.171.0PatchConvNet-B60-224 [49]99.454115.8279083.572.6PatchConvNet-B120-224 [49]188.628029.9331484.173.9ConvNeXt-B-224 [32]88.656315.4302983.873.4ConvNeXt-B-384 [32]88.619045.0785185.174.7ConvNeXt-L-224 [32]197.834434.4486584.374.0ConvNeXt-L-384 [32]197.8115101.01193885.575.3Our Vanilla Vision TransformersViT-S22.018914.698781.470.5ViT-S\u219138422.042415.5456983.473.1ViT-B86.683117.5207883.873.6ViT-B\u219138486.919055.5895685.074.8ViT-L304.427761.6378984.975.1ViT-L\u2191384304.867191",
+      "token_count": 744
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0030",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "We focus on the per-formance of ViT models pre-trained on ImageNet-1k only at resolution 224 \u00d7 224during 400 epochs on the 6 datasets shown in Table 14. Our results are presentedin Table 10. In Figure 6 we measure the impact of the crop ratio at inference timeon transfer learning results. We observe that on iNaturalist this parameter hasa significant impact on the performance.",
+      "token_count": 88
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0031",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "Our results are presentedin Table 10. In Figure 6 we measure the impact of the crop ratio at inference timeon transfer learning results. We observe that on iNaturalist this parameter hasa significant impact on the performance. As recommended in the paper ThreeThings [50] we finetune only the attention layers for transfer learning experimentson Flowers, this improves performance by 0.2%.ModelCIFAR-10CIFAR-100FlowersCarsiNat-18iNat-19Grafit ResNet-50 [52]98.292.569.875.9ResNet-152 [4]69.1ViT-B/16 [13]98.187.189.5ViT-L/16 [13]97.986.489.7ViT-B/16 [42]87.896.0ViT-L/16 [42]86.291.4DeiT-B99.190.898.492.173.277.7Ours ViT-S98.990.696.489.967.172.7Ours ViT-B99.392.598.693.473.678.0Ours ViT-L99.393.498.994.575.679.34.4.2Semantic segmentationWe evaluate our ViT baselines models (400 epochs schedules for ImageNet-1kmodels and 90 epochs for ImageNet-21k models) with semantic segmentation ex-periments on ADE20k dataset [65].",
+      "token_count": 309
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0032",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "This dataset consists of 20k training and 5kvalidation images with labels over 150 categories. For the training, we adopt thesame schedule as in Swin: 160k iterations with UperNet [59]. At test time we eval-uate with a single scale and multi-scale. Our UperNet implementation is basedon the XCiT [16] repository. By default the UperNet head uses an embedding di-mension of 512. In order to save compute, for small and tiny models we set it tothe size of their working dimension, i.e. 384 for small and 192 for tiny. We keepthe 512 by default as it is done in XCiT for other models. Our results are reportedin Table 11. We observe that vanilla ViTs trained with our training recipes have abetter FLOPs-accuracy trade-off than recent architectures like XCiT or Swin.4.4.3Training with others architecturesIn Table 12 we measure the top-1 accuracy on ImageNet-val, ImageNet-real andImageNet-v2 with different architecture train with our training procedure at reso-lution 224 \u00d7 224 on ImageNet-1k only. We can observe that for some architectureslike PiT or CaiT our training method will improve the performance. For some oth-ers like TNT our approach is neutral and for architectures like Swin it decreasesthe performance.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0033",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "We can observe that for some architectureslike PiT or CaiT our training method will improve the performance. For some oth-ers like TNT our approach is neutral and for architectures like Swin it decreasesthe performance. This is consistent with the findings of Wightman et al. [57] andillustrates the need to improve the training procedure in conjunction to the archi-tecture to obtain robust conclusions. Indeed, adjusting these architectures whilekeeping the training procedure fixed can probably have the same effect as keep-ing the architecture fixed and adjusting the training procedure. That means thatwith a fixed training procedure we can have an overfitting of an architecture for agiven training procedure.",
+      "token_count": 139
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0034",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "That means thatwith a fixed training procedure we can have an overfitting of an architecture for agiven training procedure. In order to take overfitting into account we perform ourmeasurements on the ImageNet val and ImageNet-v2 to quantify the amount ofoverfitting.BackbonePre-trainingUperNetresolution#paramsFLOPsSingle scaleMulti-scale(\u00d7106)(\u00d7109)mIoUmIoUResNet50224 \u00d7 22466.542.0DeiT-S224 \u00d7 22452.0109944.0XciT-T12/16224 \u00d7 22434.287441.5XciT-T12/8224 \u00d7 22433.994243.5Swin-T224 \u00d7 22459.994544.546.1Our ViT-T224 \u00d7 22410.914840.141.8Our ViT-S224 \u00d7 22441.758845.646.8XciT-M24/16224 \u00d7 224112.2121347.6XciT-M24/8224 \u00d7 224110.0216148.4PatchConvNet-B60224 \u00d7 224140.6125848.148.6PatchConvNet-B120224 \u00d7 224229.8155049.450.3MAE ViT-B224 \u00d7 224127.7128348.1Swin-B384 \u00d7 384121.0118848.149.7Our ViT-B224 \u00d7 224127.7128349.350.2Our ViT-L224 \u00d7 224353.6223151.552.0PatchConvNet\u2013B60\u2020224 \u00d7 224140.6125850.551.1PatchConvNet-L120\u2020224 \u00d7 224383.7208652.252.9Swin-B\u2020 (640 \u00d7 640)224 \u00d7 224121.0184150.051.6Swin-L\u2020 (640 \u00d7 640)224 \u00d7 224234.0323053.5Our ViT-B\u2020224 \u00d7 224127.7128351.852.8Our ViT-B\u2020384 \u00d7 384127.7128353.454.1Our ViT-L\u2020224 \u00d7 224353.6223153.854.7Our ViT-L\u2020320 \u00d7 320353.6223154.655.65ConclusionThis paper makes a simple contribution: it proposes improved baselines for visiontransformers trained in a supervised fashion that can serve (1) either as a com-parison basis for new architectures; (2) or for other training approaches such asthose based on self-supervised learning.",
+      "token_count": 542
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0035",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "We hope that this stronger baseline willserve the community effort in making progress on learning foundation modelsthat could serve many tasks.",
+      "token_count": 25
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0036",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "We hope that this stronger baseline willserve the community effort in making progress on learning foundation modelsthat could serve many tasks. Our experiments have also gathered a few insightson how to train ViT for larger models with reduced resources without hurting ac-curacy, allowing us to train a one-billion parameter model with 4 nodes of 8 GPUs.Acknowledgement.We thank Ishan Misra for his valuable feedback.ModelParamsFlopsImageNet-1k(\u00d7106)(\u00d7109)orig.valrealv2ViT-S [48]22.04.679.880.486.169.7ViT-B [13, 48]86.617.681.883.187.772.6PiT-S [21]23.52.980.980.486.169.2PiT-B [21]73.812.582.082.486.872.0TNT-S [62]23.85.281.581.487.270.6TNT-B [62]65.614.182.982.987.672.2ConViT-S [8]27.85.881.381.387.070.3ConViT-B [8]86.517.582.482.086.771.3Swin-S [31]49.68.783.082.186.970.7Swin-B [31]87.815.483.582.286.770.7CaiT-B12 [51]100.018.283.387.773.3References[1] Apex. https://nvidia.github.io/apex/index.html, accessed: 2022-01-01[2] Bao, H., Dong, L., Wei, F.: Beit: Bert pre-training of image transformers. arXivpreprint arXiv:2106.08254 (2021)[3] Carion, N., Massa, F., Synnaeve, G., Usunier, N., Kirillov, A., Zagoruyko, S.:End-to-end object detection with transformers.",
+      "token_count": 431
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0037",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "In: European Conference onComputer Vision (2020)[4] Chu, P., Bian, X., Liu, S., Ling, H.: Feature space augmentation for long-taileddata. arXiv preprint arXiv:2008.03673 (2020)[5] Cordonnier, J.B., Loukas, A., Jaggi, M.: On the relationship between self-attention and convolutional layers. arXiv preprint arXiv:1911.03584 (2019)[6] Cubuk, E.D., Zoph, B., Shlens, J., Le, Q.V.: RandAugment: Practical au-tomated data augmentation with a reduced search space. arXiv preprintarXiv:1909.13719 (2019)[7] Cubuk, E.D., Zoph, B., Man\u00b4e, D., Vasudevan, V., Le, Q.V.: Autoaugment:Learning augmentation policies from data. arXiv preprint arXiv:1805.09501(2018)[8] d\u2019Ascoli, S., Touvron, H., Leavitt, M.L., Morcos, A.S., Biroli, G., Sagun, L.:Convit: Improving vision transformers with soft convolutional inductive bi-ases.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0038",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "In: ICML (2021)[9] Deng, J., Dong, W., Socher, R., Li, L.J., Li, K., Fei-Fei, L.: Imagenet: A large-scale hierarchical image database. In: Conference on Computer Vision andPattern Recognition. pp. 248\u2013255 (2009)[10] Devlin, J., Chang, M.W., Lee, K., Toutanova, K.: BERT: Pre-training of deepbidirectional transformers for language understanding.",
+      "token_count": 106
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0039",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "In: NAACL (2019)[11] Dong, X., Bao, J., Chen, D., Zhang, W., Yu, N., Yuan, L., Chen, D., Guo, B.:Cswin transformer: A general vision transformer backbone with cross-shapedwindows. arXiv preprint arXiv:2107.00652 (2021)[12] Dong, X., Bao, J., Zhang, T., Chen, D., Zhang, W., Yuan, L., Chen, D., Wen, F.,Yu, N.: Peco: Perceptual codebook for bert pre-training of vision transform-ers. arXiv preprint arXiv:2111.12710 (2021)[13] Dosovitskiy, A., Beyer, L., Kolesnikov, A., Weissenborn, D., Zhai, X., Un-terthiner, T., Dehghani, M., Minderer, M., Heigold, G., Gelly, S., et al.: Animage is worth 16x16 words: Transformers for image recognition at scale.",
+      "token_count": 237
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0040",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "In:International Conference on Learning Representations (2021)[14] El-Nouby, A., Izacard, G., Touvron, H., Laptev, I., Jegou, H., Grave, E.: Arelarge-scale datasets necessary for self-supervised pre-training? arXiv preprintarXiv:2112.10740 (2021)[15] El-Nouby, A., Neverova, N., Laptev, I., J\u00b4egou, H.: Training vision transform-ers for image retrieval. arXiv preprint arXiv:2102.05644 (2021)[16] El-Nouby, A., Touvron, H., Caron, M., Bojanowski, P., Douze, M., Joulin,A., Laptev, I., Neverova, N., Synnaeve, G., Verbeek, J., et al.: Xcit: Cross-covariance image transformers. arXiv preprint arXiv:2106.09681 (2021)[17] Fan, H., Xiong, B., Mangalam, K., Li, Y., Yan, Z., Malik, J., Feichtenhofer, C.:Multiscale vision transformers. arXiv preprint arXiv:2104.11227 (2021)[18] Graham, B., El-Nouby, A., Touvron, H., Stock, P., Joulin, A., J\u00b4egou, H., Douze,M.: Levit: a vision transformer in convnet\u2019s clothing for faster inference. arXivpreprint arXiv:2104.01136 (2021)[19] He, K., Chen, X., Xie, S., Li, Y., Doll\u2019ar, P., Girshick, R.B.: Masked autoencodersare scalable vision learners. arXiv preprint arXiv:2111.06377 (2021)[20] He, K., Zhang, X., Ren, S., Sun, J.: Deep residual learning for image recogni-tion.",
+      "token_count": 439
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0041",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "In: Conference on Computer Vision and Pattern Recognition (2016)[21] Heo, B., Yun, S., Han, D., Chun, S., Choe, J., Oh, S.J.: Rethinking spatial di-mensions of vision transformers. arXiv preprint arXiv:2103.16302 (2021)[22] Horn, G.V., Mac Aodha, O., Song, Y., Shepard, A., Adam, H., Perona, P., Be-longie, S.J.: The iNaturalist species classification and detection dataset. arXivpreprint arXiv:1707.06642 (2017)[23] Horn, G.V., Mac Aodha, O., Song, Y., Shepard, A., Adam, H., Perona,P., Belongie, S.J.:The inaturalist challenge 2018 dataset. arXiv preprintarXiv:1707.06642 (2018)[24] Huang, G., Sun, Y., Liu, Z., Sedra, D., Weinberger, K.Q.: Deep networks withstochastic depth.",
+      "token_count": 234
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0042",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "In: European Conference on Computer Vision (2016)[25] Kolesnikov, A., Beyer, L., Zhai, X., Puigcerver, J., Yung, J., Gelly, S., Houlsby,N.: Big transfer (bit): General visual representation learning. arXiv preprintarXiv:1912.11370 6, 3 (2019)[26] Krause, J., Stark, M., Deng, J., Fei-Fei, L.: 3d object representations for fine-grained categorization. In: IEEE Workshop on 3D Representation and Recog-nition (2013)[27] Krizhevsky, A., Sutskever, I., Hinton, G.: ImageNet classification with deepconvolutional neural networks. In: NeurIPS (2012)[28] Krizhevsky, A.: Learning multiple layers of features from tiny images. Tech.rep., CIFAR (2009)[29] LeCun, Y., Bottou, L., Bengio, Y., Haffner, P.: Gradient-based learning appliedto document recognition.",
+      "token_count": 238
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0043",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "Tech.rep., CIFAR (2009)[29] LeCun, Y., Bottou, L., Bengio, Y., Haffner, P.: Gradient-based learning appliedto document recognition. Proceedings of the IEEE 86(11), 2278\u20132324 (1998)[30] LingChen, T.C., Khonsari, A., Lashkari, A., Nazari, M.R., Sambee, J.S., Nasci-mento, M.A.: Uniformaugment: A search-free probabilistic data augmenta-tion approach. arXiv preprint arXiv:2003.14348 (2020)[31] Liu, Z., Lin, Y., Cao, Y., Hu, H., Wei, Y., Zhang, Z., Lin, S., Guo, B.: Swintransformer: Hierarchical vision transformer using shifted windows. arXivpreprint arXiv:2103.14030 (2021)[32] Liu, Z., Mao, H., Wu, C.Y., Feichtenhofer, C., Darrell, T., Xie, S.: A convnet forthe 2020s. arXiv preprint arXiv:2201.03545 (2022)[33] Loshchilov, I., Hutter, F.: Fixing weight decay regularization in adam. arXivpreprint arXiv:1711.05101 (2017)[34] M\u00a8uller, S., Hutter, F.: Trivialaugment: Tuning-free yet state-of-the-art dataaugmentation. arXiv preprint arXiv:2103.10158 (2021)[35] Neimark, D., Bar, O., Zohar, M., Asselmann, D.: Video transformer network.arXiv preprint arXiv:2102.00719 (2021)[36] Nilsback, M.E., Zisserman, A.: Automated flower classification over a largenumber of classes.",
+      "token_count": 426
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0044",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "In: Proceedings of the Indian Conference on ComputerVision, Graphics and Image Processing (2008)[37] Oquab, M., Bottou, L., Laptev, I., Sivic, J.: Learning and transferring mid-levelimage representations using convolutional neural networks. In: Conferenceon Computer Vision and Pattern Recognition (2014)[38] Radosavovic, I., Kosaraju, R.P., Girshick, R.B., He, K., Doll\u00b4ar, P.: Designingnetwork design spaces. Conference on Computer Vision and Pattern Recog-nition (2020)[39] Recht, B., Roelofs, R., Schmidt, L., Shankar, V.: Do ImageNet classifiers gener-alize to ImageNet? In: International Conference on Machine Learning (2019)[40] Russakovsky, O., Deng, J., Su, H., Krause, J., Satheesh, S., Ma, S., Huang, Z.,Karpathy, A., Khosla, A., Bernstein, M., Berg, A.C., Fei-Fei, L.: ImageNet largescale visual recognition challenge. International Journal of Computer Vision115(3), 211\u2013252 (2015)[41] Simonyan, K., Zisserman, A.: Very deep convolutional networks for large-scale image recognition.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0045",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "International Journal of Computer Vision115(3), 211\u2013252 (2015)[41] Simonyan, K., Zisserman, A.: Very deep convolutional networks for large-scale image recognition. In: International Conference on Learning Represen-tations (2015)[42] Steiner, A., Kolesnikov, A., Zhai, X., Wightman, R., Uszkoreit, J., Beyer, L.:How to train your vit? data, augmentation, and regularization in vision trans-formers. arXiv preprint arXiv:2106.10270 (2021)[43] Szegedy, C., Wei Liu, Yangqing Jia, Sermanet, P., Reed, S., Anguelov, D., Er-han, D., Vanhoucke, V., Rabinovich, A.: Going deeper with convolutions. In:Conference on Computer Vision and Pattern Recognition (2015)[44] Tan, M., Le, Q.V.: EfficientNet: Rethinking model scaling for convolutionalneural networks. arXiv preprint arXiv:1905.11946 (2019)[45] Tan, M., Le, Q.V.: Efficientnetv2: Smaller models and faster training.",
+      "token_count": 266
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0046",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "In: Inter-national Conference on Machine Learning (2021)[46] Tolstikhin, I., Houlsby, N., Kolesnikov, A., Beyer, L., Zhai, X., Unterthiner, T.,Yung, J., Keysers, D., Uszkoreit, J., Lucic, M., Dosovitskiy, A.: MLP-Mixer: Anall-MLP architecture for vision. arXiv preprint arXiv:2105.01601 (2021)[47] Touvron, H., Bojanowski, P., Caron, M., Cord, M., El-Nouby, A., Grave,E., Joulin, A., Synnaeve, G., Verbeek, J., J\u00b4egou, H.: ResMLP: feedforwardnetworks for image classification with data-efficient training. arXiv preprintarXiv:2105.03404 (2021)[48] Touvron, H., Cord, M., Douze, M., Massa, F., Sablayrolles, A., J\u00b4egou, H.: Train-ing data-efficient image transformers & distillation through attention.",
+      "token_count": 248
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0047",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "Inter-national Conference on Machine Learning (2021)[49] Touvron, H., Cord, M., El-Nouby, A., Bojanowski, P., Joulin, A., Synnaeve, G.,J\u00b4egou, H.: Augmenting convolutional networks with attention-based aggre-gation. arXiv preprint arXiv:2112.13692 (2021)[50] Touvron, H., Cord, M., El-Nouby, A., Verbeek, J., J\u2019egou, H.:Threethings everyone should know about vision transformers. arXiv preprintarXiv:2203.09795 (2022)[51] Touvron, H., Cord, M., Sablayrolles, A., Synnaeve, G., J\u00b4egou, H.: Goingdeeper with image transformers. International Conference on Computer Vi-sion (2021)[52] Touvron, H., Sablayrolles, A., Douze, M., Cord, M., J\u00b4egou, H.: Grafit: Learn-ing fine-grained image representations with coarse labels. International Con-ference on Computer Vision (2021)[53] Touvron, H., Vedaldi, A., Douze, M., Jegou, H.: Fixing the train-test resolutiondiscrepancy.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0048",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "International Con-ference on Computer Vision (2021)[53] Touvron, H., Vedaldi, A., Douze, M., Jegou, H.: Fixing the train-test resolutiondiscrepancy. Neurips (2019)[54] Touvron, H., Vedaldi, A., Douze, M., J\u00b4egou, H.: Fixing the train-test resolutiondiscrepancy: Fixefficientnet. arXiv preprint arXiv:2003.08237 (2020)[55] Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N.,Kaiser, L., Polosukhin, I.: Attention is all you need.",
+      "token_count": 161
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0049",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "In: NeurIPS (2017)[56] Wang, W., Xie, E., Li, X., Fan, D.P., Song, K., Liang, D., Lu, T., Luo, P., Shao,L.: Pyramid vision transformer: A versatile backbone for dense predictionwithout convolutions. arXiv preprint arXiv:2102.12122 (2021)[57] Wightman, R., Touvron, H., J\u00b4egou, H.: Resnet strikes back: An improvedtraining procedure in timm. arXiv preprint arXiv:2110.00476 (2021)[58] Wu, H., Xiao, B., Codella, N.C.F., Liu, M., Dai, X., Yuan, L., Zhang,L.: Cvt: Introducing convolutions to vision transformers. arXiv preprintarXiv:2103.15808 (2021)[59] Xiao, T., Liu, Y., Zhou, B., Jiang, Y., Sun, J.: Unified perceptual parsing forscene understanding.",
+      "token_count": 224
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0050",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "In: European Conference on Computer Vision (2018)[60] Xiao, T., Singh, M., Mintun, E., Darrell, T., Doll\u00b4ar, P., Girshick, R.: Early con-volutions help transformers see better. arXiv preprint arXiv:2106.14881 (2021)[61] You, Y., Li, J., Reddi, S., Hseu, J., Kumar, S., Bhojanapalli, S., Song, X., Dem-mel, J., Keutzer, K., Hsieh, C.J.: Large batch optimization for deep learning:Training BERT in 76 minutes.",
+      "token_count": 140
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0051",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 51,
+      "section": "preamble",
+      "text": "In: International Conference on Learning Rep-resentations (2020)[62] Yuan, L., Chen, Y., Wang, T., Yu, W., Shi, Y., Tay, F., Feng, J., Yan, S.: Tokens-to-token vit: Training vision transformers from scratch on imagenet. arXivpreprint arXiv:2101.11986 (2021)[63] Yun, S., Han, D., Oh, S.J., Chun, S., Choe, J., Yoo, Y.: CutMix: Regulariza-tion strategy to train strong classifiers with localizable features. arXiv preprintarXiv:1905.04899 (2019)[64] Zhang, H., Ciss\u00b4e, M., Dauphin, Y.N., Lopez-Paz, D.: mixup: Beyond empiricalrisk minimization. arXiv preprint arXiv:1710.09412 (2017)[65] Zhou, B., Zhao, H., Puig, X., Fidler, S., Barriuso, A., Torralba, A.: Sceneparsing through ade20k dataset.",
+      "token_count": 240
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0052",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 52,
+      "section": "preamble",
+      "text": "Conference on Computer Vision and PatternRecognition (2017)[66] Zhou, J., Wei, C., Wang, H., Shen, W., Xie, C., Yuille, A.L., Kong, T.: ibot:Image bert pre-training with online tokenizer. arXiv preprint arXiv:2111.07832(2021)AppendicesAExperimental detailsFine-tuning at higher resolutionWhen pre-training on ImageNet-1k at resolu-tion 224 \u00d7 224 we fix the train-test resolution discrepancy by finetuning at a higherresolution [53]. Our finetuning procedure is inspired by DeiT, except that we adaptthe stochastic depth rate according to the model size [51]. We fix the learning reateto lr = 1 \u00d7 10\u22125 with batch-size=512 during 20 epochs with a weight decay of0.1 without repeated augmentation. Other hyper-parameters are similar to thoseemployed in DeiT fine-tuning.Stochastic depthWe adapt the stochastic depth drop rate according to the modelsize.",
+      "token_count": 216
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0053",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 53,
+      "section": "preamble",
+      "text": "Other hyper-parameters are similar to thoseemployed in DeiT fine-tuning.Stochastic depthWe adapt the stochastic depth drop rate according to the modelsize. We report stochastic depth drop rate values in Table 13.Model# ParamsFLOPsStochastic depth drop-rate(\u00d7106)(\u00d7109)ImageNet-1kImageNet-21kViT-T5.71.30.00.0ViT-S22.04.60.00.0ViT-B86.617.50.10.1ViT-L304.461.60.40.3ViT-H632.1167.40.50.5For transfer learningexperiments we evaluate our models pre-trained at resolu-tion 224 \u00d7 224 on ImageNet-1k only on 6 transfer learning datasets.",
+      "token_count": 166
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0054",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 54,
+      "section": "preamble",
+      "text": "We give thedetails of these datasets in Table 14 below.DatasetTrain sizeTest size#classesiNaturalist 2018 [23]437,51324,4268,142iNaturalist 2019 [22]265,2403,0031,010Flowers-102 [36]2,0406,149102Stanford Cars [26]8,1448,041196CIFAR-100 [28]50,00010,000100CIFAR-10 [28]50,00010,00010BAdditional AblationsNumber of training epochsIn Table 15 we provide an ablation on the number oftraining epochs on ImageNet-1k.",
+      "token_count": 143
+    },
+    {
+      "chunk_id": "2204.07118_chunk_0055",
+      "arxiv_id": "2204.07118",
+      "chunk_index": 55,
+      "section": "preamble",
+      "text": "We do not observe a saturation when the increaseModelepochsImageNet top1 acc.valrealv230079.986.168.840080.486.169.760080.886.769.980081.487.070.5ViT-S30082.887.672.140083.187.772.660083.287.873.380083.788.173.1ViT-B30084.188.574.140084.288.674.360084.488.674.680084.588.875.0ViT-LViT-H30084.689.074.940084.889.175.3of the number of training epochs, as observed with BerT like approaches [2, 19].For longer training we increase the weight decay from 0.02 to 0.05 and we increasethe stochastic depth drop-rate by 0.05 every 200 epochs to prevent overfitting.",
+      "token_count": 197
+    }
+  ]
+}

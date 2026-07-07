@@ -1,0 +1,394 @@
+{
+  "arxiv_id": "2103.15808",
+  "title": "CvT: Introducing Convolutions to Vision Transformers",
+  "authors": [
+    "Haiping Wu",
+    "Bin Xiao",
+    "Noel Codella",
+    "Mengchen Liu",
+    "Xiyang Dai",
+    "Lu Yuan",
+    "Lei Zhang"
+  ],
+  "year": 2021,
+  "abstract": "We present in this paper a new architecture, named Convolutional vision Transformer (CvT), that improves Vision Transformer (ViT) in performance and efficiency by introducing convolutions into ViT to yield the best of both designs. This is accomplished through two primary modifications: a hierarchy of Transformers containing a new convolutional token embedding, and a convolutional Transformer block leveraging a convolutional projection. These changes introduce desirable properties of convolutional neural networks (CNNs) to the ViT architecture (\\ie shift, scale, and distortion invariance) while maintaining the merits of Transformers (\\ie dynamic attention, global context, and better generalization). We validate CvT by conducting extensive experiments, showing that this approach achieves state-of-the-art performance over other Vision Transformers and ResNets on ImageNet-1k, with fewer parameters and lower FLOPs. In addition, performance gains are maintained when pretrained on larger datasets (\\eg ImageNet-22k) and fine-tuned to downstream tasks. Pre-trained on ImageNet-22k, our CvT-W24 obtains a top-1 accuracy of 87.7\\% on the ImageNet-1k val set. Finally, our results show that the positional encoding, a crucial component in existing Vision Transformers, can be safely removed in our model, simplifying the design for higher resolution vision tasks. Code will be released at \\url{https://github.com/leoxiaobin/CvT}.",
+  "categories": [
+    "cs.CV"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2103.15808v1",
+  "page_count": 10,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 46,
+  "chunks": [
+    {
+      "chunk_id": "2103.15808_chunk_0000",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "CvT: Introducing Convolutions to Vision TransformersHaiping Wu1,2*Bin Xiao2\u2020Noel Codella2Mengchen Liu2Xiyang Dai2Lu Yuan2Lei Zhang21McGill University2Microsoft Cloud + AIhaiping.wu2@mail.mcgill.ca, {bixi, ncodella, mengcliu, xidai, luyuan, leizhang}@microsoft.comAbstractCvTViTBiTCvTDeiTT2TPVTTNTWe present in this paper a new architecture, named Con-volutional vision Transformer (CvT), that improves VisionTransformer (ViT) in performance and ef\ufb01ciency by intro-ducing convolutions into ViT to yield the best of both de-signs. This is accomplished through two primary modi\ufb01ca-tions: a hierarchy of Transformers containing a new convo-lutional token embedding, and a convolutional Transformerblock leveraging a convolutional projection. These changesintroduce desirable properties of convolutional neural net-works (CNNs) to the ViT architecture (i.e. shift, scale,and distortion invariance) while maintaining the merits ofTransformers (i.e. dynamic attention, global context, andbetter generalization).",
+      "token_count": 264
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0001",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "We validate CvT by conducting ex-tensive experiments, showing that this approach achievesstate-of-the-art performance over other Vision Transform-ers and ResNets on ImageNet-1k, with fewer parame-ters and lower FLOPs.In addition, performance gainsare maintained when pretrained on larger datasets (e.g.ImageNet-22k) and \ufb01ne-tuned to downstream tasks. Pre-trained on ImageNet-22k, our CvT-W24 obtains a top-1 ac-curacy of 87.7% on the ImageNet-1k val set. Finally, ourresults show that the positional encoding, a crucial com-ponent in existing Vision Transformers, can be safely re-moved in our model, simplifying the design for higher res-olution vision tasks.Code will be released at https://github.com/leoxiaobin/CvT.ImageNet top-1 accuracy (%)277MImageNet top-1 accuracy (%)82.5928M307M82.032M86M81.520M81.080.525M80.0CvTViTBiT20406080Model Paramters (M)(a)(b)architectures [10] from language understanding with mini-mal modi\ufb01cations. First, images are split into discrete non-overlapping patches (e.g. 16 \u00d7 16).",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0002",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "First, images are split into discrete non-overlapping patches (e.g. 16 \u00d7 16). Then, these patches aretreated as tokens (analogous to tokens in NLP), summedwith a special positional encoding to represent coarse spa-tial information, and input into repeated standard Trans-former layers to model global relations for classi\ufb01cation.1. IntroductionTransformers [31, 10] have recently dominated a widerange of tasks in natural language processing (NLP) [32].The Vision Transformer (ViT) [11] is the \ufb01rst computer vi-sion model to rely exclusively on the Transformer archi-tecture to obtain competitive image classi\ufb01cation perfor-mance at large scale. The ViT design adapts TransformerDespite the success of vision Transformers at large scale,the performance is still below similarly sized convolutionalneural network (CNN) counterparts (e.g., ResNets [15])when trained on smaller amounts of data. One possible rea-son may be that ViT lacks certain desirable properties in-herently built into the CNN architecture that make CNNsuniquely suited to solve vision tasks.For example, im-ages have a strong 2D local structure: spatially neighbor-ing pixels are usually highly correlated.",
+      "token_count": 260
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0003",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "The CNN archi-*This work is done when Haiping Wu was an intern at Microsoft.\u2020Corresponding authorMethodNeeds Position Encoding (PE)Token EmbeddingProjection for AttentionHierarchical TransformersViT [11], DeiT [30]yesnon-overlappinglinearnoCPVT [6]no (w/ PE Generator)non-overlappinglinearnoTNT [14]yesnon-overlapping (patch+pixel)linearnoT2T [41]yesoverlapping (concatenate)linearpartial (tokenization)PVT [34]yesnon-overlappingspatial reductionyesCvT (ours)nooverlapping (convolution)convolutionyestecture forces the capture of this local structure by usinglocal receptive \ufb01elds, shared weights, and spatial subsam-pling [20], and thus also achieves some degree of shift,scale, and distortion invariance.",
+      "token_count": 187
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0004",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "In addition, the hierarchi-cal structure of convolutional kernels learns visual patternsthat take into account local spatial context at varying levelsof complexity, from simple low-level edges and textures tohigher order semantic patterns.former (CvT) employs all the bene\ufb01ts of CNNs: local re-ceptive \ufb01elds, shared weights, and spatial subsampling,while keeping all the advantages of Transformers: dynamicattention, global context fusion, and better generalization.Our results demonstrate that this approach attains state-of-art performance when CvT is pre-trained with ImageNet-1k, while being lightweight and ef\ufb01cient: CvT improves theperformance compared to CNN-based models (e.g. ResNet)and prior Transformer-based models (e.g. ViT, DeiT) whileutilizing fewer FLOPS and parameters. In addition, CvTachieves state-of-the-art performance when evaluated atlarger scale pretraining (e.g. on the public ImageNet-22kdataset). Finally, we demonstrate that in this new design, wecan drop the positional embedding for tokens without anydegradation to model performance.",
+      "token_count": 233
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0005",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "Finally, we demonstrate that in this new design, wecan drop the positional embedding for tokens without anydegradation to model performance. This not only simpli\ufb01esthe architecture design, but also makes it readily capable ofaccommodating variable resolutions of input images that iscritical to many vision tasks.In this paper, we hypothesize that convolutions can bestrategically introduced to the ViT structure to improveperformance and robustness, while concurrently maintain-ing a high degree of computational and memory ef\ufb01ciency.To verify our hypothesises, we present a new architecture,called the Convolutional vision Transformer (CvT), whichincorporates convolutions into the Transformer that is in-herently ef\ufb01cient, both in terms of \ufb02oating point operations(FLOPs) and parameters.The CvT design introduces convolutions to two core sec-tions of the ViT architecture. First, we partition the Trans-formers into multiple stages that form a hierarchical struc-ture of Transformers. The beginning of each stage consistsof a convolutional token embedding that performs an over-lapping convolution operation with stride on a 2D-reshapedtoken map (i.e., reshaping \ufb02attened token sequences backto the spatial grid), followed by layer normalization.",
+      "token_count": 264
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0006",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "Thisallows the model to not only capture local information, butalso progressively decrease the sequence length while si-multaneously increasing the dimension of token featuresacross stages, achieving spatial downsampling while con-currently increasing the number of feature maps, as is per-formed in CNNs [20]. Second, the linear projection priorto every self-attention block in the Transformer module isreplaced with our proposed convolutional projection, whichemploys a s \u00d7 s depth-wise separable convolution [5] oper-ation on an 2D-reshaped token map. This allows the modelto further capture local spatial context and reduce seman-tic ambiguity in the attention mechanism. It also permitsmanagement of computational complexity, as the stride ofconvolution can be used to subsample the key and value ma-trices to improve ef\ufb01ciency by 4\u00d7 or more, with minimaldegradation of performance.2. Related WorkTransformers that exclusively rely on the self-attentionmechanism to capture global dependencies have dominatedin natural language modelling [31, 10, 25].",
+      "token_count": 219
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0007",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "Related WorkTransformers that exclusively rely on the self-attentionmechanism to capture global dependencies have dominatedin natural language modelling [31, 10, 25]. Recently, theTransformer based architecture has been viewed as a viablealternative to the convolutional neural networks (CNNs) invisual recognition tasks, such as classi\ufb01cation [11, 30], ob-ject detection [3, 45, 43, 8, 28], segmentation [33, 36], im-age enhancement [4, 40], image generation [24], video pro-cessing [42, 44] and 3D point cloud processing [12].Vision Transformers.The Vision Transformer (ViT) isthe \ufb01rst to prove that a pure Transformer architecture canattain state-of-the-art performance (e.g. ResNets [15], Ef-\ufb01cientNet [29]) on image classi\ufb01cation when the data islarge enough (i.e. on ImageNet-22k, JFT-300M).",
+      "token_count": 214
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0008",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "ResNets [15], Ef-\ufb01cientNet [29]) on image classi\ufb01cation when the data islarge enough (i.e. on ImageNet-22k, JFT-300M). Speci\ufb01-cally, ViT decomposes each image into a sequence of tokens(i.e. non-overlapping patches) with \ufb01xed length, and thenapplies multiple standard Transformer layers, consisting ofMulti-Head Self-Attention module (MHSA) and Position-wise Feed-forward module (FFN), to model these tokens.DeiT [30] further explores the data-ef\ufb01cient training anddistillation for ViT.",
+      "token_count": 135
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0009",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "In this work, we study how to combineIn summary, our proposed Convolutional vision Trans-CNNs and Transformers to model both local and global de-pendencies for image classi\ufb01cation in an ef\ufb01cient way.In order to better model local context in vision Trans-formers, some concurrent works have introduced designchanges.For example, the Conditional Position encod-ings Visual Transformer (CPVT) [6] replaces the prede-\ufb01ned positional embedding used in ViT with conditionalposition encodings (CPE), enabling Transformers to pro-cess input images of arbitrary size without interpolation.Transformer-iN-Transformer (TNT) [14] utilizes both anouter Transformer block that processes the patch embed-dings, and an inner Transformer block that models the re-lation among pixel embeddings, to model both patch-leveland pixel-level representation. Tokens-to-Token (T2T) [41]mainly improves tokenization in ViT by concatenating mul-tiple tokens within a sliding window into one token. How-ever, this operation fundamentally differs from convolutionsespecially in normalization details, and the concatenationof multiple tokens greatly increases complexity in compu-tation and memory.",
+      "token_count": 241
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0010",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "How-ever, this operation fundamentally differs from convolutionsespecially in normalization details, and the concatenationof multiple tokens greatly increases complexity in compu-tation and memory. PVT [34] incorporates a multi-stagedesign (without convolutions) for Transformer similar tomulti-scales in CNNs, favoring dense prediction tasks.In contrast to these concurrent works, this work aimsto achieve the best of both worlds by introducing convolu-tions, with image domain speci\ufb01c inductive biases, into theTransformer architecture. Table 1 shows the key differencesin terms of necessity of positional encodings, type of tokenembedding, type of projection, and Transformer structure inthe backbone, between the above representative concurrentworks and ours.tasks. Among these works, the non-local networks [35] aredesigned for capturing long range dependencies via globalattention. The local relation networks [17] adapts its weightaggregation based on the compositional relations (similar-ity) between pixels/features within a local window, in con-trast to convolution layers which employ \ufb01xed aggrega-tion weights over spatially neighboring input feature. Suchan adaptive weight aggregation introduces geometric pri-ors into the network which are important for the recogni-tion tasks.",
+      "token_count": 251
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0011",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "Suchan adaptive weight aggregation introduces geometric pri-ors into the network which are important for the recogni-tion tasks. Recently, BoTNet [27] proposes a simple yetpowerful backbone architecture that just replaces the spa-tial convolutions with global self-attention in the \ufb01nal threebottleneck blocks of a ResNet and achieves a strong per-formance in image recognition. Instead, our work performsan opposite research direction: introducing convolutions toTransformers.Introducing Convolutions to Transformers.In NLPand speech recognition, convolutions have been used tomodify the Transformer block, either by replacing multi-head attentions with convolution layers [38], or addingadditional convolution layers in parallel[39] or sequen-tially [13], to capture local relationships. Other prior work[37] proposes to propagate attention maps to succeedinglayers via a residual connection, which is \ufb01rst transformedby convolutions. Different from these works, we proposeto introduce convolutions to two primary parts of the vi-sion Transformer: \ufb01rst, to replace the existing Position-wiseLinear Projection for the attention operation with our Con-volutional Projection, and second, to use our hierarchicalmulti-stage structure to enable varied resolution of 2D re-shaped token maps, similar to CNNs.",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0012",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "Our unique designaffords signi\ufb01cant performance and ef\ufb01ciency bene\ufb01ts overIntroducing Self-attentions to CNNs.Self-attentionmechanisms have been widely applied to CNNs in visionprior works.widthHi =Hi\u22121 + 2p \u2212ss \u2212o+ 1, Wi =Wi\u22121 + 2p \u2212ss \u2212o+ 1.3. Convolutional vision Transformer(1)f(xi\u22121) is then \ufb02attened into size HiWi \u00d7 Ci and normal-ized by layer normalization [1] for input into the subsequentTransformer blocks of stage i.The Convolutional Token Embedding layer allows us toadjust the token feature dimension and the number of to-kens at each stage by varying parameters of the convolutionoperation. In this manner, in each stage we progressivelydecrease the token sequence length, while increasing thetoken feature dimension. This gives the tokens the abilityto represent increasingly complex visual patterns over in-creasingly larger spatial footprints, similar to feature layersof CNNs.The overall pipeline of the Convolutional vision Trans-former (CvT) is shown in Figure 2.We introduce twoconvolution-based operations into the Vision Transformerarchitecture, namely the Convolutional Token Embeddingand Convolutional Projection.",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0013",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "As shown in Figure 2 (a), amulti-stage hierarchy design borrowed from CNNs [20, 15]is employed, where three stages in total are used in thiswork.Each stage has two parts.First, the input image(or 2D reshaped token maps) are subjected to the Convo-lutional Token Embedding layer, which is implemented as aconvolution with overlapping patches with tokens reshapedto the 2D spatial grid as the input (the degree of overlapcan be controlled via the stride length). An additional layernormalization is applied to the tokens. This allows eachstage to progressively reduce the number of tokens (i.e. fea-ture resolution) while simultaneously increasing the widthof the tokens (i.e. feature dimension), thus achieving spa-tial downsampling and increased richness of representation,similar to the design of CNNs. Different from other priorTransformer-based architectures [11, 30, 41, 34], we do notsum the ad-hod position embedding to the tokens. Next,a stack of the proposed Convolutional Transformer Blockscomprise the remainder of each stage. Figure 2 (b) showsthe architecture of the Convolutional Transformer Block,where a depth-wise separable convolution operation [5],referred as Convolutional Projection, is applied for query,key, and value embeddings respectively, instead of the stan-dard position-wise linear projection in ViT [11].",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0014",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "Addition-ally, the classi\ufb01cation token is added only in the last stage.Finally, an MLP (i.e. fully connected) Head is utilized uponthe classi\ufb01cation token of the \ufb01nal stage output to predictthe class.We \ufb01rst elaborate on the proposed Convolutional TokenEmbedding layer. Next we show how to perform Convolu-tional Projection for the Multi-Head Self-Attention module,and its ef\ufb01cient design for managing computational cost.3.2. Convolutional Projection for AttentionThe goal of the proposed Convolutional Projection layeris to achieve additional modeling of local spatial context,and to provide ef\ufb01ciency bene\ufb01ts by permitting the under-sampling of K and V matrices.Fundamentally, the proposed Transformer block withConvolutional Projection is a generalization of the origi-nal Transformer block. While previous works [13, 39] tryto add additional convolution modules to the TransformerBlock for speech recognition and natural language process-ing, they result in a more complicated design and addi-tional computational cost. Instead, we propose to replacethe original position-wise linear projection for Multi-HeadSelf-Attention (MHSA) with depth-wise separable convo-lutions, forming the Convolutional Projection layer.3.2.1Implementation Details3.1.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0015",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "Convolutional Token EmbeddingThis convolution operation in CvT aims to model localspatial contexts, from low-level edges to higher order se-mantic primitives, over a multi-stage hierarchy approach,similar to CNNs.Formally, given a 2D image or a 2D-reshaped output to-ken map from a previous stage xi\u22121 \u2208RHi\u22121\u00d7Wi\u22121\u00d7Ci\u22121as the input to stage i, we learn a function f(\u00b7) that mapsxi\u22121 into new tokens f(xi\u22121) with a channel size Ci, wheref(\u00b7) is 2D convolution operation of kernel size s \u00d7 s, strides \u2212o and p padding (to deal with boundary conditions).The new token map f(xi\u22121) \u2208RHi\u00d7Wi\u00d7Ci has height andxq/k/vi= Flatten (Conv2d (Reshape2D(xi), s)) ,(2)where xq/k/viis the token input for Q/K/V matrices atlayer i, xi is the unperturbed token prior to the Convolu-tional Projection, Conv2d is a depth-wise separable con-volution [5] implemented by: Depth-wise Conv2d \u2192BatchNorm2d \u2192Point-wise Conv2d, and s refersto the convolution kernel size.The resulting new Transformer Block with the Convo-lutional Projection layer is a generalization of the originalTransformer Block design.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0016",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "The original position-wise lin-ear projection layer could be trivially implemented using aconvolution layer with kernel size of 1 \u00d7 1.us the ability to model local spatial relationships through thenetwork. This built-in property allows dropping the positionembedding from the network without hurting performance,as evidenced by our experiments (Section 4.4), simplifyingdesign for vision tasks with variable input resolution.3.2.2Ef\ufb01ciency ConsiderationsThere are two primary ef\ufb01ciency bene\ufb01ts from the designof our Convolutional Projection layer.First, we utilize ef\ufb01cient convolutions. Directly usingstandard s\u00d7s convolutions for the Convolutional Projectionwould require s2C2 parameters and O(s2C2T) FLOPs,where C is the token channel dimension, and T is the num-ber of tokens for processing. Instead, we split the standards \u00d7 s convolution into a depth-wise separable convolution[16]. In this way, each of the proposed Convolutional Pro-jection would only introduce an extra of s2C parametersand O(s2CT) FLOPs compared to the original position-wise linear projection, which are negligible with respect tothe total parameters and FLOPs of the models.Second, we leverage the proposed Convolutional Projec-tion to reduce the computation cost for the MHSA opera-tion.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0017",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "The s \u00d7 s Convolutional Projection permits reducingthe number of tokens by using a stride larger than 1. Fig-ure 3 (c) shows the Convolutional Projection, where the keyand value projection are subsampled by using a convolu-tion with stride larger than 1. We use a stride of 2 for keyand value projection, leaving the stride of 1 for query un-changed. In this way, the number of tokens for key andvalue is reduced 4 times, and the computational cost is re-duced by 4 times for the later MHSA operation. This comeswith a minimal performance penalty, as neighboring pix-els/patches in images tend to have redundancy in appear-ance/semantics. In addition, the local context modeling ofthe proposed Convolutional Projection compensates for theloss of information incurred by resolution reduction.Relations to Concurrent Work:Recently, two more re-lated concurrent works also propose to improve ViT by in-corporating elements of CNNs to Transformers. Tokens-to-Token ViT [41] implements a progressive tokenization,and then uses a Transformer-based backbone in which thelength of tokens is \ufb01xed. By contrast, our CvT implementsa progressive tokenization by a multi-stage process \u2013 con-taining both convolutional token embeddings and convolu-tional Transformer blocks in each stage.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0018",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "By contrast, our CvT implementsa progressive tokenization by a multi-stage process \u2013 con-taining both convolutional token embeddings and convolu-tional Transformer blocks in each stage. As the length oftokens are decreased in each stage, the width of the tokens(dimension of feature) can be increased, allowing increasedrichness of representations at each feature spatial resolu-tion. Additionally, whereas T2T concatenates neighboringtokens into one new token, leading to increasing the com-plexity of memory and computation, our usage of convolu-tional token embedding directly performs contextual learn-ing without concatenation, while providing the \ufb02exibilityof controlling stride and feature dimension. To manage thecomplexity, T2T has to consider a deep-narrow architecturedesign with smaller hidden dimensions and MLP size thanViT in the subsequent backbone. Instead, we changed pre-vious Transformer modules by replacing the position-wiselinear projection with our convolutional projectionPyramid Vision Transformer (PVT) [34] overcomes thedif\ufb01culties of porting ViT to various dense prediction tasks.In ViT, the output feature map has only a single scale withlow resolution. In addition, computations and memory costare relatively high, even for common input image sizes. Toaddress this problem, both PVT and our CvT incorporatepyramid structures from CNNs to the Transformers struc-ture.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0019",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "In addition, computations and memory costare relatively high, even for common input image sizes. Toaddress this problem, both PVT and our CvT incorporatepyramid structures from CNNs to the Transformers struc-ture. Compared with PVT, which only spatially subsam-ples the feature map or key/value matrices in projection, ourCvT instead employs convolutions with stride to achievethis goal. Our experiments (shown in Section 4.4) demon-3.3. Methodological DiscussionsRemoving Positional Embeddings:The introduction ofConvolutional Projections for every Transformer block,combined with the Convolutional Token Embedding, givesOutput SizeLayer NameCvT-13CvT-21CvT-W2456 \u00d7 56Conv. Embed.7 \u00d7 7, 64, stride 47 \u00d7 7, 192, stride 4Conv. Proj.MHSAMLP\uf8f03 \u00d7 3, 64H1 = 1, D1 = 64R1 = 4\uf8f03 \u00d7 3, 64H1 = 1, D1 = 64R1 = 4\uf8f03 \u00d7 3, 192H1 = 3, D1 = 192R1 = 4Stage156 \u00d7 56\uf8fb\u00d7 1\uf8fb\u00d7 1\uf8fb\u00d7 228 \u00d7 28Conv.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0020",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "Embed.3 \u00d7 3, 192, stride 23 \u00d7 3, 768, stride 2Conv. Proj.MHSAMLP\uf8f03 \u00d7 3, 192H2 = 3, D2 = 192R2 = 4\uf8f03 \u00d7 3, 192H2 = 3, D2 = 192R2 = 4\uf8f03 \u00d7 3, 768H2 = 12, D2 = 768R2 = 4Stage228 \u00d7 28\uf8fb\u00d7 2\uf8fb\u00d7 4\uf8fb\u00d7 214 \u00d7 14Conv. Embed.3 \u00d7 3, 384, stride 23 \u00d7 3, 1024, stride 2Conv.",
+      "token_count": 162
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0021",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "Embed.3 \u00d7 3, 384, stride 23 \u00d7 3, 1024, stride 2Conv. Proj.MHSAMLP\uf8f03 \u00d7 3, 384H3 = 6, D3 = 384R3 = 4\uf8f03 \u00d7 3, 384H3 = 6, D3 = 384R3 = 4\uf8f03 \u00d7 3, 1024H3 = 16, D3 = 1024R3 = 4Stage314 \u00d7 14\uf8fb\u00d7 10\uf8fb\u00d7 16\uf8fb\u00d7 20Head1 \u00d7 1Linear1000Params19.98 M31.54 M276.7 MFLOPs4.53 G7.13 G60.86 Gstrate that the fusion of local neighboring information playsan important role on the performance.same data augmentation and regularization methods as inViT [30]. Unless otherwise stated, all ImageNet models aretrained with an 224 \u00d7 224 input size.4. ExperimentsFine-tuningWe adopt \ufb01ne-tuning strategy from ViT [30].SGD optimizor with a momentum of 0.9 is used for \ufb01ne-tuning.",
+      "token_count": 260
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0022",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "ExperimentsFine-tuningWe adopt \ufb01ne-tuning strategy from ViT [30].SGD optimizor with a momentum of 0.9 is used for \ufb01ne-tuning. As in ViT [30], we pre-train our models at resolu-tion 224 \u00d7 224, and \ufb01ne-tune at resolution of 384 \u00d7 384.We \ufb01ne-tune each model with a total batch size of 512,for 20,000 steps on ImageNet-1k, 10,000 steps on CIFAR-10 and CIFAR-100, and 500 steps on Oxford-IIIT Pets andOxford-IIIT Flowers-102.In this section, we evaluate the CvT model on large-scaleimage classi\ufb01cation datasets and transfer to various down-stream datasets. In addition, we perform through ablationstudies to validate the design of the proposed architecture.4.1. SetupFor evaluation, we use the ImageNet dataset, with 1.3Mimages and 1k classes, as well as its superset ImageNet-22kwith 22k classes and 14M images [9]. We further trans-fer the models pretrained on ImageNet-22k to downstreamtasks, including CIFAR-10/100 [19], Oxford-IIIT-Pet [23],Oxford-IIIT-Flower [22], following [18, 11].4.2.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0023",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "Comparison to state of the artWe compare our method with state-of-the-art classi\ufb01ca-tion methods including Transformer-based models and rep-resentative CNN-based models on ImageNet [9], ImageNetReal [2] and ImageNet V2 [26] datasets in Table 3.Compared to Transformer based models, CvT achievesa much higher accuracy with fewer parameters and FLOPs.CvT-21 obtains a 82.5% ImageNet Top-1 accuracy, whichis 0.5% higher than DeiT-B with the reduction of 63% pa-rameters and 60% FLOPs. When comparing to concurrentworks, CvT still shows superior advantages. With fewerparamerters, CvT-13 achieves a 81.6% ImageNet Top-1 ac-curacy, outperforming PVT-Small [34], T2T-ViTt-14 [41],TNT-S [14] by 1.7%, 0.8%, 0.2% respectively.Our architecture designing can be further improved interms of model parameters and FLOPs by neural architec-ture search (NAS) [7].",
+      "token_count": 244
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0024",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "In particular, we search the properstride for each convolution projection of key and value(stride = 1, 2) and the expansion ratio for each MLPlayer (ratioMLP = 2, 4).Such architecture candidateswith FLOPs ranging from 2.59G to 4.03G and the num-Model VariantsWe instantiate models with different pa-rameters and FLOPs by varying the number of Transformerblocks of each stage and the hidden feature dimension used,as shown in Table 2. Three stages are adapted. We de-\ufb01ne CvT-13 and CvT-21 as basic models, with 19.98M and31.54M paramters. CvT-X stands for Convolutional visionTransformer with X Transformer Blocks in total. Addition-ally, we experiment with a wider model with a larger tokendimension for each stage, namely CvT-W24 (W stands forWide), resulting 298.3M parameters, to validate the scalingability of the proposed architecture.TrainingAdamW [21] optimizer is used with the weightdecay of 0.05 for our CvT-13, and 0.1 for our CvT-21 andCvT-W24.We train our models with an initial learningrate of 0.02 and a total batch size of 2048 for 300 epochs,with a cosine learning rate decay scheduler.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0025",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "We adopt the#Param.imageFLOPsImageNetRealV2Method TypeNetwork(M)size(G)top-1 (%)top-1 (%)top-1 (%)ResNet-50 [15]2522424.176.282.563.3ResNet-101 [15]4522427.977.483.765.7ResNet-152 [15]6022421178.384.167.0Convolutional NetworksViT-B/16 [11]86384255.577.983.6\u2013ViT-L/16 [11]3073842191.176.582.2\u2013DeiT-S [30][arxiv 2020]2222424.679.885.768.5DeiT-B [30][arxiv 2020]86224217.681.886.771.5PVT-Small [34][arxiv 2021]2522423.879.8\u2013\u2013PVT-Medium [34][arxiv 2021]4422426.781.2\u2013\u2013PVT-Large [34][arxiv 2021]6122429.881.7\u2013\u2013TransformersT2T-ViTt-14 [41][arxiv 2021]2222426.180.7\u2013\u2013T2T-ViTt-19 [41][arxiv 2021]3922429.881.4\u2013\u2013T2T-ViTt-24 [41][arxiv 2021]64224215.082.2\u2013\u2013TNT-S [14][arxiv 2021]2422425.281.3\u2013\u2013TNT-B [14][arxiv 2021]66224214.182.8\u2013\u2013Ours: CvT-132022424.581.686.770.4Ours: CvT-213222427.182.587.271.3Ours: CvT-13\u219138420384216.383.087.971.9Ours: CvT-21\u219138432384224.983.387.771.9Convolutional TransformersOurs: CvT-13-NAS1822424.182.287.571.3Convolution Networks22kBiT-M\u2191480 [18]928480283785.4\u2013\u2013ViT-B/16\u2191384 [11]86384255.584.088.4\u2013ViT-L/16\u2191384 [11]3073842191.185.288.4\u2013ViT-H/16\u2191384 [11]6323842\u201385.188.7\u2013Transformers22kOurs: CvT-13\u21913842038421683.388.772.9Ours: CvT-21\u21913843238422584.989.875.6Ours: CvT-W24\u21913842773842193.287.790.678.8Convolutional Transformers22kber of model parameters ranging from 13.66M to 19.88Mconstruct the search space.",
+      "token_count": 623
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0026",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "The NAS is evaluated directlyon ImageNet-1k. The searched CvT-13-NAS, a bottleneck-like architecture with stride = 2, ratioMLP = 2 at the \ufb01rstand last stages, and stride = 1, ratioMLP = 4 at most lay-ers of the middle stage, reaches to a 82.2% ImageNet Top-1accuracy with fewer model parameters than CvT-13.Compared to CNN-based models, CvT further closes theperformance gap of Transformer-based models. Our small-est model CvT-13 with 20M parameters and 4.5G FLOPssurpasses the large ResNet-152 model by 3.2% on Ima-geNet Top-1 accuracy, while ResNet-151 has 3 times theparameters of CvT-13.Furthermore, when more data are involved, our widemodel CvT-W24* pretrained on ImageNet-22k reaches to87.7% Top-1 Accuracy on ImageNet without extra data(e.g. JFT-300M), surpassing the previous best Transformerbased models ViT-L/16 by 2.5% with similar number ofmodel parameters and FLOPs.4.3. Downstream task transferWe further investigate the ability of our models to trans-fer by \ufb01ne-tuning models on various tasks, with all modelsbeing pre-trained on ImageNet-22k.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0027",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "Downstream task transferWe further investigate the ability of our models to trans-fer by \ufb01ne-tuning models on various tasks, with all modelsbeing pre-trained on ImageNet-22k. Table 4 shows the re-sults. Our CvT-W24 model is able to obtain the best per-formance across all the downstream tasks considered, evenwhen compared to the large BiT-R152x4 [18] model, whichhas more than 3\u00d7 the number of parameters as CvT-W24.4.4. Ablation StudyWe design various ablation experiments to investigatethe effectiveness of the proposed components of our archi-tecture.",
+      "token_count": 136
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0028",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "Ablation StudyWe design various ablation experiments to investigatethe effectiveness of the proposed components of our archi-tecture. First, we show that with our introduction of con-volutions, position embeddings can be removed from theModelParam(M)CIFAR10CIFAR100PetsFlowers102MethodConv.Embed.Pos.Embed.#Param(M)ImageNettop-1 (%)BiT-M [18]92898.9192.1794.4699.30a19.580.7b19.981.1c20.381.4d20.081.6ViT-B/16 [11]8698.9591.6794.4399.38ViT-L/16 [11]30799.1693.4494.7399.61ViT-H/16 [11]63299.2793.8294.8299.51Ours: CvT-132098.8391.1193.2599.50Ours: CvT-213299.1692.8894.0399.62Ours: CvT-W2427799.3994.0994.7399.72MethodConv. Proj. KV.strideParams(M)FLOPs(G)ImageNettop-1 (%)a1206.5582.3b2204.5381.6MethodModelParam(M)Pos.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0029",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "Proj. KV.strideParams(M)FLOPs(G)ImageNettop-1 (%)a1206.5582.3b2204.5381.6MethodModelParam(M)Pos. Emb.ImageNetTop-1 (%)aDeiT-S22Default79.8bDeiT-S22N/A78.0cCvT-1320Every stage81.5dCvT-1320First stage81.4eCvT-1320Last stage81.4fCvT-1320N/A81.6MethodConv. ProjectionImagenettop-1 (%)Stage 1Stage 2Stage 3a80.6b80.8c81.0d81.6model. Then, we study the impact of each of the proposedConvolutional Token Embedding and Convolutional Projec-tion components.#Blocks1210Removing Position EmbeddingGiven that we have in-troduced convolutions into the model, allowing local con-text to be captured, we study whether position embed-ding is still needed for CvT. The results are shown in Ta-ble 5, and demonstrate that removing position embeddingof our model does not degrade the performance. There-fore, position embeddings have been removed from CvTby default.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0030",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "The results are shown in Ta-ble 5, and demonstrate that removing position embeddingof our model does not degrade the performance. There-fore, position embeddings have been removed from CvTby default. As a comparison, removing the position em-bedding of DeiT-S would lead to 1.8% drop of ImageNetTop-1 accuracy, as it does not model image spatial relation-ships other than by adding the position embedding. Thisfurther shows the effectiveness of our introduced convolu-tions. Position Embedding is often realized by \ufb01xed-lengthlearn-able vectors, limiting the trained model adaptation ofvariable-length input. However, a wide range of vision ap-plications take variable image resolutions.Recent workCPVT [6] tries to replace explicit position embedding ofVision Transformers with a conditional position encodingsmodule to model position information on-the-\ufb02y. CvT isable to completely remove the positional embedding, pro-viding the possibility of simplifying adaption to more visiontasks without requiring a re-designing of the embedding.Convolutional Token EmbeddingWe study the effec-tiveness of the proposed Convolutional Token Embedding,and Table 6 shows the results.Table 6d is the CvT-13model. When we replace the Convolutional Token Embed-ding with non-overlapping Patch Embedding [11], the per-formance drops 0.8% (Table 6a v.s.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0031",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "When we replace the Convolutional Token Embed-ding with non-overlapping Patch Embedding [11], the per-formance drops 0.8% (Table 6a v.s. Table 6d). When po-sition embedding is used, the introduction of ConvolutionalToken Embedding still obtains 0.3% improvement (Table 6bv.s.Table 6c).Further, when using both ConvolutionalToken Embedding and position embedding as Table 6d, itslightly drops 0.1% accuracy. These results validate the in-troduction of Convolutional Token Embedding not only im-proves the performance, but also helps CvT model spatialrelationships without position embedding.Convolutional ProjectionFirst, we compare the pro-posed Convolutional Projection with different strides in Ta-ble 7. By using a stride of 2 for key and value projection,we observe a 0.3% drop in ImageNet Top-1 accuracy, butwith 30% fewer FLOPs. We choose to use ConvolutionalProjection with stride 2 for key and value as default for lesscomputational cost and memory usage.Then, we study how the proposed Convolutional Pro-jection affects the performance by choosing whether to useConvolutional Projection or the regular Position-wise Lin-ear Projection for each stage. The results are shown in Ta-ble 8.",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0032",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "The results are shown in Ta-ble 8. We observe that replacing the original Position-wiseLinear Projection with the proposed Convolutional Projec-tion improves the Top-1 Accuracy on ImageNet from 80.6%to 81.5%. In addition, performance continually improves asmore stages use the design, validating this approach as aneffective modeling strategy.cient neural architecture search. In European Conference onComputer Vision, 2020. 6[8] Zhigang Dai, Bolun Cai, Yugeng Lin, and Junying Chen.Up-detr: Unsupervised pre-training for object detection withtransformers. arXiv preprint arXiv:2011.09094, 2020. 2[9] Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li,and Li Fei-Fei. Imagenet: A large-scale hierarchical imagedatabase. In 2009 IEEE conference on computer vision andpattern recognition, pages 248\u2013255. Ieee, 2009. 6, 7[10] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and KristinaToutanova. BERT: Pre-training of deep bidirectional trans-formers for language understanding.",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0033",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "Ieee, 2009. 6, 7[10] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and KristinaToutanova. BERT: Pre-training of deep bidirectional trans-formers for language understanding. In Proceedings of the2019 Conference of the North American Chapter of the As-sociation for Computational Linguistics: Human LanguageTechnologies, Volume 1 (Long and Short Papers), pages4171\u20134186, Minneapolis, Minnesota, 2019. Association forComputational Linguistics. 1, 2[11] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov,Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner,Mostafa Dehghani, Matthias Minderer, Georg Heigold, Syl-vain Gelly, et al.",
+      "token_count": 180
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0034",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "An image is worth 16x16 words: Trans-formers for image recognition at scale.arXiv preprintarXiv:2010.11929, 2020. 1, 2, 4, 5, 6, 7, 8[12] Nico Engel, Vasileios Belagiannis, and Klaus Dietmayer.Point transformer.arXiv preprint arXiv:011.00931, 2020.2[13] Anmol Gulati, James Qin, Chung-Cheng Chiu, Niki Par-mar, Yu Zhang, Jiahui Yu, Wei Han, Shibo Wang, Zheng-dong Zhang, Yonghui Wu, et al. Conformer: Convolution-augmented transformer for speech recognition.arXivpreprint arXiv:2005.08100, 2020. 3, 4[14] Kai Han, An Xiao, Enhua Wu, Jianyuan Guo, Chunjing Xu,and Yunhe Wang. Transformer in transformer. arXiv preprintarXiv:2103.00112, 2021. 1, 3, 6, 7[15] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.Deep residual learning for image recognition.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0035",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "In Proceed-ings of the IEEE conference on computer vision and patternrecognition, pages 770\u2013778, 2016. 1, 2, 4, 7[16] Andrew G Howard, Menglong Zhu, Bo Chen, DmitryKalenichenko, Weijun Wang, Tobias Weyand, Marco An-dreetto, and Hartwig Adam. Mobilenets: Ef\ufb01cient convolu-tional neural networks for mobile vision applications. arXivpreprint arXiv:1704.04861, 2017. 5[17] Han Hu, Zheng Zhang, Zhenda Xie, and Stephen Lin. Lo-cal relation networks for image recognition. arXiv preprintarXiv:1904.11491, 2019. 3[18] Alexander Kolesnikov, Lucas Beyer, Xiaohua Zhai, JoanPuigcerver, Jessica Yung, Sylvain Gelly, and Neil Houlsby.Big transfer (bit): General visual representation learning.arXiv preprint arXiv:1912.11370, 6(2):8, 2019. 1, 6, 7[19] Alex Krizhevsky, Geoffrey Hinton, et al.",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0036",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "Learning multiplelayers of features from tiny images. 2009. 6[20] Yann Lecun, Patrick Haffner, L\u00b4eon Bottou, and Yoshua Ben-gio.Object recognition with gradient-based learning.InContour and Grouping in Computer Vision. Springer, 1999.2, 4[21] Ilya Loshchilov and Frank Hutter. Decoupled weight decayregularization. arXiv preprint arXiv:1711.05101, 2017. 65. ConclusionIn this work, we have presented a detailed study of in-troducing convolutions into the Vision Transformer archi-tecture to merge the bene\ufb01ts of Transformers with the ben-e\ufb01ts of CNNs for image recognition tasks. Extensive ex-periments demonstrate that the introduced convolutional to-ken embedding and convolutional projection, along with themulti-stage design of the network enabled by convolutions,make our CvT architecture achieve superior performancewhile maintaining computational ef\ufb01ciency. Furthermore,due to the built-in local context structure introduced by con-volutions, CvT no longer requires a position embedding,giving it a potential advantage for adaption to a wide rangeof vision tasks requiring variable input resolution.References[1] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0037",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "Hinton.Layer normalization, 2016. 4[2] Lucas Beyer, Olivier J H\u00b4enaff, Alexander Kolesnikov, Xi-aohua Zhai, and A\u00a8aron van den Oord. Are we done withimagenet? arXiv preprint arXiv:2006.07159, 2020. 6, 7[3] Nicolas Carion, Francisco Massa, Gabriel Synnaeve, NicolasUsunier, Alexander Kirillov, and Sergey Zagoruyko. End-to-end object detection with transformers. In European Confer-ence on Computer Vision, pages 213\u2013229. Springer, 2020.2[4] Hanting Chen, Yunhe Wang, Tianyu Guo, Chang Xu, YipingDeng, Zhenhua Liu, Siwei Ma, Chunjing Xu, Chao Xu, andWen Gao. Pre-trained image processing transformer. arXivpreprint arXiv:2012.00364, 2020. 2[5] Franc\u00b8ois Chollet. Xception: Deep learning with depthwiseseparable convolutions.In Proceedings of the IEEE con-ference on computer vision and pattern recognition, pages1251\u20131258, 2017. 2, 4[6] Xiangxiang Chu, Bo Zhang, Zhi Tian, Xiaolin Wei, andHuaxia Xia.",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0038",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "Do we really need explicit position encodingsfor vision transformers? arXiv preprint arXiv:2102.10882,2021. 3, 8[7] Xiyang Dai, Dongdong Chen, Mengchen Liu, YinpengChen, and Lu YUan. Da-nas: Data adapted pruning for ef\ufb01-[22] Maria-Elena Nilsback and Andrew Zisserman. Automated\ufb02ower classi\ufb01cation over a large number of classes. In In-dian Conference on Computer Vision, Graphics and ImageProcessing, Dec 2008. 6[23] Omkar M. Parkhi, Andrea Vedaldi, Andrew Zisserman, andC. V. Jawahar. Cats and dogs. In IEEE Conference on Com-puter Vision and Pattern Recognition, 2012. 6[24] Niki Parmar, Ashish Vaswani, Jakob Uszkoreit, LukaszKaiser, Noam Shazeer, Alexander Ku, and Dustin Tran. Im-age transformer. In International Conference on MachineLearning, pages 4055\u20134064. PMLR, 2018. 2[25] Alec Radford, Karthik Narasimhan, Tim Salimans, and IlyaSutskever.",
+      "token_count": 273
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0039",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "PMLR, 2018. 2[25] Alec Radford, Karthik Narasimhan, Tim Salimans, and IlyaSutskever. Improving language understanding by generativepre-training. 2018. 2[26] Benjamin Recht, Rebecca Roelofs, Ludwig Schmidt, andVaishaal Shankar. Do imagenet classi\ufb01ers generalize to im-agenet? In International Conference on Machine Learning,pages 5389\u20135400. PMLR, 2019. 6, 7[27] Aravind Srinivas, Tsung-Yi Lin, Niki Parmar, JonathonShlens, Pieter Abbeel, and Ashish Vaswani.Bottle-neck transformers for visual recognition.arXiv preprintarXiv:2101.11605, 2021. 3[28] Zhiqing Sun, Shengcao Cao, Yiming Yang, and Kris Kitani.Rethinking transformer-based set prediction for object detec-tion. arXiv preprint arXiv:2011.10881, 2020. 2[29] Mingxing Tan and Quoc Le. Ef\ufb01cientnet: Rethinking modelscaling for convolutional neural networks. In InternationalConference on Machine Learning, pages 6105\u20136114.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0040",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "Ef\ufb01cientnet: Rethinking modelscaling for convolutional neural networks. In InternationalConference on Machine Learning, pages 6105\u20136114. PMLR,2019. 2[30] Hugo Touvron, Matthieu Cord, Matthijs Douze, FranciscoMassa, Alexandre Sablayrolles, and Herv\u00b4e J\u00b4egou. Trainingdata-ef\ufb01cient image transformers & distillation through at-tention. arXiv preprint arXiv:2012.12877, 2020. 1, 2, 4, 6,7[31] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszko-reit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and IlliaPolosukhin. Attention is all you need. In Isabelle Guyon,Ulrike von Luxburg, Samy Bengio, Hanna M. Wallach, RobFergus, S. V. N.",
+      "token_count": 216
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0041",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "Attention is all you need. In Isabelle Guyon,Ulrike von Luxburg, Samy Bengio, Hanna M. Wallach, RobFergus, S. V. N. Vishwanathan, and Roman Garnett, editors,Advances in Neural Information Processing Systems 30: An-nual Conference on Neural Information Processing Systems2017, December 4-9, 2017, Long Beach, CA, USA, pages5998\u20136008, 2017. 1, 2[32] Alex Wang, Amanpreet Singh, Julian Michael, Felix Hill,Omer Levy, and Samuel R. Bowman. GLUE: A multi-taskbenchmark and analysis platform for natural language un-derstanding. In 7th International Conference on LearningRepresentations, ICLR 2019, New Orleans, LA, USA, May6-9, 2019. OpenReview.net, 2019. 1[33] Huiyu Wang, Yukun Zhu, Hartwig Adam, Alan Yuille,and Liang-Chieh Chen.",
+      "token_count": 220
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0042",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "OpenReview.net, 2019. 1[33] Huiyu Wang, Yukun Zhu, Hartwig Adam, Alan Yuille,and Liang-Chieh Chen. Max-deeplab: End-to-end panop-tic segmentation with mask transformers.arXiv preprintarXiv:2012.00759, 2020. 2[34] Wenhai Wang, Enze Xie, Xiang Li, Deng-Ping Fan, KaitaoSong, Ding Liang, Tong Lu, Ping Luo, and Ling Shao.Pyramid vision transformer:A versatile backbone fordense prediction without convolutions.arXiv preprintarXiv:2102.12122, 2021. 1, 3, 4, 5, 6, 7[35] Xiaolong Wang, Ross Girshick, Abhinav Gupta, and Kaim-ing He. Non-local neural networks.",
+      "token_count": 194
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0043",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "Non-local neural networks. In Proceedings of theIEEE conference on computer vision and pattern recogni-tion, pages 7794\u20137803, 2018. 3[36] Yuqing Wang, Zhaoliang Xu, Xinlong Wang, Chunhua Shen,Baoshan Cheng, Hao Shen, and Huaxia Xia.End-to-end video instance segmentation with transformers. arXivpreprint arXiv:2011.14503, 2020. 2[37] Yujing Wang, Yaming Yang, Jiangang Bai, MingliangZhang, Jing Bai, Jing Yu, Ce Zhang, Gao Huang, and YunhaiTong. Evolving attention with residual convolutions. arXivpreprint arXiv:2102.12895, 2021. 3[38] Felix Wu, Angela Fan, Alexei Baevski, Yann N Dauphin,and Michael Auli. Pay less attention with lightweight and dy-namic convolutions. arXiv preprint arXiv:1901.10430, 2019.3[39] Zhanghao Wu, Zhijian Liu, Ji Lin, Yujun Lin, and SongHan.",
+      "token_count": 252
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0044",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "Lite transformer with long-short range attention. arXivpreprint arXiv:2004.11886, 2020. 3, 4[40] Fuzhi Yang, Huan Yang, Jianlong Fu, Hongtao Lu, and Bain-ing Guo. Learning texture transformer network for imagesuper-resolution. In Proceedings of the IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition, pages5791\u20135800, 2020. 2[41] Li Yuan, Yunpeng Chen, Tao Wang, Weihao Yu, Yujun Shi,Francis EH Tay, Jiashi Feng, and Shuicheng Yan. Tokens-to-token vit: Training vision transformers from scratch onimagenet. arXiv preprint arXiv:2101.11986, 2021. 1, 3, 4,5, 6, 7[42] Yanhong Zeng, Jianlong Fu, and Hongyang Chao. Learningjoint spatial-temporal transformations for video inpainting.In European Conference on Computer Vision, pages 528\u2013543. Springer, 2020. 2[43] Minghang Zheng, Peng Gao, Xiaogang Wang, HongshengLi, and Hao Dong.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2103.15808_chunk_0045",
+      "arxiv_id": "2103.15808",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "Springer, 2020. 2[43] Minghang Zheng, Peng Gao, Xiaogang Wang, HongshengLi, and Hao Dong. End-to-end object detection with adaptiveclustering transformer.arXiv preprint arXiv:2011.09315,2020. 2[44] Luowei Zhou, Yingbo Zhou, Jason J. Corso, Richard Socher,and Caiming Xiong. End-to-end dense video captioning withmasked transformer. In Proceedings of the IEEE Conferenceon Computer Vision and Pattern Recognition (CVPR), June2018. 2[45] Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, XiaogangWang, and Jifeng Dai. Deformable detr: Deformable trans-formers for end-to-end object detection.arXiv preprintarXiv:2010.04159, 2020. 2",
+      "token_count": 196
+    }
+  ]
+}

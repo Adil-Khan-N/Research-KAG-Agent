@@ -1,0 +1,710 @@
+[
+  {
+    "arxiv_id": "1706.03762",
+    "title": "Attention Is All You Need",
+    "methods": [
+      "Transformer",
+      "Attention mechanism"
+    ],
+    "datasets": [
+      "WMT 2014 English-to-German",
+      "WMT 2014 English-to-French"
+    ],
+    "tasks": [
+      "Sequence transduction",
+      "Machine translation",
+      "English-to-German translation",
+      "English-to-French translation"
+    ],
+    "concepts": [
+      "Encoder-decoder configuration",
+      "Ensembles"
+    ],
+    "extends": [],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2005.12872",
+    "title": "End-to-End Object Detection with Transformers",
+    "methods": [
+      "Transformers",
+      "non-maximum suppression procedure",
+      "anchor generation",
+      "set-based global loss",
+      "bipartite matching",
+      "transformer encoder-decoder architecture",
+      "object queries"
+    ],
+    "datasets": [
+      "COCO"
+    ],
+    "tasks": [
+      "object detection"
+    ],
+    "concepts": [
+      "End-to-End",
+      "direct set prediction problem"
+    ],
+    "extends": [
+      "DETR",
+      "Faster RCNN"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2010.11929",
+    "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+    "methods": [
+      "Transformer",
+      "Vision Transformer (ViT)",
+      "Convolutional Networks"
+    ],
+    "datasets": [
+      "ImageNet",
+      "CIFAR-100",
+      "VTAB"
+    ],
+    "tasks": [
+      "natural language processing",
+      "image classification",
+      "image recognition"
+    ],
+    "concepts": [
+      "computer vision",
+      "attention",
+      "sequences of image patches",
+      "pre-training",
+      "transfer learning"
+    ],
+    "extends": [
+      "Transformer"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2012.12877",
+    "title": "Training data-efficient image transformers & distillation through attention",
+    "methods": [
+      "Vision Transformers",
+      "Convolution-free Transformer",
+      "Distillation through attention",
+      "Distillation token",
+      "Token-based distillation"
+    ],
+    "datasets": [
+      "ImageNet"
+    ],
+    "tasks": [
+      "Image classification",
+      "Image understanding tasks"
+    ],
+    "concepts": [
+      "Attention",
+      "Teacher-student strategy"
+    ],
+    "extends": [
+      "ViT",
+      "ConvNet"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2101.11605",
+    "title": "Bottleneck Transformers for Visual Recognition",
+    "methods": [
+      "Bottleneck Transformers",
+      "BoTNet",
+      "self-attention",
+      "spatial convolutions",
+      "global self-attention",
+      "ResNet bottleneck blocks with self-attention",
+      "Transformer blocks",
+      "3x3 convolutions",
+      "convolution operation",
+      "local self-attention",
+      "vector self-attention",
+      "axial self-attention"
+    ],
+    "datasets": [
+      "COCO Instance Segmentation benchmark",
+      "COCO validation set"
+    ],
+    "tasks": [
+      "Visual Recognition",
+      "image classification",
+      "object detection",
+      "instance segmentation",
+      "keypoint detection"
+    ],
+    "concepts": [
+      "Mask AP",
+      "Box AP",
+      "Deep convolutional backbone architectures",
+      "long range dependencies"
+    ],
+    "extends": [
+      "ResNet",
+      "Mask R-CNN",
+      "ResNeSt"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2102.12122",
+    "title": "Pyramid Vision Transformer: A Versatile Backbone for Dense Prediction without Convolutions",
+    "methods": [
+      "Pyramid Vision Transformer (PVT)",
+      "Transformer",
+      "RetinaNet"
+    ],
+    "datasets": [
+      "COCO"
+    ],
+    "tasks": [
+      "dense prediction",
+      "image classification",
+      "object detection",
+      "instance segmentation",
+      "semantic segmentation",
+      "pixel-level predictions"
+    ],
+    "concepts": [
+      "backbone",
+      "without Convolutions",
+      "convolutional neural networks (CNNs)",
+      "high output resolution",
+      "progressive shrinking pyramid",
+      "unified backbone",
+      "CNN backbones",
+      "convolution-free backbone network"
+    ],
+    "extends": [
+      "ViT",
+      "ResNet50"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2103.10697",
+    "title": "ConViT: Improving Vision Transformers with Soft Convolutional Inductive Biases",
+    "methods": [
+      "ConViT",
+      "Convolutional architectures",
+      "self-attention layers",
+      "Vision Transformers",
+      "CNNs",
+      "gated positional self-attention (GPSA)",
+      "positional self-attention",
+      "convolutional layers",
+      "attention head",
+      "AlexNet"
+    ],
+    "datasets": [],
+    "tasks": [
+      "vision tasks",
+      "image classification"
+    ],
+    "concepts": [
+      "Soft Convolutional Inductive Biases",
+      "hard inductive biases",
+      "inductive biases",
+      "distillation",
+      "locality",
+      "weight sharing"
+    ],
+    "extends": [
+      "ViT"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2103.15808",
+    "title": "CvT: Introducing Convolutions to Vision Transformers",
+    "methods": [
+      "CvT",
+      "convolutional token embedding",
+      "convolutional Transformer block",
+      "convolutional projection",
+      "convolutional neural networks (CNNs)",
+      "Transformers",
+      "Vision Transformers"
+    ],
+    "datasets": [
+      "ImageNet-1k"
+    ],
+    "tasks": [
+      "image classification",
+      "natural language processing (NLP)",
+      "computer vision",
+      "vision tasks"
+    ],
+    "concepts": [
+      "convolutions",
+      "hierarchy of Transformers",
+      "shift, scale, and distortion invariance",
+      "dynamic attention",
+      "global context",
+      "generalization",
+      "state-of-the-art performance",
+      "fewer parameters",
+      "lower FLOPs",
+      "2D local structure"
+    ],
+    "extends": [
+      "ViT",
+      "ResNets"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2104.01136",
+    "title": "LeViT: a Vision Transformer in ConvNet's Clothing for Faster Inference",
+    "methods": [
+      "LeViT",
+      "LeViT-384",
+      "attention bias",
+      "convolutional neural networks",
+      "ConvNet"
+    ],
+    "datasets": [],
+    "tasks": [
+      "image classification"
+    ],
+    "concepts": [
+      "attention-based architectures",
+      "activation maps with decreasing resolutions",
+      "positional information",
+      "hybrid neural network",
+      "Vision Transformer",
+      "Transformer"
+    ],
+    "extends": [
+      "DeiTSmall"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2104.11227",
+    "title": "Multiscale Vision Transformers",
+    "methods": [
+      "Multiscale Vision Transformers (MViT)",
+      "Neocognitron",
+      "backpropagation"
+    ],
+    "datasets": [],
+    "tasks": [
+      "video recognition",
+      "image classification",
+      "pattern recognition"
+    ],
+    "concepts": [
+      "multiscale feature hierarchies",
+      "multiscale pyramid of features",
+      "channel-resolution scale stages",
+      "external pre-training",
+      "hierarchical model of the visual pathway",
+      "simple cells",
+      "complex cells",
+      "downsampling",
+      "shift invariance",
+      "convolutional structure"
+    ],
+    "extends": [
+      "Transformer",
+      "ViT"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2105.15082",
+    "title": "M6-T: Exploring Sparse Expert Models and Beyond",
+    "methods": [
+      "Mixture-of-Experts (MoE)",
+      "Sparse Expert Models",
+      "MoE layers",
+      "top-k routing",
+      "expert prototyping",
+      "k top-1 routing"
+    ],
+    "datasets": [],
+    "tasks": [],
+    "concepts": [
+      "sparse activation",
+      "load imbalance",
+      "expert capacity",
+      "model scaling"
+    ],
+    "extends": [],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2106.04560",
+    "title": "Scaling Vision Transformers",
+    "methods": [
+      "Attention",
+      "Vision Transformer",
+      "Transformer"
+    ],
+    "datasets": [
+      "ImageNet"
+    ],
+    "tasks": [
+      "image classification",
+      "few-shot transfer"
+    ],
+    "concepts": [
+      "Scaling",
+      "error rate",
+      "memory consumption",
+      "accuracy",
+      "supervised pre-training",
+      "unsupervised pre-training"
+    ],
+    "extends": [
+      "ViT"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2106.08254",
+    "title": "BEiT: BERT Pre-Training of Image Transformers",
+    "methods": [
+      "BEiT",
+      "Image Transformers",
+      "vision Transformers",
+      "Transformer",
+      "randomly mask some image patches"
+    ],
+    "datasets": [],
+    "tasks": [
+      "masked image modeling",
+      "image classification",
+      "semantic segmentation"
+    ],
+    "concepts": [
+      "self-supervised vision representation",
+      "image patches",
+      "visual tokens",
+      "tokenization",
+      "fine-tuning",
+      "pre-training"
+    ],
+    "extends": [
+      "BERT"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2106.10270",
+    "title": "How to train your ViT? Data, Augmentation, and Regularization in Vision Transformers",
+    "methods": [],
+    "datasets": [
+      "ImageNet-21k",
+      "JFT-300M"
+    ],
+    "tasks": [
+      "image classification",
+      "object detection",
+      "semantic image segmentation"
+    ],
+    "concepts": [
+      "Data Augmentation",
+      "Regularization",
+      "AugReg",
+      "inductive bias",
+      "compute budget",
+      "model size",
+      "training data"
+    ],
+    "extends": [
+      "ViT"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2107.14795",
+    "title": "Perceiver IO: A General Architecture for Structured Inputs & Outputs",
+    "methods": [
+      "Perceiver IO",
+      "flexible querying mechanism",
+      "Transformer",
+      "BERT"
+    ],
+    "datasets": [
+      "StarCraft II",
+      "GLUE language benchmark"
+    ],
+    "tasks": [
+      "natural language understanding",
+      "visual understanding",
+      "multi-task reasoning",
+      "multi-modal reasoning"
+    ],
+    "concepts": [
+      "input tokenization"
+    ],
+    "extends": [
+      "Perceiver"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2108.01072",
+    "title": "S$^2$-MLPv2: Improved Spatial-Shift MLP Architecture for Vision",
+    "methods": [
+      "S$^2$-MLPv2",
+      "spatial-shift operation",
+      "split-attention operation"
+    ],
+    "datasets": [],
+    "tasks": [
+      "image recognition"
+    ],
+    "concepts": [
+      "MLP-based vision architectures",
+      "inductive bias",
+      "smaller patches",
+      "pyramid structure"
+    ],
+    "extends": [
+      "S$^2$-MLP",
+      "MLP-mixer",
+      "ResMLP",
+      "Vision Permutator (ViP)",
+      "Global Filter Network (GFNet)",
+      "CNNs",
+      "vision Transformers"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2111.09883",
+    "title": "Swin Transformer V2: Scaling Up Capacity and Resolution",
+    "methods": [
+      "residual-post-norm method",
+      "cosine attention",
+      "log-spaced continuous position bias method",
+      "SimMIM"
+    ],
+    "datasets": [],
+    "tasks": [
+      "language tasks",
+      "computer vision"
+    ],
+    "concepts": [
+      "training instability",
+      "resolution gaps",
+      "labeled data hunger",
+      "few-shot capabilities",
+      "self-supervised learning",
+      "position bias",
+      "transfer learning",
+      "large-scale models"
+    ],
+    "extends": [
+      "Swin"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2112.13492",
+    "title": "Vision Transformer for Small-Size Datasets",
+    "methods": [
+      "Shifted Patch Tokenization (SPT)",
+      "Locality Self-Attention (LSA)"
+    ],
+    "datasets": [
+      "JFT-300M",
+      "Tiny-ImageNet"
+    ],
+    "tasks": [
+      "image classification"
+    ],
+    "concepts": [
+      "transformer structure",
+      "convolutional neural networks",
+      "low locality inductive bias",
+      "lack of locality inductive bias",
+      "small-size datasets",
+      "add-on modules",
+      "visual representations",
+      "image data",
+      "computer vision (CV)",
+      "Natural Language Processing (NLP)",
+      "self-attention mechanism",
+      "image domain",
+      "standard Transformer"
+    ],
+    "extends": [
+      "Vision Transformer (ViT)",
+      "Swin Transformer",
+      "Transformer",
+      "ResNet",
+      "EfficientNet"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2204.07118",
+    "title": "DeiT III: Revenge of the ViT",
+    "methods": [
+      "BerT-like pre-training",
+      "data-augmentation procedure",
+      "3 augmentations"
+    ],
+    "datasets": [
+      "ImageNet-1k",
+      "ImageNet-21k"
+    ],
+    "tasks": [
+      "Image classification",
+      "transfer learning",
+      "semantic segmentation"
+    ],
+    "concepts": [
+      "architectural priors",
+      "supervised training",
+      "self-supervised pre-training",
+      "self-supervised learning"
+    ],
+    "extends": [
+      "ViT",
+      "BeiT",
+      "ResNet-50"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2208.00173",
+    "title": "A Survey on Masked Autoencoder for Self-supervised Learning in Vision and Beyond",
+    "methods": [
+      "Masked autoencoders",
+      "Mask image modeling",
+      "Denoising autoencoder"
+    ],
+    "datasets": [],
+    "tasks": [],
+    "concepts": [
+      "Self-supervised learning",
+      "Generative pretext tasks",
+      "Masked prediction",
+      "Contrastive learning"
+    ],
+    "extends": [
+      "MAE",
+      "BERT"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2209.07399",
+    "title": "A Light Recipe to Train Robust Vision Transformers",
+    "methods": [
+      "Adversarial training",
+      "Convolutional Neural Networks",
+      "Data augmentation",
+      "Attention modules",
+      "Convolutions",
+      "$\u03b5$-warmup",
+      "Larger weight decay"
+    ],
+    "datasets": [
+      "ImageNet"
+    ],
+    "tasks": [],
+    "concepts": [
+      "Adversarial robustness",
+      "Evasion attacks",
+      "Vision inductive bias",
+      "Bag-of-tricks"
+    ],
+    "extends": [
+      "ViT"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2103.14030",
+    "title": "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows",
+    "methods": [
+      "Swin Transformer",
+      "Vision Transformer",
+      "Shifted Windows",
+      "Hierarchical Transformer",
+      "Shifted windowing scheme",
+      "Hierarchical architecture",
+      "Non-overlapping local windows"
+    ],
+    "datasets": [
+      "ImageNet-1K"
+    ],
+    "tasks": [
+      "image classification",
+      "vision tasks"
+    ],
+    "concepts": [
+      "Hierarchical features",
+      "General-purpose backbone",
+      "Adapting Transformer from language to vision",
+      "Self-attention",
+      "Cross-window connection",
+      "Linear computational complexity"
+    ],
+    "extends": [],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2110.02178",
+    "title": "MobileViT: Light-weight, General-purpose, and Mobile-friendly Vision Transformer",
+    "methods": [
+      "MobileViT",
+      "Convolutional Neural Networks (CNNs)",
+      "Vision Transformers (ViTs)"
+    ],
+    "datasets": [
+      "ImageNet-1k"
+    ],
+    "tasks": [
+      "mobile vision tasks",
+      "image classification"
+    ],
+    "concepts": [
+      "light-weight",
+      "spatial inductive biases",
+      "global representations",
+      "self-attention",
+      "transformers as convolutions",
+      "global processing of information"
+    ],
+    "extends": [
+      "ViT"
+    ],
+    "contradicts": []
+  },
+  {
+    "arxiv_id": "2111.06377",
+    "title": "Masked Autoencoders Are Scalable Vision Learners",
+    "methods": [
+      "Masked Autoencoders (MAE)",
+      "asymmetric encoder-decoder architecture",
+      "mask random patches",
+      "lightweight decoder",
+      "mask tokens",
+      "masking a high proportion of the input image",
+      "encoder that operates only on the visible subset of patches"
+    ],
+    "datasets": [
+      "ImageNet-1K"
+    ],
+    "tasks": [
+      "image reconstruction"
+    ],
+    "concepts": [
+      "self-supervised learning"
+    ],
+    "extends": [
+      "ViT"
+    ],
+    "contradicts": []
+  }
+]

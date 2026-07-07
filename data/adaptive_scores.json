@@ -1,0 +1,49 @@
+{
+  "fixed": {
+    "faithfulness": 1.0,
+    "answer_relevancy": NaN,
+    "context_precision": NaN,
+    "context_recall": 0.3333,
+    "average": NaN
+  },
+  "adaptive": {
+    "faithfulness": NaN,
+    "answer_relevancy": NaN,
+    "context_precision": NaN,
+    "context_recall": NaN,
+    "average": NaN,
+    "improvement": NaN
+  },
+  "comparison": {
+    "fixed_avg": 0.5132,
+    "adaptive_avg": 0.5429,
+    "improvement": 0.0297,
+    "per_query": [
+      {
+        "query": "how does attention mechanism work in vision transformers",
+        "fixed": 0.5647,
+        "adaptive": 0.5944
+      },
+      {
+        "query": "what datasets are used to evaluate ViT",
+        "fixed": 0.4341,
+        "adaptive": 0.4766
+      },
+      {
+        "query": "compare fixed and shifted window attention",
+        "fixed": 0.5553,
+        "adaptive": 0.525
+      },
+      {
+        "query": "what is masked autoencoder pretraining",
+        "fixed": 0.6315,
+        "adaptive": 0.6825
+      },
+      {
+        "query": "how does DeiT improve data efficiency",
+        "fixed": 0.3803,
+        "adaptive": 0.4358
+      }
+    ]
+  }
+}

@@ -1,0 +1,844 @@
+{
+  "arxiv_id": "2104.11227",
+  "title": "Multiscale Vision Transformers",
+  "authors": [
+    "Haoqi Fan",
+    "Bo Xiong",
+    "Karttikeya Mangalam",
+    "Yanghao Li",
+    "Zhicheng Yan",
+    "Jitendra Malik",
+    "Christoph Feichtenhofer"
+  ],
+  "year": 2021,
+  "abstract": "We present Multiscale Vision Transformers (MViT) for video and image recognition, by connecting the seminal idea of multiscale feature hierarchies with transformer models. Multiscale Transformers have several channel-resolution scale stages. Starting from the input resolution and a small channel dimension, the stages hierarchically expand the channel capacity while reducing the spatial resolution. This creates a multiscale pyramid of features with early layers operating at high spatial resolution to model simple low-level visual information, and deeper layers at spatially coarse, but complex, high-dimensional features. We evaluate this fundamental architectural prior for modeling the dense nature of visual signals for a variety of video recognition tasks where it outperforms concurrent vision transformers that rely on large scale external pre-training and are 5-10x more costly in computation and parameters. We further remove the temporal dimension and apply our model for image classification where it outperforms prior work on vision transformers. Code is available at: https://github.com/facebookresearch/SlowFast",
+  "categories": [
+    "cs.CV",
+    "cs.AI",
+    "cs.LG"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2104.11227v1",
+  "page_count": 18,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 102,
+  "chunks": [
+    {
+      "chunk_id": "2104.11227_chunk_0000",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "Multiscale Vision TransformersHaoqi Fan *, 1Bo Xiong *, 1Karttikeya Mangalam *, 1, 2Yanghao Li *, 1Zhicheng Yan 1Jitendra Malik 1, 2Christoph Feichtenhofer *, 11Facebook AI Research2UC BerkeleyAbstractWe present Multiscale Vision Transformers (MViT) forvideo and image recognition, by connecting the seminal ideaof multiscale feature hierarchies with transformer models.Multiscale Transformers have several channel-resolutionscale stages. Starting from the input resolution and a smallchannel dimension, the stages hierarchically expand thechannel capacity while reducing the spatial resolution. Thiscreates a multiscale pyramid of features with early lay-ers operating at high spatial resolution to model simplelow-level visual information, and deeper layers at spatiallycoarse, but complex, high-dimensional features. We eval-uate this fundamental architectural prior for modeling thedense nature of visual signals for a variety of video recog-nition tasks where it outperforms concurrent vision trans-formers that rely on large scale external pre-training andare 5-10\u00d7 more costly in computation and parameters. Wefurther remove the temporal dimension and apply our modelfor image classi\ufb01cation where it outperforms prior workon vision transformers.Code is available at: https://github.com/facebookresearch/SlowFast.Inputscale1scale2scale3Figure 1.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0001",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "Multiscale Vision Transformers learn a hierarchy fromdense (in space) and simple (in channels) to coarse and complexfeatures. Several resolution-channel scale stages progressivelyincrease the channel capacity of the intermediate latent sequencewhile reducing its length and thereby spatial resolution.channel corresponding to ever more specialized features.In a parallel development, the computer vision com-munity developed multiscale processing, sometimes called\u201cpyramid\u201d strategies, with Rosenfeld and Thurston [85], Burtand Adelson [8], Koenderink [61], among the key papers.There were two motivations (i) To decrease the computing re-quirements by working at lower resolutions and (ii) A bettersense of \u201ccontext\u201d at the lower resolutions, which could thenguide the processing at higher resolutions (this is a precursorto the bene\ufb01t of \u201cdepth\u201d in today\u2019s neural networks.)The Transformer [98] architecture allows learning ar-bitrary functions de\ufb01ned over sets and has been scalablysuccessful in sequence tasks such as language comprehen-sion [26] and machine translation [7]. Fundamentally, atransformer uses blocks with two basic operations. First,is an attention operation [4] for modeling inter-element re-lations. Second, is a multi-layer perceptron (MLP), whichmodels relations within an element.",
+      "token_count": 269
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0002",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "Fundamentally, atransformer uses blocks with two basic operations. First,is an attention operation [4] for modeling inter-element re-lations. Second, is a multi-layer perceptron (MLP), whichmodels relations within an element. Intertwining these oper-ations with normalization [2] and residual connections [44]allows transformers to generalize to a wide variety of tasks.Recently, transformers have been applied to key com-puter vision tasks such as image classi\ufb01cation. In the spiritof architectural universalism, vision transformers [25, 95]approach performance of convolutional models across a va-riety of data and compute regimes. By only having a \ufb01rstlayer that \u2018patchi\ufb01es\u2019 the input in spirit of a 2D convolu-tion, followed by a stack of transformer blocks, the visiontransformer aims to showcase the power of the transformerarchitecture using little inductive bias.1. IntroductionWe begin with the intellectual history of neural networkmodels for computer vision. Based on their studies of catand monkey visual cortex, Hubel and Wiesel [55] developeda hierarchical model of the visual pathway with neuronsin lower areas such as V1 responding to features such asoriented edges and bars, and in higher areas to more spe-ci\ufb01c stimuli.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0003",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "Fukushima proposed the Neocognitron [32], aneural network architecture for pattern recognition explic-itly motivated by Hubel and Wiesel\u2019s hierarchy. His modelhad alternating layers of simple cells and complex cells, thusincorporating downsampling, and shift invariance, thus incor-porating convolutional structure. LeCun et al. [65] took theadditional step of using backpropagation to train the weightsof this network. But already the main aspects of hierarchy ofvisual processing had been established: (i) Reduction in spa-tial resolution as one goes up the processing hierarchy and(ii) Increase in the number of different \u201cchannels\u201d, with each*Equal technical contribution.In this paper, our intention is to connect the seminal ideaof multiscale feature hierarchies with the transformer model.We posit that the fundamental vision principle of resolutionand channel scaling, can be bene\ufb01cial for transformer modelsacross a variety of visual recognition tasks.We present Multiscale Vision Transformers (MViT), atransformer architecture for modeling visual data such as im-ages and videos. Consider an input image as shown in Fig. 1.Unlike conventional transformers, which maintain a constantchannel capacity and resolution throughout the network,Multiscale Transformers have several channel-resolution\u2018scale\u2019 stages. Starting from the image resolution and a smallchannel dimension, the stages hierarchically expand thechannel capacity while reducing the spatial resolution.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0004",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "Starting from the image resolution and a smallchannel dimension, the stages hierarchically expand thechannel capacity while reducing the spatial resolution. Thiscreates a multiscale pyramid of feature activations inside thetransformer network, effectively connecting the principlesof transformers with multi scale feature hierarchies.Our conceptual idea provides an effective design advan-tage for vision transformer models. The early layers of ourarchitecture can operate at high spatial resolution to modelsimple low-level visual information, due to the lightweightchannel capacity. In turn, the deeper layers can effectivelyfocus on spatially coarse but complex high-level featuresto model visual semantics. The fundamental advantage ofour multiscale transformer arises from the extremely densenature of visual signals, a phenomenon that is even morepronounced for space-time visual signals captured in video.A noteworthy bene\ufb01t of our design is the presence ofstrong implicit temporal bias in video multiscale models. Weshow that vision transformer models [25] trained on naturalvideo suffer no performance decay when tested on videoswith shuf\ufb02ed frames. This indicates that these models are noteffectively using the temporal information and instead relyheavily on appearance.",
+      "token_count": 231
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0005",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "This indicates that these models are noteffectively using the temporal information and instead relyheavily on appearance. In contrast, when testing our MViTmodels on shuf\ufb02ed frames, we observe signi\ufb01cant accuracydecay, indicating strong use of temporal information.Our focus in this paper is video recognition, and we de-sign and evaluate MViT for video tasks (Kinetics [59,10],Charades [86], SSv2 [38] and AVA [39]). MViT providesa signi\ufb01cant performance gain over concurrent video trans-formers [78,6,1], without any external pre-training data.In Fig. A.4 we show the computation/accuracy trade-offfor video-level inference, when varying the number of tem-poral clips used in MViT. The vertical axis shows accuracyon Kinetics-400 and the horizontal axis the overall infer-ence cost in FLOPs for different models, MViT and concur-rent ViT [25] video variants: VTN [78], TimeSformer [6],ViViT [1]. To achieve similar accuracy level as MViT, thesemodels require signi\ufb01cant more computation and parameters(e.g.",
+      "token_count": 254
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0006",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "To achieve similar accuracy level as MViT, thesemodels require signi\ufb01cant more computation and parameters(e.g. ViViT-L [1] has 6.8\u00d7 higher FLOPs and 8.5\u00d7 more pa-rameters at equal accuracy, more analysis in \u00a7A.1) and needlarge-scale external pre-training on ImageNet-21K (whichcontains around 60\u00d7 more labels than Kinetics-400).Kinetics top-1 val accuracy (%)IN-21KIN-21KIN-21K+4.6% accat 1/5 FLOPsat 1/3 Params without ImageNetIN-1KMViT-B 16x4MViT-B 32x2[1] ViViT-L ImageNet-21K[6] TimeSformer ImageNet-21K[78] VTN ImageNet-1K / 21KInference cost per video in TFLOPs (# of multiply-adds x 1012)We further apply our architecture to an image classi\ufb01-cation task on ImageNet [21], by simply removing the tem-poral dimension of the video model found with ablationexperiments on Kinetics, and show signi\ufb01cant gains oversingle-scale vision transformers for image recognition.2. Related WorkConvolutional networks (ConvNets).",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0007",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "Related WorkConvolutional networks (ConvNets). Incorporating down-sampling, shift invariance, and shared weights, ConvNetsare de-facto standard backbones for computer vision tasksfor image [65, 62, 88, 90, 46, 12, 15, 34, 93, 81, 41] andvideo [87,31,11,79,69,106,96,30,105,35,29,117,57].Self-attention in ConvNets.Self-attention mechanismshas been used for image understanding [82, 114, 52], un-supervised object recognition [74] as well as vision andlanguage [77,66]. Hybrids of self-attention operations andconvolutional networks have also been applied to imageunderstanding [51] and video recognition [101].Vision Transformers. Much of current enthusiasm in ap-plication of Transformers [98] to vision tasks commenceswith the Vision Transformer (ViT) [25] and Detection Trans-former [9].",
+      "token_count": 221
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0008",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "Much of current enthusiasm in ap-plication of Transformers [98] to vision tasks commenceswith the Vision Transformer (ViT) [25] and Detection Trans-former [9]. We build directly upon [25] with a staged modelallowing channel expansion and resolution downsampling.DeiT [95] proposes a data ef\ufb01cient approach to training ViT.Our training recipe builds on, and we compare our imageclassi\ufb01cation models to, DeiT under identical settings.An emerging thread of work aims at applying transform-ers to vision tasks such as object detection [5], semanticsegmentation [115,99], 3D reconstruction [72], pose estima-tion [107], generative modeling [14], image retrieval [27],medical image segmentation [13,97,111], point clouds [40],video instance segmentation [103], object re-identi\ufb01cation[47], video retrieval [33], video dialogue [64], video objectdetection [110] and multi-modal tasks [73,23,80,53,108].A separate line of works attempts at modeling visual datawith learnt discretized token sequences [104,83,14,109,18].Ef\ufb01cient Transformers.",
+      "token_count": 249
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0009",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "Recent works [100,60,17,94,20,16, 67] reduce the quadratic attention complexity to maketransformers more ef\ufb01cient for natural language processingapplications, which is complementary to our approach.Three concurrent works propose a ViT-based architecturefor video [78, 6, 1]. However, these methods rely on pre-training on vast amount of external data such as ImageNet-21K [21], and thus use the vanilla ViT [25] with minimaladaptations. In contrast, our MViT introduces multiscalefeature hierarchies for transformers, allowing effective mod-eling of dense visual input without large-scale external data.Add & NormTHW \u00d7 D ^^^MatMulSoftmaxTHW \u00d7 D ~~~THW \u00d7 ^^^THW ~~~MatMul & ScaleTHW \u00d7 D Q~~~THW \u00d7 D ^^^PoolV PoolQPoolQPoolK^K^V^QTHW \u00d7 D THW \u00d7 D THW \u00d7 D3. Multiscale Vision Transformer (MViT)LinearLinearLinearOur generic Multiscale Transformer architecture buildson the core concept of stages. Each stage consists of multipletransformer blocks with speci\ufb01c space-time resolution andchannel dimension. The main idea of Multiscale Transform-ers is to progressively expand the channel capacity, whilepooling the resolution from input to output of the network.THW \u00d7 D3.1.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0010",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "The main idea of Multiscale Transform-ers is to progressively expand the channel capacity, whilepooling the resolution from input to output of the network.THW \u00d7 D3.1. Multi Head Pooling AttentionWe \ufb01rst describe Multi Head Pooling Attention (MHPA),a self attention operator that enables \ufb02exible resolution mod-eling in a transformer block allowing Multiscale Transform-ers to operate at progressively changing spatiotemporal reso-lution. In contrast to original Multi Head Attention (MHA)operators [98], where the channel dimension and the spatio-temporal resolution remains \ufb01xed, MHPA pools the sequenceof latent tensors to reduce the sequence length (resolution)of the attended input. Fig. 3 shows the concept.Concretely, consider a D dimensional input tensor Xof sequence length L, X \u2208RL\u00d7D. Following MHA [25],MHPA projects the input X into intermediate query tensor\u02c6Q \u2208RL\u00d7D, key tensor \u02c6K \u2208RL\u00d7D and value tensor \u02c6V \u2208RL\u00d7D with linear operationsinput tensor of dimensions L = T \u00d7 H \u00d7 W to \u02dcL given by,\u02dcL =L + 2p \u2212k+ 1with the equation applying coordinate-wise.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0011",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "The pooledtensor is \ufb02attened again yielding the output of P(Y ; \u0398) \u2208R\u02dcL\u00d7D with reduced sequence length, \u02dcL = \u02dcT \u00d7 \u02dcH \u00d7 \u02dcW.By default we use overlapping kernels k with shape-preserving padding p in our pooling attention operators, sothat \u02dcL , the sequence length of the output tensor P(Y ; \u0398),experiences an overall reduction by a factor of sT sHsW .Pooling Attention. The pooling operator P(\u00b7; \u0398) is appliedto all the intermediate tensors \u02c6Q, \u02c6K and \u02c6V independentlywith chosen pooling kernels k, stride s and padding p. De-noting \u03b8 yielding the pre-attention vectors Q = P( \u02c6Q; \u0398Q),K = P( \u02c6K; \u0398K) and V = P( \u02c6V ; \u0398V ) with reduced se-quence lengths. Attention is now computed on these short-ened vectors, with the operation,\u02c6Q = XWQ\u02c6K = XWK\u02c6V = XWV/ with weights WQ, WK, WV of dimensions D \u00d7 D.",
+      "token_count": 261
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0012",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "Attention is now computed on these short-ened vectors, with the operation,\u02c6Q = XWQ\u02c6K = XWK\u02c6V = XWV/ with weights WQ, WK, WV of dimensions D \u00d7 D. Theobtained intermediate tensors are then pooled in sequencelength, with a pooling operator P as described below.Attention(Q, K, V ) = Softmax(QKT /\u221aD)V.Pooling Operator. Before attending the input, the interme-diate tensors \u02c6Q, \u02c6K, \u02c6V are pooled with the pooling operatorP(\u00b7; \u0398) which is the cornerstone of our MHPA and, by ex-tension, of our Multiscale Transformer architecture.The operator P(\u00b7; \u0398) performs a pooling kernel com-putation on the input tensor along each of the dimensions.Unpacking \u0398 as \u0398 := (k, s, p), the operator employs apooling kernel k of dimensions kT \u00d7 kH \u00d7 kW , a stride sof corresponding dimensions sT \u00d7 sH \u00d7 sW and a paddingp of corresponding dimensions pT \u00d7 pH \u00d7 pW to reduce anNaturally, the operation induces the constraints sK \u2261sVon the pooling operators.",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0013",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "In summary, pooling attention iscomputed as,PA(\u00b7) = Softmax(P(Q; \u0398Q)P(K; \u0398K)T /\u221ad)P(V ; \u0398V ),where\u221ad is normalizing the inner product matrix row-wise.The output of the Pooling attention operation thus has itssequence length reduced by a stride factor of sQT sQHsQW fol-lowing the shortening of the query vector Q in P(\u00b7).stageoperatorsoutput sizesdata layerstride \u03c4\u00d71\u00d71T\u00d7H\u00d7Wstagesoperatorsoutput sizesdata layerstride \u03c4\u00d71\u00d71D\u00d7T\u00d7H\u00d7Wpatch11\u00d716\u00d716, DD\u00d7T\u00d7 H16 \u00d7 Wcube1cT \u00d7cH\u00d7cW , DD\u00d7 TsT \u00d7 H4 \u00d7 W16stride 1\u00d716\u00d7164stride sT \u00d74\u00d74MHA(D)MLP(4D)\u00d7ND\u00d7T\u00d7 H16 \u00d7 WMHPA(D)MLP(4D)\u00d7N2D\u00d7 TsT \u00d7 H4 \u00d7 Wscale2scale2MHPA(2D)MLP(8D)\u00d7N32D\u00d7 TsT \u00d7 H8 \u00d7 Wscale3MHPA(4D)MLP(16D)\u00d7N44D\u00d7 Tscale4sT \u00d7 H16 \u00d7 WMHPA(8D)MLP(32D)\u00d7N58D\u00d7 Tscale5sT \u00d7 H32 \u00d7 W16\u00d7 W16 ).Multiple heads.",
+      "token_count": 321
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0014",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "As in [98] the computation can be paral-lelized by considering h heads where each head is perform-ing the pooling attention on a non overlapping subset of D/hchannels of the D dimensional input tensor X.4 .The subsequent stages progressively down-sample this resolution(at beginning of a stage) with MHPA while simultaneously increas-ing the channel dimension, in MLP layers, (at the end of a stage).Each stage consists of N\u2217transformer blocks, denoted in [brackets].4 \u00d7 WComputational Analysis. Since attention computationscales quadratically w.r.t. the sequence length, pooling thekey, query and value tensors has dramatic bene\ufb01ts on thefundamental compute and memory requirements of the Mul-tiscale Transformer model. Denoting the sequence lengthreduction factors by fQ, fK and fV we have,dimension D to encode the positional information and breakpermutation invariance.",
+      "token_count": 190
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0015",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "Denoting the sequence lengthreduction factors by fQ, fK and fV we have,dimension D to encode the positional information and breakpermutation invariance. A learnable class embedding isappended to the projected image patches.The resulting sequence of length of L + 1 is then pro-cessed sequentially by a stack of N transformer blocks, eachone performing attention (MHA [98]), multi-layer percep-tron (MLP) and layer normalization (LN [3]) operations.Considering X to be the input of the block, the output of asingle transformer block, Block(X) is computed byfj = sjT \u00b7 sjH \u00b7 sjW , \u2200j \u2208{Q, K, V }.Considering the input tensor to P(; \u0398) to have dimensionsD \u00d7 T \u00d7 H \u00d7 W, the run-time complexity of MHPA isO(THWD/h(D + THW/fQfK)) per head and the mem-ory complexity is O(THWh(D/h + THW/fQfK)).This trade-off between the number of channels D andsequence length term THW/fQfK informs our designchoices about architectural parameters such as number ofheads and width of layers.",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0016",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "We refer the reader to the sup-plement for a detailed analysis and discussions on the time-memory complexity trade-off.X1 = MHA(LN(X)) + XBlock(X) = MLP(LN(X1)) + X1.The resulting sequence after N consecutive blocks is layer-normalized and the class embedding is extracted and passedthrough a linear layer to predict the desired output (e.g. class).By default, the hidden dimension of the MLP is 4D. Werefer the reader to [25,98] for details.In context of the present paper, it is noteworthy that ViTmaintains a constant channel capacity and spatial resolutionthroughout all the blocks (see Table 1).3.2. Multiscale Transformer NetworksBuilding upon Multi Head Pooling Attention (Sec. 3.1),we describe the Multiscale Transformer model for visualrepresentation learning using exclusively MHPA and MLPlayers. First, we present a brief review of the Vision Trans-former Model that informs our design.Multiscale Vision Transformers (MViT). Our key con-cept is to progressively grow the channel resolution (i.e. di-mension), while simultaneously reducing the spatiotemporalresolution (i.e. sequence length) throughout the network. Bydesign, our MViT architecture has \ufb01ne spacetime (and coarsechannel) resolution in early layers that is up-/downsampledto a coarse spacetime (and \ufb01ne channel) resolution in latelayers.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0017",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "Bydesign, our MViT architecture has \ufb01ne spacetime (and coarsechannel) resolution in early layers that is up-/downsampledto a coarse spacetime (and \ufb01ne channel) resolution in latelayers. MViT is shown in Table 2.Preliminaries: Vision Transformer (ViT). The VisionTransformer (ViT) architecture [25] starts by dicing the inputvideo of resolution T\u00d7H\u00d7W, where T is the number offrames H the height and W the width, into non-overlappingpatches of size 1\u00d716\u00d716 each, followed by point-wise ap-plication of linear layer on the \ufb02attened image patches to toproject them into the latent dimension, D, of the transformer.This is equivalent to a convolution with equal kernel sizeand stride of 1\u00d716\u00d716 and is shown as patch1 stage in themodel de\ufb01nition in Table 1.Next, a positional embedding E \u2208RL\u00d7D is added toeach element of the projected sequence of length L withScale stages. A scale stage is de\ufb01ned as a set of N trans-former blocks that operate on the same scale with identi-cal resolution across channels and space-time dimensionsD\u00d7T\u00d7H\u00d7W.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0018",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "A scale stage is de\ufb01ned as a set of N trans-former blocks that operate on the same scale with identi-cal resolution across channels and space-time dimensionsD\u00d7T\u00d7H\u00d7W. At the input (cube1 in Table 2), we projectthe patches (or cubes if they have a temporal extent) to asmaller channel dimension (e.g. 8\u00d7 smaller than a typicalViT model), but long sequence (e.g. 4\u00d74 = 16\u00d7 denser thana typical ViT model; cf.",
+      "token_count": 113
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0019",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "Table 1).stageoperatorsoutput sizesdatastride 8\u00d71\u00d718\u00d7224\u00d7224stageoperatorsoutput sizesdatastride 4\u00d71\u00d7116\u00d7224\u00d7224stageoperatorsoutput sizesdatastride 4\u00d71\u00d7116\u00d7224\u00d7224patch11\u00d716\u00d716, 768768\u00d78\u00d714\u00d714stride 1\u00d716\u00d716cube13\u00d77\u00d77, 9696\u00d78\u00d756\u00d756stride 2\u00d74\u00d74cube13\u00d78\u00d78, 128128\u00d78\u00d728\u00d728stride 2\u00d78\u00d78scale2MHA(768)MLP(3072)\u00d712768\u00d78\u00d714\u00d714scale2MHPA(96)MLP(384)\u00d7196\u00d78\u00d756\u00d756scale2MHPA(128)MLP(512)\u00d73128\u00d78\u00d728\u00d728scale3MHPA(192)MLP(768)\u00d72192\u00d78\u00d728\u00d728scale3MHPA(256)MLP(1024)\u00d77256\u00d78\u00d714\u00d714MHPA(384)MLP(1536)\u00d711384\u00d78\u00d714\u00d714MHPA(512)MLP(2048)\u00d76512\u00d78\u00d77\u00d77scale4scale4MHPA(768)MLP(3072)\u00d72768\u00d78\u00d77\u00d77scale5(c) MViT-S with 32.9G FLOPs, 26.1M param,4.3G memory, and 74.3% top-1 accuracy.Table 3.",
+      "token_count": 343
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0020",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "Comparing ViT-B to two instantiations of MViT with varying complexity, MViT-S in (c) and MViT-B in (b). MViT-S operates ata lower spatial resolution and lacks a \ufb01rst high-resolution stage. The top-1 accuracy corresponds to 5-Center view testing on K400. FLOPscorrespond to a single inference clip, and memory is for a training batch of 4 clips. See Table 2 for the general MViT-B structure.(a) ViT-B with 179.6G FLOPs, 87.2M param,16.8G memory, and 68.5% top-1 accuracy.(b) MViT-B with 70.5G FLOPs, 36.5M param,6.8G memory, and 77.2% top-1 accuracy.At a stage transition (e.g. scale1 to scale2 to in Table 2),the channel dimension of the processed sequence is up-sampled while the length of the sequence is down-sampled.This effectively reduces the spatio-temporal resolution of theunderlying visual data while allowing the network to assimi-late the processed information in more complex features.Skip connections. Since the channel dimension and se-quence length change inside a residual block, we pool theskip connection to adapt to the dimension mismatch betweenits two ends.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0021",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "Since the channel dimension and se-quence length change inside a residual block, we pool theskip connection to adapt to the dimension mismatch betweenits two ends. MHPA handles this mismatch by adding thequery pooling operator P(\u00b7; \u0398Q) to the residual path. Asshown in Fig. 3, instead of directly adding the input X ofMHPA to the output, we add the pooled input X to theoutput, thereby matching the resolution to attended query Q.For handling the channel dimension mismatch betweenstage changes, we employ an extra linear layer that operateson the layer-normalized output of our MHPA operation. Notethat this differs from the other (resolution-preserving) skip-connections that operate on the un-normalized signal.Channel expansion. When transitioning from one stageto the next, we expand the channel dimension by increas-ing the output of the \ufb01nal MLP layer in the previous stageby a factor that is relative to the resolution change intro-duced at the stage. Concretely, if we down-sample thespace-time resolution by 4\u00d7, we increase the channel di-mension by 2\u00d7.",
+      "token_count": 233
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0022",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "Concretely, if we down-sample thespace-time resolution by 4\u00d7, we increase the channel di-mension by 2\u00d7. For example, scale3 to scale4 changes reso-lution from 2D\u00d7 T16 in Table 2.This roughly preserves the computational complexity acrossstages, and is similar to ConvNet design principles [87,45].sT \u00d7 H8 \u00d7 T8 to 4D\u00d7 TsT \u00d7 H16\u00d7 T3.3. Network instantiation detailsQuery pooling. The pooling attention operation affords\ufb02exibility not only in the length of key and value vectorsbut also in the length of the query, and thereby output, se-quence. Pooling the query vector P(Q; k; p; s) with a kernels \u2261(sQT , sQH, sQW ) leads to sequence reduction by a factor ofsQT \u00b7 sQH \u00b7 sQW . Since, our intention is to decrease resolutionat the beginning of a stage and then preserve this resolutionthroughout the stage, only the \ufb01rst pooling attention operatorof each stage operates at non-degenerate query stride sQ > 1,with all other operators constrained to sQ \u2261(1, 1, 1).Key-Value pooling.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0023",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "Unlike Query pooling, changing the se-quence length of key K and value V tensors, does not changethe output sequence length and, hence, the space-time resolu-tion. However, they play a key role in overall computationalrequirements of the pooling attention operator.We decouple the usage of K, V and Q pooling, withQ pooling being used in the \ufb01rst layer of each stage andK, V pooling being employed in all other layers. Since thesequence length of key and value tensors need to be identicalto allow attention weight calculation, the pooling stride usedon K and value V tensors needs to be identical.",
+      "token_count": 127
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0024",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "Since thesequence length of key and value tensors need to be identicalto allow attention weight calculation, the pooling stride usedon K and value V tensors needs to be identical. In ourdefault setting, we constrain all pooling parameters (k; p; s)to be identical i.e. \u0398K \u2261\u0398V within a stage, but vary sadaptively w.r.t. to the scale across stages.modelpre-traintop-1 top-5 FLOPs\u00d7views ParamTwo-Stream I3D [11]-71.690.0216 \u00d7 NA25.0ip-CSN-152 [96]-77.892.8109\u00d73\u00d71032.8SlowFast 8\u00d78 +NL [30]-78.793.5116\u00d73\u00d71059.9SlowFast 16\u00d78 +NL [30]-79.893.9234\u00d73\u00d71059.9X3D-M [29]-76.092.36.2\u00d73\u00d7103.8X3D-XL [29]-79.193.948.4\u00d73\u00d71011.0ViT-B-VTN [78]ImageNet-1K75.692.44218\u00d71\u00d71114.0ViT-B-VTN [78]ImageNet-21K 78.693.74218\u00d71\u00d71114.0ViT-B-TimeSformer [6]ImageNet-21K 80.794.72380\u00d73\u00d71121.4ViT-L-ViViT [1]ImageNet-21K 81.394.73992\u00d73\u00d74310.8ViT-B (our baseline)ImageNet-21K 79.393.9180\u00d71\u00d7587.2ViT-B (our baseline)-68.586.9180\u00d71\u00d7587.2MViT-S-76.092.132.9\u00d71\u00d7526.1MViT-B, 16\u00d74-78.493.570.5\u00d71\u00d7536.6MViT-B, 32\u00d73-80.294.4170\u00d71\u00d7536.6MViT-B, 64\u00d73-81.295.1455\u00d73\u00d7336.6Table 4.",
+      "token_count": 473
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0025",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "Comparison with previous work on Kinetics-400. Wereport the inference cost with a single \u201cview\" (temporal clip withspatial crop) \u00d7 the number of views (FLOPs\u00d7viewspace\u00d7viewtime).Magnitudes are Giga (109) for FLOPs and Mega (106) for Param.Accuracy of models trained with external data is de-emphasized.modelpretrain top-1 top-5 GFLOPs\u00d7views ParamSlowFast 16\u00d78 +NL [30]-81.895.1234\u00d73\u00d71059.9X3D-M-78.894.56.2\u00d73\u00d7103.8X3D-XL-81.995.548.4\u00d73\u00d71011.0ViT-B-TimeSformer [6]IN-21K 82.496.01703\u00d73\u00d71121.4ViT-L-ViViT [1]IN-21K 83.095.73992\u00d73\u00d74310.8MViT-B, 16\u00d74-82.195.770.5\u00d71\u00d7536.8MViT-B, 32\u00d73-83.496.3170\u00d71\u00d7536.8MViT-B-24, 32\u00d73-83.896.3236\u00d71\u00d7552.9Table 5.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0026",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "Comparison with previous work on Kinetics-600.The \ufb01rst Table 4 section shows prior art using ConvNets.The second section shows concurrent work using VisionTransformers [25] for video classi\ufb01cation [78,6]. Both ap-proaches rely on ImageNet pre-trained base models. ViT-B-VTN [78] achieves 75.6% top-1 accuracy, which is boostedby 3% to 78.6% by merely changing the pre-training fromImageNet-1K to ImageNet-21K. ViT-B-TimeSformer [6]shows another 2.1% gain on top of VTN, at higher cost of7140G FLOPs and 121.4M parameters. ViViT improvesaccuracy further with an even larger ViT-L model.The third section in Table 4 shows our ViT baselines. We\ufb01rst list our ViT-B, also pre-trained on the ImageNet-21K,which achieves 79.3%, thereby being 1.4% lower than ViT-B-TimeSformer, but is with 4.4\u00d7 fewer FLOPs and 1.4\u00d7 fewerparameters. This result shows that simply \ufb01ne-tuning anoff-the-shelf ViT-B model from ImageNet-21K [25] providesa strong baseline on Kinetics.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0027",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "This result shows that simply \ufb01ne-tuning anoff-the-shelf ViT-B model from ImageNet-21K [25] providesa strong baseline on Kinetics. However, training this modelfrom-scratch with the same \ufb01ne-tuning recipe will resultin 34.3%. Using our \u201ctraining-from-scratch\u201d recipe willproduce 68.5% for this ViT-B model, using the same 1\u00d75,spatial \u00d7 temporal, views for video-level inference.The \ufb01nal section of Table 4 lists our MViT results. All ourmodels are trained-from-scratch using this recipe, withoutany external pre-training. Our small model, MViT-S pro-duces 76.0% while being relatively lightweight with 26.1Mparam and 32.9\u00d75=164.5G FLOPs, outperforming ViT-Bby +7.5% at 5.5\u00d7 less compute in identical train/val setting.Our base model, MViT-B provides 78.4%, a +9.9% accu-racy boost over ViT-B under identical settings, while having2.6\u00d7/2.4\u00d7fewer FLOPs/parameters. When changing theframe sampling from 16\u00d74 to 32\u00d73 performance increasesto 80.2%.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0028",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "When changing theframe sampling from 16\u00d74 to 32\u00d73 performance increasesto 80.2%. Finally, we take this model and \ufb01ne-tune it for 5epochs with longer 64 frame input, after interpolating thetemporal positional embedding, to reach 81.2% top-1 using3 spatial and 3 temporal views for inference (it is suf\ufb01cienttest with fewer temporal views if a clip has more frames).Further quantitative and qualitative results are in \u00a7A.We employ K, V pooling in all MHPA blocks, with\u0398K \u2261\u0398V and sQ = (1, 8, 8) in scale1 and adaptivelydecay this stride w.r.t. to the scale across stages such that theK, V tensors have consistent scale across all blocks.4. Experiments: Video RecognitionDatasets. We use Kinetics-400 [59] (K400) (\u223c240k train-ing videos in 400 classes) and Kinetics-600 [11]. We fur-ther assess transfer learning performance for on Something-Something-v2 [38], Charades [86], and AVA [39].We report top-1 and top-5 classi\ufb01cation accuracy (%) onthe validation set, computational cost (in FLOPs) of a single,spatially center-cropped clip and the number of clips used.Training.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0029",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "By default, all models are trained from randominitialization (\u201cfrom scratch\u201d) on Kinetics, without usingImageNet [22] or other pre-training. Our training recipe andaugmentations follow [30,95]. For Kinetics, we train for 200epochs with 2 repeated augmentation [50] repetitions.We report ViT baselines that are \ufb01ne-tuned from Ima-geNet, using a 30-epoch version of the training recipe in [30].For the temporal domain, we sample a clip from the full-length video, and the input to the network are T frames witha temporal stride of \u03c4; denoted as T \u00d7 \u03c4 [30].Inference. We apply two testing strategies following [30,29]: (i) Temporally, uniformly samples K clips (e.g. K=5)from a video, scales the shorter spatial side to 256 pixels andtakes a 224\u00d7224 center crop, and (ii), the same as (i) tempo-rally, but take 3 crops of 224\u00d7224 to cover the longer spatialaxis. We average the scores for all individual predictions.All implementation speci\ufb01cs are in \u00a7D.Kinetics-600 [11] is a larger version of Kinetics. Resultsare in Table 5. We train MViT from-scratch, without anypre-training.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0030",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "Resultsare in Table 5. We train MViT from-scratch, without anypre-training. MViT-B, 16\u00d74 achieves 82.1% top-1 accu-racy. We further train a deeper 24-layer model with longersampling, MViT-B-24, 32\u00d73, to investigate model scale onthis larger dataset. MViT achieves state-of-the-art of 83.4%with 5-clip center crop testing while having 56.0\u00d7 fewerFLOPs and 8.4\u00d7 fewer parameters than ViT-L-ViViT [1]which relies on large-scale ImageNet-21K pre-training.4.1. Main ResultsKinetics-400. Table 4 compares to prior work.",
+      "token_count": 163
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0031",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "Main ResultsKinetics-400. Table 4 compares to prior work. From top-to-bottom, it has four sections and we discuss them in turn.modelpretraintop-1 top-5 FLOPs\u00d7views ParamTSM-RGB [71]IN-1K+K400 63.388.262.4\u00d73\u00d7242.9MSNet [63]IN-1K64.789.467\u00d71\u00d7124.6TEA [68]IN-1K65.189.970\u00d73\u00d710-ViT-B-TimeSformer [6]IN-21K62.5-1703\u00d73\u00d71121.4ViT-B (our baseline)IN-21K63.588.3180\u00d73\u00d7187.2SlowFast R50, 8\u00d78 [30]modelpretrain val mAP FLOPs ParamSlowFast, 4\u00d716, R50 [30]21.952.633.7SlowFast, 8\u00d78, R101 [30]23.813853.0MViT-B, 16\u00d7424.570.536.4MViT-B, 32\u00d7326.817036.4MViT-B, 64\u00d7327.345536.4SlowFast, 8\u00d78 R101+NL [30]K40061.987.065.7\u00d73\u00d7134.1SlowFast R101, 8\u00d78 [30]63.187.6106\u00d73\u00d7153.3MViT-B, 16\u00d7464.789.270.5\u00d73\u00d7136.6MViT-B, 32\u00d7367.190.8170\u00d73\u00d7136.6MViT-B, 64\u00d7367.790.9455\u00d73\u00d7136.6MViT-B, 16\u00d7427.114759.2SlowFast, 16\u00d78 R101+NL [30]27.529659.2X3D-XL [29]27.448.411.0MViT-B, 16\u00d7426.170.536.3MViT-B, 32\u00d7327.517036.4MViT-B-24, 32\u00d7328.723652.9Table 8.",
+      "token_count": 477
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0032",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "Comparison with previvous work on AVA v2.2. Allmethods use single center crop inference following [29].K400K60066.290.270.5\u00d73\u00d7136.6MViT-B, 32\u00d7367.891.3170\u00d73\u00d7136.6MViT-B-24, 32\u00d7368.791.5236\u00d73\u00d7153.2Table 6. Comparison with previous work on SSv2.K600Something-Something-v2 (SSv2) [38] is a dataset withvideos containing object interactions, which is known asa \u2018temporal modeling\u2018 task. Table 6 compares our methodwith the state-of-the-art. We \ufb01rst report a simple ViT-B(our baseline) that uses ImageNet-21K pre-training. OurMViT-B with 16 frames has 64.7% top-1 accuracy, which isbetter than the SlowFast R101 [30] which shares the samesetting (K400 pre-training and 3\u00d71 view testing). With moreinput frames, our MViT-B achieves 67.7% and the deeperMViT-B-24 achieves 68.7% using our K600 pre-trainedmodel of above. In general, Table 6 veri\ufb01es the capability oftemporal modeling for MViT.4.2.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0033",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "In general, Table 6 veri\ufb01es the capability oftemporal modeling for MViT.4.2. Ablations on KineticsWe carry out ablations on Kinetics-400 (K400) using 5-clip center 224\u00d7224 crop testing. We show top-1 accuracy(Acc), as well as computational complexity measured inGFLOPs for a single clip input of spatial size 2242. Infer-ence computational cost is proportional as a \ufb01xed numberof 5 clips is used (to roughly cover the inferred videos withT\u00d7\u03c4=16\u00d74 sampling.) We also report Parameters in M(106)and training GPU memory in G(109) for a batch size of 4.",
+      "token_count": 152
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0034",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "Bydefault all MViT ablations are with MViT-B, T\u00d7\u03c4=16\u00d74and max-pooling in MHSA.modelpretrainmAPFLOPs\u00d7views ParamNonlocal [101]IN-1K+K40037.5544\u00d73\u00d71054.3STRG +NL [102]39.7630\u00d73\u00d71058.3Timeception [56]modelshuf\ufb02ingFLOPs (G)Param (M)AccMViT-B70.536.577.2MViT-B\u271370.1 (\u22127.1)ViT-B179.687.268.5ViT-B\u271368.4 (\u22120.1)Table 9. Shuf\ufb02ing frames in inference.",
+      "token_count": 169
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0035",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "Shuf\ufb02ing frames in inference. MViT-B severely drops(\u22127.1%) for shuf\ufb02ed temporal input, but ViT-B models appear toignore temporal information as accuracy remains similar (\u22120.1%).41.1N/A\u00d7N/AN/ALFB +NL [105]42.5529\u00d73\u00d710122SlowFast 50, 8\u00d78 [30]38.065.7\u00d73\u00d71034.0SlowFast 101+NL, 16\u00d78 [30]42.5234\u00d73\u00d71059.9X3D-XL [29]43.448.4\u00d73\u00d71011.0MViT-B, 16\u00d7440.070.5\u00d73\u00d71036.4MViT-B, 32\u00d7344.3170\u00d73\u00d71036.4MViT-B, 64\u00d7346.3455\u00d73\u00d71036.4SlowFast R101+NL, 16\u00d78 [30]K400Frame shuf\ufb02ing. Table 9 shows results for randomly shuf-\ufb02ing the input frames in time during testing.",
+      "token_count": 251
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0036",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "Table 9 shows results for randomly shuf-\ufb02ing the input frames in time during testing. All models aretrained without any shuf\ufb02ing and have temporal embeddings.We notice that our MViT-B architecture suffers a signi\ufb01cantaccuracy drop of -7.1% (77.2 \u219270.1) for shuf\ufb02ing infer-ence frames. By contrast, ViT-B is surprisingly robust forshuf\ufb02ing the temporal order of the input.This indicates that a na\u00efve application of ViT to videodoes not model temporal information, and the temporal po-sitional embedding in ViT-B seems to be fully ignored.",
+      "token_count": 141
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0037",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "Wealso veri\ufb01ed this with the 79.3% ImageNet-21K pre-trainedViT-B of Table 4, which has the same accuracy of 79.3% forshuf\ufb02ing test frames, suggesting that it implicitly performsbag-of-frames video classi\ufb01cation in Kinetics.45.2234\u00d73\u00d71059.9X3D-XL [29]47.148.4\u00d73\u00d71011.0MViT-B, 16\u00d7443.970.5\u00d73\u00d71036.4MViT-B, 32\u00d7347.1170\u00d73\u00d71036.4MViT-B-24, 32\u00d7347.7236\u00d73\u00d71053.0Table 7. Comparison with previous work on Charades.K600Charades [86] is a dataset with longer range activities. Wevalidate our model in Table 7. With similar FLOPs andparameters, our MViT-B 16\u00d74 achieves better results (+2.0mAP) than SlowFast R50 [30]. As shown in the Table, theperformance of MViT-B is further improved by increasingthe number of input frames and MViT-B layers and usingK600 pre-trained models.AVA [39] is a dataset with for spatiotemporal-localizationof human actions. We validate our MViT on this detectiontask.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0038",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "We validate our MViT on this detectiontask. Details about the detection architecture of MViT canbe found in \u00a7D.2. Table 8 shows the results of our MViTmodels compared with SlowFast [30] and X3D [29]. Weobserve that MViT-B can be competitive to SlowFast andX3D using the same pre-training and testing strategy.variant[N1, N2] FLOPs (G)Mem (G)AccViT-B[12, 0]179.616.868.52-scale ViT-B, Q pool[6, 6]111.1 (\u221268.5) 9.8 (\u22127.0) 71.0 (+1.5)ViT-B, K, V pool[12, 0]148.4 (\u221231.2) 8.9 (\u22127.9) 69.1 (+0.6)Table 10. Query (scale stage) and Key-Value pooling on ViT-B. Introducing a single extra resolution stage into ViT-B boostsaccuracy by +1.5%. Pooling K, V provides +0.6% accuracy. Bothtechniques allow dramatic FLOPs/memory savings.Two scales in ViT. We provide a simple experiment thatablates the effectiveness of scale-stage design on ViT-B. Forthis we add a single scale stage to the ViT-B model.",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0039",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "We provide a simple experiment thatablates the effectiveness of scale-stage design on ViT-B. Forthis we add a single scale stage to the ViT-B model. Toisolate the effect of having different scales in ViT, we donot alter the channel dimensionality for this experiment. Wedo so by performing Q-Pooling with sQ \u2261(1, 2, 2) after 6Transformer blocks (cf. Table 3). Table 10 shows the results.Adding a single scale stage to the ViT-B baseline boosts accu-racy by +1.5% while deceasing FLOPs and memory cost by38% and 41%.",
+      "token_count": 139
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0040",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "Table 3). Table 10 shows the results.Adding a single scale stage to the ViT-B baseline boosts accu-racy by +1.5% while deceasing FLOPs and memory cost by38% and 41%. Pooling Key-Value tensors reduces computeand memory cost while slightly increasing accuracy.variant[N2, N3, N4, N5]FLOPsParamMemAccV1[2, 6, 6, 2]90.229.511.076.3V2[2, 4, 6, 4]86.942.810.375.9V3[2, 4, 8, 2]88.332.210.576.6V4[2, 2, 8, 4]85.045.59.776.7V5[1, 2, 11, 2]83.636.59.177.1V6[2, 2, 10, 2]86.434.911.376.9more blocks later stages the parameters of the architecture.Shifting the majority of blocks to the scale4 stage (VariantV5 and V6 in Table 13) achieves the best trade-off.positional embeddingParam (M)Acc(i)none36.275.8(ii)space-only36.576.7(iii)joint space-time38.676.5(iv)separate in space & time36.577.2stride sadaptive FLOPsMemAccnonen/a130.816.377.61\u00d74\u00d7471.48.275.92\u00d74\u00d7464.36.674.82\u00d74\u00d74\u271383.69.177.11\u00d78\u00d78\u271370.56.877.22\u00d78\u00d78\u271363.76.375.8Separate space & time embeddings in MViT.",
+      "token_count": 395
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0041",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "In Table 11,we ablate using (i) none, (ii) space-only, (iii) joint space-time,and (iv) a separate space and time (our default), positionalembeddings. We observe that no embedding (i) decays ac-curacy by -0.9% over using just a spatial one (ii) which isroughly equivalent to a joint spatiotemporal one (iii). Ourseparate space-time embedding (iv) is best, and also has2.1M fewer parameters than a joint spacetime embedding.Key-Value pooling. The ablation in Table 14 analyzes thepooling stride s = sT \u00d7 sH \u00d7 sW , for pooling K and Vtensors. Here, we compare an \u201cadaptive\u201d pooling that uses astride w.r.t. stage resolution, and keeps the K, V resolution\ufb01xed across all stages, against a non-adaptive version thatuses the same stride at every block. First, we compare thebaseline which uses no K, V pooling with non-adaptivepooling with a \ufb01xed stride of 2\u00d74\u00d74 across all stages: thisdrops accuracy from 77.6% to 74.8 (and reduces FLOPsand memory by over 50%).",
+      "token_count": 264
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0042",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "Using an adaptive stride that is1\u00d78\u00d78 in the scale1 stage, 1\u00d74\u00d74 in scale2, and 1\u00d72\u00d72 inscale3 gives the best accuracy of 77.2% while still preservingmost of the ef\ufb01ciency gains in FLOPs and memory.T \u00d7 \u03c4cT \u00d7cH\u00d7cWsT \u00d7sH\u00d7sWFLOPsParamAcc8\u00d781\u00d74\u00d741\u00d74\u00d7469.436.574.58\u00d781\u00d77\u00d771\u00d74\u00d7469.636.575.68\u00d783\u00d77\u00d771\u00d74\u00d7470.536.575.916\u00d743\u00d77\u00d772\u00d74\u00d7470.536.577.232\u00d723\u00d77\u00d774\u00d74\u00d7470.536.577.232\u00d727\u00d77\u00d774\u00d74\u00d7470.536.577.3kernel kpooling funcParamAccsmax36.576.12s + 1max36.575.5s + 1max36.577.2s + 1average36.575.4s + 1conv36.678.33\u00d73\u00d73conv36.678.4Input Sampling Rate. Table 12 shows results for differentcubi\ufb01cation kernel size c and sampling stride s (cf.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0043",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "Table 12 shows results for differentcubi\ufb01cation kernel size c and sampling stride s (cf. Table 2).We observe that sampling patches, cT = 1, performs worsethan sampling cubes with cT > 1. Further, sampling twiceas many frames, T= 16, with twice the cube stride, sT = 2,keeps the cost constant but boosts performance by +1.3%(75.9% \u219277.2%). Also, sampling overlapping input cubess < c allows better information \ufb02ow and bene\ufb01ts perfor-mance. While cT > 1 helps, very large temporal kernel size(cT = 7) doesn\u2019t futher improve performance.Pooling function. The ablation in Table 15 looks at thekernel size k w.r.t. the stride s, and the pooling function(max/average/conv). First, we see that having equivalentkernel and stride k=s provides 76.1%, increasing the kernelsize to k=2s+1 decays to 75.5%, but using a kernel k=s+1gives a clear bene\ufb01t of 77.2%. This indicates that overlap-ping pooling is effective, but a too large overlap (2s+1) hurts.Stage distribution. The ablation in Table 13 shows the re-sults for distributing the number of transformer blocks ineach individual scale stage.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0044",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "The ablation in Table 13 shows the re-sults for distributing the number of transformer blocks ineach individual scale stage. The overall number of trans-former blocks, N=16 is consistent. We observe that havingmore blocks in early stages increases memory and havingSecond, we investigate average instead of max-pooling andobserve that accuracy decays by from 77.2% to 75.4%.Third, we use conv-pooling by a learnable, channelwiseconvolution followed by LN.",
+      "token_count": 105
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0045",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "This variant has +1.2% overmax pooling and is used for all experiments in \u00a74.1 and \u00a75.modelAcc FLOPs (G) Param (M)RegNetZ-4GF [24]83.14.028.1RegNetZ-16GF [24]84.115.995.3Ef\ufb01cientNet-B7 [93]84.337.066.0DeiT-S [95]79.84.622.1DeiT-B [95]81.817.686.6DeiT-B \u21913842 [95]83.155.587.0MViT-B-16, max-pool82.57.837.0MViT-B-24, max-pool83.110.953.5MViT-B-24-wide-3202, max-pool 84.332.772.9MViT-B-1683.07.837.0MViT-B-24-wide-320284.832.772.9Table 17. Comparison to prior work on ImageNet.RegNetand Ef\ufb01cientNet are ConvNet examples that use different trainingrecipes.",
+      "token_count": 242
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0046",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "Comparison to prior work on ImageNet.RegNetand Ef\ufb01cientNet are ConvNet examples that use different trainingrecipes. DeiT/MViT are ViT-based and use identical recipes [95].modelclips/secAccFLOPs\u00d7viewsParamX3D-M [29]7.974.14.7\u00d71\u00d753.8SlowFast R50 [30]5.275.765.7\u00d71\u00d7534.6SlowFast R101 [30]3.277.6125.9\u00d71\u00d7562.8ViT-B [25]3.668.5179.6\u00d71\u00d7587.2MViT-S, max-pool12.374.332.9\u00d71\u00d7526.1MViT-B, max-pool6.377.270.5\u00d71\u00d7536.5MViT-S, conv-pool9.476.032.9\u00d71\u00d7526.1MViT-B, conv-pool4.878.470.5\u00d71\u00d7536.6Table 16. Speed-Accuracy tradeoff on Kinetics-400.Trainingthroughput is measured in clips/s.",
+      "token_count": 242
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0047",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "Speed-Accuracy tradeoff on Kinetics-400.Trainingthroughput is measured in clips/s. MViT is fast and accurate.We show models of different depth, MViT-B-Depth, (16,24, and 32), where MViT-B-16 is our base model and thedeeper variants are simply created by repeating the num-ber of blocks N\u2217in each scale stage (cf. Table 3b). \u201cwide\u201ddenotes a larger channel dimension of D = 112. All ourmodels are trained using the identical recipe as DeiT [95].We make the following observations:(i) Our lightweight MViT-B-16 achieves 82.5% top-1accuracy, with only 7.8 GFLOPs, which outperforms theDeiT-B counterpart by +0.7% with lower computation cost(2.3\u00d7fewer FLOPs and Parameters).",
+      "token_count": 192
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0048",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "If we use conv insteadof max-pooling, this number is increased by +0.5% to 83.0%.(ii) Our deeper model MViT-B-24, provides a gain of+0.6% accuracy at slight increase in computation.(iii) A larger model, MViT-B-24-wide with input resolu-tion 3202 reaches 84.3%, corresponding to a +1.2% gain, at1.7\u00d7fewer FLOPs, over DeiT-B\u21913842. Using convolutional,instead of max-pooling elevates this to 84.8%.These results suggest that Multiscale Vision Transformershave an architectural advantage over Vision Transformers.Speed-Accuracy tradeoff. In Table 16, we analyze thespeed/accuracy trade-off of our MViT models, along withtheir counterparts vision transformer (ViT [25]) and Con-vNets (SlowFast 8\u00d78 R50, SlowFast 8\u00d78 R101 [30], &X3D-L [29]). We measure training throughput as the num-ber of video clips per second on a single M40 GPU.We observe that both MViT-S and MViT-B models arenot only signi\ufb01cantly more accurate but also much fasterthan both the ViT-B baseline and convolutional models.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0049",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "Con-cretely, MViT-S has 3.4\u00d7 higher throughput speed (clips/s),is +5.8% more accurate (Acc), and has 3.3\u00d7 fewer param-eters (Param) than ViT-B. Using a conv instead of max-pooling in MHSA, we observe a training speed reduction of\u223c20% for convolution and additional parameter updates.5. Experiments: Image RecognitionWe apply our video models on static image recognition byusing them with single frame, T = 1, on ImageNet-1K [22].6. ConclusionTraining. Our recipe is identical to DeiT [95] and summa-rized in the supplementary material. Training is for 300epochs and results improve for training longer [95].We have presented Multiscale Vision Transformers thataim to connect the fundamental concept of multiscale featurehierarchies with the transformer model. MViT hierarchicallyexpands the feature complexity while reducing visual reso-lution. In empirical evaluation, MViT shows a fundamentaladvantage over single-scale vision transformers for videoand image recognition. We hope that our approach will fosterfurther research in visual recognition.5.1. Main ResultsFor this experiment, we take our models which were de-signed by ablation studies for video classi\ufb01cation on Kineticsand simply remove the temporal dimension.",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0050",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "Main ResultsFor this experiment, we take our models which were de-signed by ablation studies for video classi\ufb01cation on Kineticsand simply remove the temporal dimension. Then we trainand validate them (\u201cfrom scratch\u201d) on ImageNet.Table 17 shows the comparison with previous work. Fromtop to bottom, the table contains RegNet [81] and Ef\ufb01cient-Net [93] as ConvNet examples, and DeiT [95], with DeiT-Bbeing identical to ViT-B [25] but trained with the improvedrecipe in [95].",
+      "token_count": 115
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0051",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 51,
+      "section": "preamble",
+      "text": "Therefore, this is the vision transformer coun-terpart we are interested in comparing to.The bottom section in Table 17 shows results for ourMultiscale Vision Transformer (MViT) models.AppendixIn this appendix, \u00a7A contains further ablations for Kinet-ics (\u00a7A.1) & ImageNet (\u00a7A.2), \u00a7C contains an analysis oncomputational complexity of MHPA, and \u00a7B qualitative ob-servations in MViT and ViT models. \u00a7D contains additionalimplementation details for: Kinetics (\u00a7D.1), AVA (\u00a7D.2),Charades (\u00a7D.3), SSv2 (\u00a7D.4), and ImageNet (\u00a7D.5).IN-21KIN-21KIN-21KIN-21KKinetics top-1 val accuracy (%)Kinetics top-1 val accuracy (%)IN-1KIN-1KMViT-B 16x4MViT-B 32x2MViT-B 16x4MViT-B 32x2X3D-XLX3D-MX3D-XLX3D-MX3D-SSlowFast 16x8, R101+NLSlowFast 8x8, R101+NLX3D-SSlowFast 16x8, R101+NLSlowFast 8x8, R101+NLViViT-L ImageNet-21KTimeSformer ImageNet-21KVTN ImageNet-1K / 21KViViT-L ImageNet-21KTimeSformer ImageNet-21KVTN ImageNet-1K / 21KInference cost per video in TFLOPs (# of multiply-adds x 1012)Inference cost per video in FLOPs (# of multiply-adds), log-scaleFigure A.4.",
+      "token_count": 391
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0052",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 52,
+      "section": "preamble",
+      "text": "Accuracy/complexity trade-off on K400-val for varying # of inference clips per video. The top-1 accuracy (vertical axis) isobtained by K-Center clip testing where the number of temporal clips K \u2208{1, 3, 5, 7, 10} is shown in each curve. The horizontal axismeasures the full inference cost per video. The left-sided plots show a linear and the right plots a logarithmic (log) scale.A. Additional Resultsmodels (X3D-S and X3D-M) can still provide more ef\ufb01cientinference in terms of multiply-add operations and MViT-Bcompute/accuracy trade-off is similar to X3D-XL.A.1. Ablations: Kinetics Action Classi\ufb01cationInference cost. In the spirit of [29] we aim to provide fur-ther ablations for the effect of using fewer testing clips foref\ufb01cient video-level inference. In Fig. A.4 we analyze thetrade-off for the full inference of a video, when varying thenumber of temporal clips used.",
+      "token_count": 228
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0053",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 53,
+      "section": "preamble",
+      "text": "In Fig. A.4 we analyze thetrade-off for the full inference of a video, when varying thenumber of temporal clips used. The vertical axis showsthe top-1 accuracy on K400-val and the horizontal axis theoverall inference cost in FLOPs for different model fami-lies: MViT, X3D [29], SlowFast [30], and concurrent ViTmodels, VTN [78] ViT-B-TimeSformer [6] ViT-L-ViViT [1],pre-trained on ImageNet-21K.We \ufb01rst compare MViT with concurrent Transformer-based methods in the left plot in Fig. A.4. All these methods,VTN [78], TimeSformer [6] and ViViT [1], pre-train onImageNet-21K and use the ViT [25] model with modi\ufb01ca-tions on top of it.",
+      "token_count": 192
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0054",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 54,
+      "section": "preamble",
+      "text": "The inference FLOPs of these methodsare around 5-10\u00d7higher than MViT models with equivalentperformance; for example, ViT-L-ViViT [1] uses 4 clips of1446G FLOPs (i.e. 5.78 TFLOPs) each to produce 80.3%accuracy while MViT-B, 32\u00d73 uses 5 clips of 170G FLOPs(i.e. 0.85 TFLOPs) to produce 80.2% accuracy. Therefore,MViT-L can provide similar accuracy at 6.8\u00d7 lower FLOPs(and 8.5\u00d7 lower parameters), than concurrent ViViT-L [1].More importantly, the MViT result is achieved without exter-nal data. All concurrent Transformer based works [78,6,1]require the huge scale ImageNet-21K to be competitive, andthe performance degrades signi\ufb01cantly (-3% accuracy, seeIN-1K in Fig. A.4 for VTN [78]). These works further reportfailure of training without ImageNet initialization.The plot in Fig. A.4 right shows this same plot with alogarithmic scale applied to the FLOPs axis. Using this scal-ing it is clearer to observe that smaller models convolutionalAblations on skip-connections.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0055",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 55,
+      "section": "preamble",
+      "text": "A.4 right shows this same plot with alogarithmic scale applied to the FLOPs axis. Using this scal-ing it is clearer to observe that smaller models convolutionalAblations on skip-connections. Recall that, at each scale-stage transition in MViT, we expand the channel dimensionby increasing the output dimension of the previous stages\u2019MLP layer; therefore, it is not possible to directly applythe original skip-connection design [25], because the inputchannel dimension (Din) differs from the output channeldimension (Dout). We ablate three strategies for this:(a) First normalize the input with layer normalizationand then expand its channel dimension to match the outputdimension with a linear layer (Fig. A.5a); this is our default.(b) Directly expand the channel dimension of the inputby using a linear layer to match the dimension (Fig. A.5b).(c) No skip-connection for stage-transitions (Fig. A.5c).XTHW \u00d7 DinXTHW \u00d7 DinXTHW \u00d7 DinNormNormNormMLPMLPMLPLinear (Din, Dout)THW \u00d7 DoutLinear (Din, Dout)THW \u00d7 DoutTHW \u00d7 Dout(a)normalizedskip-connection(b) unnormalized skip-connection(c)noskip-connectionFigure A.5. Skip-connections at stage-transitions.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0056",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 56,
+      "section": "preamble",
+      "text": "Skip-connections at stage-transitions. Three skip-connection variants for expanding channel dimensions: (a) \ufb01rstnormalize the input with layer normalization (Norm) and thenexpand its channel dimension; (b) directly expand the channeldimension of the input; (c) no skip-connection at stage-transitions.methodtop-1top-5(a)normalized skip-connection77.293.1(b)unnormalized skip-connection74.691.3(c)no skip-connection74.791.8pooling that uses a stride w.r.t. stage resolution, and keepsthe K, V resolution \ufb01xed across all stages.First, we compare the baseline which uses pooling witha \ufb01xed stride of 4\u00d74 with a model has a stride of 8\u00d78: thisdrops accuracy from 82.5% to 81.6%, and reduces FLOPsand memory by 0.6G and 2.9G.Table A.1. Skip-connections at stage-transitions on K400. Weuse our base model, MViT-B 16\u00d74.Normalizing the skip-connection at channel expansion is essential for good performance.Table A.1 shows the Kinetics-400 ablations for all 3 vari-ants.",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0057",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 57,
+      "section": "preamble",
+      "text": "Weuse our base model, MViT-B 16\u00d74.Normalizing the skip-connection at channel expansion is essential for good performance.Table A.1 shows the Kinetics-400 ablations for all 3 vari-ants. Our default of using a normalized skip-connection (a)obtains the best results with 77.2% top-1 accuracy, whileusing an un-normalized skip-connection after channel ex-pansion (b) decays signi\ufb01cantly to 74.6% and using no skip-connection for all stage-transitions (c) has a similar result.We hypothesize that for expanding the channel dimension,normalizing the signal is essential to foster optimization, anduse this design as our default in all other experiments.Second, we reduce the stride to 2\u00d72, which increasesFLOPs and memory signi\ufb01cantly but performs 0.7% worsethan our default stride of 4\u00d74.Third, we remove the K, V pooling completely whichincreases FLOPs by 33% and memory consumption by 45%,while providing lower accuracy than our default.Overall, the results show that our K, V pooling is aneffective technique to increase accuracy and decrease cost(FLOPs/memory) for image classi\ufb01cation.backbonerecipeAccSlowFast R50, 8\u00d78[30]77.0SlowFast R50, 8\u00d78MViT67.4SlowFast R101, 8\u00d78[30]78.0SlowFast R101, 8\u00d78MViT61.6B.",
+      "token_count": 337
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0058",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 58,
+      "section": "preamble",
+      "text": "Qualitative Experiments: KineticsIn Figure A.6, we plot the mean attention distance for allheads across all the layers of our Multiscale Transformermodel and its Vision Transformer counterpart, at initializa-tion with random weights, and at convergence after training.Each head represents a point in the plots (ViT-B has moreheads). Both the models use the exact same weight initial-ization scheme and the difference in the attention signaturestems purely from the multiscale skeleton in MViT. We ob-serve that the dynamic range of attention distance is about4\u00d7 larger in the MViT model than ViT at initialization it-self (A.6a vs. A.6b). This signals the strong inductive biasstemming from the multiscale design of MViT. Also notethat while at initialization, every layer in ViT has roughly thesame mean attention distance, the MViT layers have strik-ingly different mean attention signatures indicating distinctpredilections towards global and local features.Table A.2. SlowFast models with MViT recipe on Kinetics-400.The default recipe is using the recipe from the original paper. Ac-curacy is evaluated on 10\u00d73 views.SlowFast with MViT recipe. To investigate if our trainingrecipe can bene\ufb01t ConvNet models, we apply the same aug-mentations and training recipe as for MViT to SlowFast inTable A.2.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0059",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 59,
+      "section": "preamble",
+      "text": "To investigate if our trainingrecipe can bene\ufb01t ConvNet models, we apply the same aug-mentations and training recipe as for MViT to SlowFast inTable A.2. The results suggest that SlowFast models do notbene\ufb01t from the MViT recipe directly and more studies arerequired to understand the effect of applying our training-from-scratch recipe to ConvNets, as it seems higher capacityConvNets (R101) perform worse when using our recipe.A.2. Ablations: ImageNet Image Classi\ufb01cationWe carry out ablations on ImageNet with the MViT-B-16model with 16 layers, and show top-1 accuracy (Acc) as wellas computational complexity measured in GFLOPs (\ufb02oating-point operations). We also report Parameters in M(106) andtraining GPU memory in G(109) for a batch size of 512.The bottom row of Fig. A.6 shows the same plot for aconverged Vision Transformer (A.6c) and Multiscale VisionTransformer (A.6d) model.We notice very different trends between the two modelsafter training. While the ViT model (A.6c) has a consistentincrease in attention distance across layers, the MViT model(A.6d) is not monotonic at all.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0060",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 60,
+      "section": "preamble",
+      "text": "While the ViT model (A.6c) has a consistentincrease in attention distance across layers, the MViT model(A.6d) is not monotonic at all. Further, the intra-head varia-tion in the ViT model decreases as the depth saturates, while,for MViT, different heads are still focusing on different fea-tures even in the higher layers. This suggests that some ofthe capacity in the ViT model might indeed be wasted withredundant computation while the lean MViT heads are morejudiciously utilizing their compute. Noticeable is further alarger delta (between initialization in Fig. A.6a and conver-gence in A.6c) in the overall attention distance signature inthe ViT model, compared to MViT\u2019s location distribution.stride sFLOPsMemAcc8\u00d787.29.081.64\u00d747.811.982.52\u00d729.013.281.8none10.417.382.3Table A.3. ImageNet: Key-Value pooling: We vary stride sH \u00d7sW , for pooling K and V . We use \u201cadaptive\u201d pooling that reducesstride w.r.t. stage resolution.Key-Value pooling for image classi\ufb01cation. The ablationin Table A.3 analyzes the pooling stride s = sH \u00d7 sW , forpooling K and V tensors.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0061",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 61,
+      "section": "preamble",
+      "text": "The ablationin Table A.3 analyzes the pooling stride s = sH \u00d7 sW , forpooling K and V tensors. Here, we use our default \u2018adaptive\u2019(a) ViT-B at initialization(b) MViT-B at initialization(c) ViT-B at convergence(d) MViT-B at convergenceFigure A.6. Mean attention distance across layers at initialization/convergence for Vision Transformer (a)/(c) & Multiscale VisionTransformers (b)/(d). Each point shows the normalized average attention distance (weighted by the attention scores, with 1.0 being maximumpossible distance) for each head in a layer. MViT attends close and distant features throughout the network hierarchy.C. Computational Analysisf j = sjT \u00b7 sjH \u00b7 sjW , \u2200j \u2208{Q, K, V }.Since attention is quadratic in compute and memory com-plexity, pooling the key, query and value vectors have di-rect bene\ufb01ts on the fundamental compute and memory re-quirements of the pooling operator and by extension, onthe complete Multiscale Transformer model. Consider aninput tensor of dimensions T \u00d7 H \u00d7 W and correspondingsequence length L = T \u00b7 H \u00b7 W. Further, assume the key,query and value strides to be sK, sQ and sV .",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0062",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 62,
+      "section": "preamble",
+      "text": "Consider aninput tensor of dimensions T \u00d7 H \u00d7 W and correspondingsequence length L = T \u00b7 H \u00b7 W. Further, assume the key,query and value strides to be sK, sQ and sV . As describedin Sec. 3.1 in main paper, each of the vectors would experi-ence a sptio-temporal resolution downsampling by a factorof their corresponding strides. Equivalently, the sequencelength of query, key and value vectors would be reduced bya factor of f Q, f K and f V respectively, where,Computational complexity. Using these shorter sequencesyields a corresponding reduction in space and runtime com-plexities for the pooling attention operator. Consideringkey, query and value vectors to have sequence lengths L/fk,L/fq and L/fv after pooling, the overall runtime complex-ity of computing the key, query and value embeddings isO(THWD2/h) per head, where h is the number of headsin MHPA. Further, the runtime complexity for calculating thefull attention matrix and the weighed sum of value vectorswith reduced sequence lengths is O(T 2H2W 2D/fqfhh)per head. Computational complexity for pooling isin [95, 30]. For Kinetics, we train for 200 epochs with 2repeated augmentation [50] repetitions.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0063",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 63,
+      "section": "preamble",
+      "text": "Computational complexity for pooling isin [95, 30]. For Kinetics, we train for 200 epochs with 2repeated augmentation [50] repetitions. The mini-batch sizeis 4 clips per GPU (so the overall batchsize is 512).We adopt a half-period cosine schedule [75] of learningrate decaying: the learning rate at the n-th iteration is \u03b7 \u00b70.5[cos(nnmax \u03c0) + 1], where nmax is the maximum trainingiterations and the base learning rate \u03b7 is set as 1.6 \u00b7 10\u22123.We linearly scale the base learning rate w.r.t. the overallbatch-size, \u03b7 = 1.6\u00b710\u22123 batchsizeT(P(\u00b7; \u0398)) = OTHW \u00b7 D \u00b7 kT kW kH,sT sW sHwhich is negligible compared to the quadratic complexityof the attention computation and hence can be ignored inasymptotic notation. Thus, the \ufb01nal runtime complexity ofMHPA is O(THWD(D + THW/fqfk)).512, and use a linear warm-upstrategy in the \ufb01rst 30 epochs [37].",
+      "token_count": 248
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0064",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 64,
+      "section": "preamble",
+      "text": "Thus, the \ufb01nal runtime complexity ofMHPA is O(THWD(D + THW/fqfk)).512, and use a linear warm-upstrategy in the \ufb01rst 30 epochs [37]. The cosine schedule iscompleted when reaching a \ufb01nal learning rate of 1.6 \u00b7 10\u22125.We extract the class token after the last stage and use it asthe input to the \ufb01nal linear layer to predict the output classes.For Kinetics-600 all hyper-parameters are identical to K400.Memory complexity. The space complexity for storingthe sequence itself and other tensors of similar sizes isO(THWD). Complexity for storing the full attention ma-trix is O(T 2H2W 2h/fqfk). Thus the total space complex-ity of MHPA is O(THWh(D/h + THW/fqfk)).Design choice. Note the trade-off between the number ofchannels D and the sequence length term THW/fqfk inboth space and runtime complexity.",
+      "token_count": 211
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0065",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 65,
+      "section": "preamble",
+      "text": "Note the trade-off between the number ofchannels D and the sequence length term THW/fqfk inboth space and runtime complexity. This tradeoff in multihead pooling attention informs two critical design choicesof Multiscale Transformer architecture.First, as the effective spatio-temporal resolution decreaseswith layers because of diminishing THW/fqfk, the channelcapacity is increased to keep the computational time spent(FLOPs) roughly the same for each stage.Second, for a \ufb01xed channel dimension, D, higher numberof heads h cause a prohibitively larger memory requirementbecause of the (D + h \u2217THW/fqfk) term. Hence, Multi-scale Transformer starts with a small number of heads whichis increased as the resolution factor THW/fqfk decreases,to hold the effect of (D +h\u2217THW/fqfk) roughly constant.Regularization details. We use weight decay of 5\u00b710-2,a dropout [49] of 0.5 before the \ufb01nal classi\ufb01er, label-smoothing [92] of 0.1 and use stochastic depth [54] (i.e.drop-connect) with rate 0.2.Our data augmentation is performed on input clips byapplying the same transformation across all frames.",
+      "token_count": 258
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0066",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 66,
+      "section": "preamble",
+      "text": "To eachclip, we apply a random horizontal \ufb02ip, Mixup [113] with\u03b1 = 0.8 to half of the clips in a batch and CutMix [112] tothe other half, Random Erasing [116] with probability 0.25,and Rand Augment [19] with probability of 0.5 for 4 layersof maximum magnitude 7.For the temporal domain, we randomly sample a clipfrom the full-length video, and the input to the network areT frames with a temporal stride of \u03c4; denoted as T \u00d7 \u03c4 [30].For the spatial domain, we use Inception-style [91] croppingthat randomly resizes the input area between a [min, max],scale of [0.08, 1.00], and jitters aspect ratio between 3/4 to4/3, before taking an H \u00d7 W = 224\u00d7224 crop.D. Additional Implementation DetailsWe implement our model with PySlowFast [28]. Codeand models are available at: https://github.com/facebookresearch/SlowFast.Fine-tuning from ImageNet. To \ufb01ne-tune our ViT-B base-line, we extend it to take a video clip of T = 8 framesas input and initialize the model weights from the ViT-Bmodel [25] pre-trained on ImageNet-21K dataset. The posi-tional embedding is duplicated for each frame.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0067",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 67,
+      "section": "preamble",
+      "text": "The posi-tional embedding is duplicated for each frame. We \ufb01ne-tunethe model for 30 epochs with SGD using the recipe in [30].The mini-batch size is 2 clips per GPU and a half-periodcosine learning rate decay is used. We linearly scale the baselearning rate w.r.t. the overall batch-size, \u03b7 = 10\u22123 batchsizeD.1. Details: Kinetics Action Classi\ufb01cationArchitecture details. As in original ViT [25], we use resid-ual connections [45] and Layer Normalization (LN) [2] inthe pre-normalization con\ufb01guration that applies LN at thebeginning of the residual function, and our MLPs consist oftwo linear layers with GELU activation [48], where the \ufb01rstlayer expands the dimension from D to 4D, and the secondrestores the input dimension D, except at the end of a scale-stage, where we increase this channel dimensions to matchthe input of the next scale-stage. At such stage-transitions,our skip connections receive an extra linear layer that takesas input the layer-normalized signal which is also fed intothe MLP. In case of Q-pooling at scale-stage transitions, wecorrespondingly pool the skip-connection signal.16.Weight decay is set to 10\u22124.D.2. Details: AVA Action DetectionDataset.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0068",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 68,
+      "section": "preamble",
+      "text": "In case of Q-pooling at scale-stage transitions, wecorrespondingly pool the skip-connection signal.16.Weight decay is set to 10\u22124.D.2. Details: AVA Action DetectionDataset. The AVA dataset [39] has bounding box annota-tions for spatiotemporal localization of (possibly multiple)human actions. It has 211k training and 57k validation videosegments. We follow the standard protocol reporting meanAverage Precision (mAP) on 60 classes [39] on AVA v2.2.Optimization details. We use the truncated normal dis-tribution initialization in [42] and adopt synchronizedAdamW [76] training on 128 GPUs following the recipeDetection architecture.",
+      "token_count": 153
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0069",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 69,
+      "section": "preamble",
+      "text": "We use the truncated normal dis-tribution initialization in [42] and adopt synchronizedAdamW [76] training on 128 GPUs following the recipeDetection architecture. We follow the detection architec-ture in [30] to allow direct comparison of MViT againstSlowFast networks as a backbone.First, we reinterpret our transformer spacetime cube out-puts from MViT as a spatial-temporal feature map by con-catenating them according to the corresponding temporaland spatial location.Second, we employ a the detector similar to Faster R-CNN [84] with minimal modi\ufb01cations adapted for video.Region-of-interest (RoI) features [36] are extracted at thegenerated feature map from MViT by extending a 2D pro-posal at a frame into a 3D RoI by replicating it along thetemporal axis, similar as done in previous work [39,89,58],followed by application of frame-wise RoIAlign [43] andtemporal global average pooling. The RoI features are thenmax-pooled and fed to a per-class, sigmoid classi\ufb01er forprediction.Training. We \ufb01ne-tune the pre-trained Kinetics models. Wetrain for 100 epochs using 64 GPUs with 8 clips per GPUand a base learning rate of 0.02 with half-period cosinedecay [75].",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0070",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 70,
+      "section": "preamble",
+      "text": "We \ufb01ne-tune the pre-trained Kinetics models. Wetrain for 100 epochs using 64 GPUs with 8 clips per GPUand a base learning rate of 0.02 with half-period cosinedecay [75]. Weight decay is set to 10\u22124 and stochasticdepth rate [54] is 0.4. Our training augmentation is the sameas in \u00a7D.1, but as SSv2 requires distinguishing betweendirections, we disable random \ufb02ipping in training. We usesegment-based input frame sampling [70] that splits eachvideo into segments, and from each of them, we sample oneframe to form a clip.Inference. We take single clip with 3 spatial crops to formpredictions over a single video in testing.D.5. Details: ImageNetTraining. We initialize the network weights from the Ki-netics models and adopt synchronized SGD training on 64GPUs. We use 8 clips per GPU as the mini-batch size and ahalf-period cosine schedule of learning rate decaying. Thebase learning rate is set as 0.6. We train for 30 epochswith linear warm-up [37] for the \ufb01rst 5 epochs and use aweight decay of 10\u22128 and stochastic depth [54] with rate0.4.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0071",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 71,
+      "section": "preamble",
+      "text": "We train for 30 epochswith linear warm-up [37] for the \ufb01rst 5 epochs and use aweight decay of 10\u22128 and stochastic depth [54] with rate0.4. Ground-truth boxes, and proposals overlapping withground-truth boxes by IoU > 0.9, are used as the samplesfor training. The region proposals are identical to the onesused in [30].Datasets. For image classi\ufb01cation experiments, we per-form our experiments on ImageNet-1K [22] dataset thathas \u223c1.28M images in 1000 classes. We train models on thetrain set and report top-1 and top-5 classi\ufb01cation accuracy(%) on the val set. Inference cost (in FLOPs) is measuredfrom a single center-crop with resolution of 2242 if the inputresolution was not speci\ufb01cally mentioned.Training. We use the training recipe of DeiT [95] and sum-marize it here for completeness. We train for 100 epochswith 3 repeated augmentation [50] repetitions (overall com-putation equals 300 epochs), using a batch size of 4096 in64 GPUs.",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0072",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 72,
+      "section": "preamble",
+      "text": "We train for 100 epochswith 3 repeated augmentation [50] repetitions (overall com-putation equals 300 epochs), using a batch size of 4096 in64 GPUs. We use truncated normal distribution initializa-tion [42] and adopt synchronized AdamW [76] optimizationwith a base learning rate of 0.0005 per 512 batch-size thatis warmed up and decayed as half-period cosine, as in [95].We use a weight decay of 0.05, label-smoothing [92] of0.1. Stochastic depth [54] (i.e. drop-connect) is also usedwith rate 0.1 for model with depth of 16 (MViT-B-16), andrate 0.3 for deeper models (MViT-B-24). Mixup [113] with\u03b1 = 0.8 to half of the clips in a batch and CutMix [112] tothe other half, Random Erasing [116] with probability 0.25,and Rand Augment [19] with maximum magnitude 9 andprobability of 0.5 for 4 layers (for max-pooling) or 6 layers(for conv-pooling).Inference. We perform inference on a single clip withT frames sampled with stride \u03c4 centered at the frame that isto be evaluated.D.3. Details: Charades Action Classi\ufb01cationDataset.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0073",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 73,
+      "section": "preamble",
+      "text": "We perform inference on a single clip withT frames sampled with stride \u03c4 centered at the frame that isto be evaluated.D.3. Details: Charades Action Classi\ufb01cationDataset. Charades [86] has \u223c9.8k training videos and 1.8kvalidation videos in 157 classes in a multi-label classi\ufb01cationsetting of longer activities spanning \u223c30 seconds on average.Performance is measured in mean Average Precision (mAP).Training. We \ufb01ne-tune our MViT models from the Kineticsmodels. A per-class sigmoid output is used to account forthe multi-class nature. We train with SGD on 32 GPUs for200 epochs using 8 clips per GPU. The base learning rateis set as 0.6 with half-period cosine decay. We use weightdecay of 10-7 and stochastic depth [54] with rate 0.45. Weperform the same data augmentation schemes as for Kineticsin \u00a7D.1, except of using Mixup.AcknowledgementsWe are grateful for discussions with Chao-Yuan Wu,Ross Girshick, and Kaiming He.Inference.",
+      "token_count": 239
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0074",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 74,
+      "section": "preamble",
+      "text": "To infer the actions over a single video, wespatio-temporally max-pool prediction scores from multipleclips in testing [30].References[1] Anurag Arnab, Mostafa Dehghani, Georg Heigold, ChenSun, Mario Lu\u02c7ci\u00b4c, and Cordelia Schmid. Vivit: A videovision transformer. arXiv preprint arXiv:2103.15691, 2021.2, 3, 6, 10[2] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hin-ton. Layer normalization. arXiv preprint arXiv:1607.06450,2016. 1, 13D.4. Details: Something-Something V2 (SSv2)Dataset. The Something-Something V2 dataset [38] con-tains 169k training, and 25k validation videos. The videosshow human-object interactions to be classi\ufb01ed into 174classes. We report accuracy on the validation set.for vision transformers? arXiv preprint arXiv:2102.10882,2021. 2[19] Ekin D Cubuk, Barret Zoph, Jonathon Shlens, and Quoc VLe. Randaugment: Practical automated data augmentationwith a reduced search space. In Proc.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0075",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 75,
+      "section": "preamble",
+      "text": "Randaugment: Practical automated data augmentationwith a reduced search space. In Proc. CVPR, 2020. 13, 14[20] Zihang Dai, Guokun Lai, Yiming Yang, and Quoc VLe.Funnel-transformer: Filtering out sequential redun-dancy for ef\ufb01cient language processing.arXiv preprintarXiv:2006.03236, 2020. 3[21] Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li,and Li Fei-Fei. Imagenet: A large-scale hierarchical imagedatabase. In Proc. CVPR, pages 248\u2013255. Ieee, 2009. 2, 3[22] J. Deng, W. Dong, R. Socher, L.-J. Li, K. Li, and L. Fei-Fei.ImageNet: A large-scale hierarchical image database. InProc. CVPR, 2009. 6, 9, 14[23] Karan Desai and Justin Johnson. Virtex: Learning visualrepresentations from textual annotations. arXiv preprintarXiv:2006.06666, 2020. 2[24] Piotr Doll\u00e1r, Mannat Singh, and Ross Girshick. Fast andaccurate model scaling. In Proc.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0076",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 76,
+      "section": "preamble",
+      "text": "Fast andaccurate model scaling. In Proc. CVPR, 2021. 9[25] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov,Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner,Mostafa Dehghani, Matthias Minderer, Georg Heigold, Syl-vain Gelly, et al. An image is worth 16x16 words: Trans-formers for image recognition at scale.arXiv preprintarXiv:2010.11929, 2020. 1, 2, 3, 4, 5, 6, 9, 10, 13[26] Sergey Edunov, Myle Ott, Michael Auli, and David Grang-ier. Understanding back-translation at scale. arXiv preprintarXiv:1808.09381, 2018. 1[27] Alaaeldin El-Nouby, Natalia Neverova, Ivan Laptev, andHerv\u00e9 J\u00e9gou. Training vision transformers for image re-trieval. arXiv preprint arXiv:2102.05644, 2021. 2[28] Haoqi Fan, Yanghao Li, Bo Xiong, Wan-Yen Lo, andChristoph Feichtenhofer.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0077",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 77,
+      "section": "preamble",
+      "text": "PySlowFast. https://github.com/facebookresearch/slowfast, 2020. 13[29] Christoph Feichtenhofer. X3d: Expanding architectures foref\ufb01cient video recognition. In Proc. CVPR, pages 203\u2013213,2020. 2, 6, 7, 9, 10[30] Christoph Feichtenhofer, Haoqi Fan, Jitendra Malik, andKaiming He. SlowFast networks for video recognition. InProc. ICCV, 2019. 2, 6, 7, 9, 10, 11, 13, 14[31] Christoph Feichtenhofer, Axel Pinz, and Andrew Zisserman.Convolutional two-stream network fusion for video actionrecognition. In Proc. CVPR, 2016. 2[32] Kunihiko Fukushima and Sei Miyake. Neocognitron: Aself-organizing neural network model for a mechanism ofvisual pattern recognition. In Competition and cooperationin neural nets, pages 267\u2013285. Springer, 1982. 1[33] Valentin Gabeur, Chen Sun, Karteek Alahari, and CordeliaSchmid. Multi-modal transformer for video retrieval. InProc. ECCV, volume 5.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0078",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 78,
+      "section": "preamble",
+      "text": "Multi-modal transformer for video retrieval. InProc. ECCV, volume 5. Springer, 2020. 2[34] Shanghua Gao, Ming-Ming Cheng, Kai Zhao, Xin-YuZhang, Ming-Hsuan Yang, and Philip HS Torr. Res2net:A new multi-scale backbone architecture. IEEE PAMI, 2019.2[35] Rohit Girdhar, Joao Carreira, Carl Doersch, and AndrewZisserman. Video action transformer network. In Proc.CVPR, 2019. 2[3] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton.Layer normalization. arXiv:1607.06450, 2016. 4[4] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio.Neural machine translation by jointly learning to align andtranslate. arXiv preprint arXiv:1409.0473, 2014. 1[5] Josh Beal, Eric Kim, Eric Tzeng, Dong Huk Park, AndrewZhai, and Dmitry Kislyuk. Toward transformer-based objectdetection. arXiv preprint arXiv:2012.09958, 2020. 2[6] Gedas Bertasius, Heng Wang, and Lorenzo Torresani.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0079",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 79,
+      "section": "preamble",
+      "text": "Toward transformer-based objectdetection. arXiv preprint arXiv:2012.09958, 2020. 2[6] Gedas Bertasius, Heng Wang, and Lorenzo Torresani. Isspace-time attention all you need for video understanding?arXiv preprint arXiv:2102.05095, 2021. 2, 3, 6, 7, 10[7] Tom B Brown, Benjamin Mann, Nick Ryder, Melanie Sub-biah, Jared Kaplan, Prafulla Dhariwal, Arvind Neelakan-tan, Pranav Shyam, Girish Sastry, Amanda Askell, et al.Language models are few-shot learners.arXiv preprintarXiv:2005.14165, 2020. 1[8] Peter J Burt and Edward H Adelson. The laplacian pyramidas a compact image code. In Readings in computer vision,pages 671\u2013679. Elsevier, 1987. 1[9] Nicolas Carion, Francisco Massa, Gabriel Synnaeve, NicolasUsunier, Alexander Kirillov, and Sergey Zagoruyko. End-to-end object detection with transformers. In Proc. ECCV,pages 213\u2013229.",
+      "token_count": 273
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0080",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 80,
+      "section": "preamble",
+      "text": "End-to-end object detection with transformers. In Proc. ECCV,pages 213\u2013229. Springer, 2020. 2[10] Joao Carreira, Eric Noland, Andras Banki-Horvath, ChloeHillier, and Andrew Zisserman. A short note about Kinetics-600. arXiv:1808.01340, 2018. 2[11] Joao Carreira and Andrew Zisserman. Quo vadis, actionrecognition? a new model and the kinetics dataset. In Proc.CVPR, 2017. 2, 6[12] Chun-Fu Chen, Quanfu Fan, Neil Mallinar, Tom Sercu, andRogerio Feris.",
+      "token_count": 157
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0081",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 81,
+      "section": "preamble",
+      "text": "In Proc.CVPR, 2017. 2, 6[12] Chun-Fu Chen, Quanfu Fan, Neil Mallinar, Tom Sercu, andRogerio Feris. Big-little net: An ef\ufb01cient multi-scale featurerepresentation for visual and speech recognition.arXivpreprint arXiv:1807.03848, 2018. 2[13] Jieneng Chen, Yongyi Lu, Qihang Yu, Xiangde Luo, EhsanAdeli, Yan Wang, Le Lu, Alan L Yuille, and Yuyin Zhou.Transunet: Transformers make strong encoders for medi-cal image segmentation. arXiv preprint arXiv:2102.04306,2021. 2[14] Mark Chen, Alec Radford, Rewon Child, Jeffrey Wu, Hee-woo Jun, David Luan, and Ilya Sutskever. Generative pre-training from pixels. In Proc. ICML, pages 1691\u20131703.PMLR, 2020. 2[15] Yunpeng Chen, Haoqi Fang, Bing Xu, Zhicheng Yan, YannisKalantidis, Marcus Rohrbach, Shuicheng Yan, and JiashiFeng.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0082",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 82,
+      "section": "preamble",
+      "text": "Drop an octave: Reducing spatial redundancy in con-volutional neural networks with octave convolution. arXivpreprint arXiv:1904.05049, 2019. 2[16] Rewon Child, Scott Gray, Alec Radford, and Ilya Sutskever.Generating long sequences with sparse transformers. arXivpreprint arXiv:1904.10509, 2019. 3[17] Krzysztof Choromanski, Valerii Likhosherstov, David Do-han, Xingyou Song, Andreea Gane, Tamas Sarlos, PeterHawkins, Jared Davis, Afroz Mohiuddin, Lukasz Kaiser,et al. Rethinking attention with performers. arXiv preprintarXiv:2009.14794, 2020. 3[18] Xiangxiang Chu, Bo Zhang, Zhi Tian, Xiaolin Wei, andHuaxia Xia. Do we really need explicit position encodings[36] Ross Girshick. Fast R-CNN. In Proc. ICCV, 2015. 14[37] Priya Goyal, Piotr Doll\u00e1r, Ross Girshick, Pieter Noord-huis, Lukasz Wesolowski, Aapo Kyrola, Andrew Tulloch,Yangqing Jia, and Kaiming He.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0083",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 83,
+      "section": "preamble",
+      "text": "Accurate, large minibatchSGD: training ImageNet in 1 hour. arXiv:1706.02677, 2017.13, 14[38] Raghav Goyal, Samira Ebrahimi Kahou, Vincent Michal-ski, Joanna Materzynska, Susanne Westphal, Heuna Kim,Valentin Haenel, Ingo Fruend, Peter Yianilos, MoritzMueller-Freitag, et al. The \u201cSomething Something\" videodatabase for learning and evaluating visual common sense.In ICCV, 2017. 2, 6, 7, 14[39] Chunhui Gu, Chen Sun, David A. Ross, Carl Von-drick, Caroline Pantofaru, Yeqing Li, Sudheendra Vijaya-narasimhan, George Toderici, Susanna Ricco, Rahul Suk-thankar, Cordelia Schmid, and Jitendra Malik. AVA: A videodataset of spatio-temporally localized atomic visual actions.In Proc. CVPR, 2018. 2, 6, 7, 13, 14[40] Meng-Hao Guo, Jun-Xiong Cai, Zheng-Ning Liu, Tai-JiangMu, Ralph R Martin, and Shi-Min Hu.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0084",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 84,
+      "section": "preamble",
+      "text": "Pct: Point cloudtransformer. arXiv preprint arXiv:2012.09688, 2020. 2[41] Zhang Hang, Chongruo Wu, Zhongyue Zhang, Yi Zhu, ZhiZhang, Haibin Lin, and Yue Sun. Resnest: Split-attentionnetworks. 2020. 2[42] Boris Hanin and David Rolnick.How to start training:The effect of initialization and architecture. arXiv preprintarXiv:1803.01719, 2018. 13, 14[43] Kaiming He, Georgia Gkioxari, Piotr Doll\u00e1r, and Ross Gir-shick. Mask R-CNN. In Proc. ICCV, 2017. 14[44] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.Delving deep into recti\ufb01ers: Surpassing human-level per-formance on imagenet classi\ufb01cation. In Proc. CVPR, 2015.1[45] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.Deep residual learning for image recognition.In Proc.CVPR, 2016. 5, 13[46] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.Identity mappings in deep residual networks. In Proc.",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0085",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 85,
+      "section": "preamble",
+      "text": "In Proc. ECCV,2016. 2[47] Shuting He, Hao Luo, Pichao Wang, Fan Wang, Hao Li,and Wei Jiang. Transreid: Transformer-based object re-identi\ufb01cation. arXiv preprint arXiv:2102.04378, 2021. 2[48] Dan Hendrycks and Kevin Gimpel. Gaussian error linearunits (GELUs). arXiv preprint arXiv:1606.08415, 2016. 13[49] Geoffrey E Hinton, Nitish Srivastava, Alex Krizhevsky, IlyaSutskever, and Ruslan R Salakhutdinov. Improving neuralnetworks by preventing co-adaptation of feature detectors.arXiv:1207.0580, 2012. 13[50] Elad Hoffer, Tal Ben-Nun, Itay Hubara, Niv Giladi, TorstenHoe\ufb02er, and Daniel Soudry. Augment your batch: Improvinggeneralization through instance repetition. In Proc. CVPR,pages 8129\u20138138, 2020. 6, 13, 14[51] Han Hu, Jiayuan Gu, Zheng Zhang, Jifeng Dai, and YichenWei. Relation networks for object detection. In Proc.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0086",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 86,
+      "section": "preamble",
+      "text": "Relation networks for object detection. In Proc. CVPR,pages 3588\u20133597, 2018. 2[52] Han Hu, Zheng Zhang, Zhenda Xie, and Stephen Lin. Localrelation networks for image recognition. In Proc. ICCV,pages 3464\u20133473, 2019. 2[53] Ronghang Hu and Amanpreet Singh. Transformer is allyou need: Multimodal multitask learning with a uni\ufb01edtransformer. arXiv preprint arXiv:2102.10772, 2021. 2[54] Gao Huang, Yu Sun, Zhuang Liu, Daniel Sedra, and Kilian QWeinberger. Deep networks with stochastic depth. In Proc.ECCV, 2016. 13, 14[55] DH Hubel and TN Wiesel. Receptive \ufb01elds of optic nerve\ufb01bres in the spider monkey. The Journal of physiology,154(3):572\u2013580, 1960. 1[56] Noureldien Hussein, Efstratios Gavves, and Arnold WMSmeulders. Timeception for complex action recognition. InProc. CVPR, 2019. 7[57] Boyuan Jiang, MengMeng Wang, Weihao Gan, Wei Wu, andJunjie Yan.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0087",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 87,
+      "section": "preamble",
+      "text": "Timeception for complex action recognition. InProc. CVPR, 2019. 7[57] Boyuan Jiang, MengMeng Wang, Weihao Gan, Wei Wu, andJunjie Yan. Stm: Spatiotemporal and motion encoding foraction recognition. In Proc. CVPR, pages 2000\u20132009, 2019.2[58] Huaizu Jiang, Deqing Sun, Varun Jampani, Ming-HsuanYang, Erik Learned-Miller, and Jan Kautz. Super slomo:High quality estimation of multiple intermediate frames forvideo interpolation. In Proc. CVPR, 2018. 14[59] Will Kay, Joao Carreira, Karen Simonyan, Brian Zhang,Chloe Hillier, Sudheendra Vijayanarasimhan, Fabio Viola,Tim Green, Trevor Back, Paul Natsev, et al. The kineticshuman action video dataset. arXiv:1705.06950, 2017. 2, 6[60] Nikita Kitaev, \u0141ukasz Kaiser, and Anselm Levskaya.Reformer:The ef\ufb01cient transformer.arXiv preprintarXiv:2001.04451, 2020. 3[61] Jan J Koenderink. The structure of images.",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0088",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 88,
+      "section": "preamble",
+      "text": "The structure of images. Biologicalcybernetics, 50(5):363\u2013370, 1984. 1[62] Alex Krizhevsky, Ilya Sutskever, and Geoffrey E Hinton.ImageNet classi\ufb01cation with deep convolutional neural net-works. In NIPS, 2012. 2[63] Heeseung Kwon, Manjin Kim, Suha Kwak, and Minsu Cho.Motionsqueeze: Neural motion feature learning for videounderstanding. In Proc. ECCV, pages 345\u2013362. Springer,2020. 7[64] Hung Le, Doyen Sahoo, Nancy F Chen, and Steven CHHoi.Multimodal transformer networks for end-to-end video-grounded dialogue systems.arXiv preprintarXiv:1907.01166, 2019. 2[65] Yann LeCun, Bernhard Boser, John S Denker, DonnieHenderson, Richard E Howard, Wayne Hubbard, andLawrence D Jackel. Backpropagation applied to handwrittenzip code recognition.",
+      "token_count": 233
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0089",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 89,
+      "section": "preamble",
+      "text": "Backpropagation applied to handwrittenzip code recognition. Neural computation, 1(4):541\u2013551,1989. 1, 2[66] Liunian Harold Li, Mark Yatskar, Da Yin, Cho-Jui Hsieh,and Kai-Wei Chang.Visualbert: A simple and perfor-mant baseline for vision and language.arXiv preprintarXiv:1908.03557, 2019. 2[67] Rui Li, Chenxi Duan, and Shunyi Zheng. Linear attentionmechanism: An ef\ufb01cient attention for semantic segmenta-tion. arXiv preprint arXiv:2007.14902, 2020. 3[68] Yan Li, Bin Ji, Xintian Shi, Jianguo Zhang, Bin Kang, andLimin Wang. Tea: Temporal excitation and aggregation foraction recognition. In Proc. CVPR, pages 909\u2013918, 2020. 7[69] Zhenyang Li, Kirill Gavrilyuk, Efstratios Gavves, Mihir Jain,and Cees GM Snoek. VideoLSTM convolves, attends and\ufb02ows for action recognition. Computer Vision and ImageUnderstanding, 166:41\u201350, 2018. 2[70] Ji Lin, Chuang Gan, and Song Han.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0090",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 90,
+      "section": "preamble",
+      "text": "VideoLSTM convolves, attends and\ufb02ows for action recognition. Computer Vision and ImageUnderstanding, 166:41\u201350, 2018. 2[70] Ji Lin, Chuang Gan, and Song Han. Temporal shift modulefor ef\ufb01cient video understanding. In Proc. ICCV, 2019. 14[71] Ji Lin, Chuang Gan, and Song Han. Tsm: Temporal shiftmodule for ef\ufb01cient video understanding. In Proc. CVPR,pages 7083\u20137093, 2019. 7[72] Kevin Lin, Lijuan Wang, and Zicheng Liu. End-to-end hu-man pose and mesh reconstruction with transformers. arXivpreprint arXiv:2012.09760, 2020. 2[73] Wei Liu, Sihan Chen, Longteng Guo, Xinxin Zhu, and JingLiu. Cptr: Full transformer network for image captioning.arXiv preprint arXiv:2101.10804, 2021. 2[74] Francesco Locatello, Dirk Weissenborn, Thomas Un-terthiner, Aravindh Mahendran, Georg Heigold, JakobUszkoreit, Alexey Dosovitskiy, and Thomas Kipf.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0091",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 91,
+      "section": "preamble",
+      "text": "Object-centric learning with slot attention.arXiv preprintarXiv:2006.15055, 2020. 2[75] Ilya Loshchilov and Frank Hutter. SGDR: Stochastic gra-dient descent with warm restarts. arXiv:1608.03983, 2016.13, 14[76] Ilya Loshchilov and Frank Hutter. Fixing weight decayregularization in adam. 2018. 13, 14[77] Jiasen Lu, Dhruv Batra, Devi Parikh, and Stefan Lee. Vilbert:Pretraining task-agnostic visiolinguistic representations forvision-and-language tasks. arXiv preprint arXiv:1908.02265,2019. 2[78] Daniel Neimark, Omri Bar, Maya Zohar, and Dotan As-selmann.Video transformer network.arXiv preprintarXiv:2102.00719, 2021. 2, 3, 6, 10[79] Zhaofan Qiu, Ting Yao, and Tao Mei. Learning spatio-temporal representation with pseudo-3d residual networks.In Proc.",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0092",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 92,
+      "section": "preamble",
+      "text": "Learning spatio-temporal representation with pseudo-3d residual networks.In Proc. ICCV, 2017. 2[80] Alec Radford, Jong Wook Kim, Chris Hallacy, AdityaRamesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry,Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learningtransferable visual models from natural language supervi-sion. arXiv preprint arXiv:2103.00020, 2021. 2[81] Ilija Radosavovic, Raj Prateek Kosaraju, Ross Girshick,Kaiming He, and Piotr Doll\u00e1r. Designing network designspaces. In Proc.",
+      "token_count": 156
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0093",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 93,
+      "section": "preamble",
+      "text": "Designing network designspaces. In Proc. CVPR, June 2020. 2, 9[82] Prajit Ramachandran, Niki Parmar, Ashish Vaswani, IrwanBello, Anselm Levskaya, and Jonathon Shlens.Stand-alone self-attention in vision models.arXiv preprintarXiv:1906.05909, 2019. 2[83] Aditya Ramesh, Mikhail Pavlov, Gabriel Goh, ScottGray, Chelsea Voss, Alec Radford, Mark Chen, and IlyaSutskever.Zero-shot text-to-image generation.arXivpreprint arXiv:2102.12092, 2021. 2[84] Shaoqing Ren, Kaiming He, Ross Girshick, and Jian Sun.Faster R-CNN: Towards real-time object detection with re-gion proposal networks. In NIPS, 2015. 14[85] Azriel Rosenfeld and Mark Thurston. Edge and curve de-tection for visual scene analysis. IEEE Transactions oncomputers, 100(5):562\u2013569, 1971. 1[86] Gunnar A Sigurdsson, G\u00fcl Varol, Xiaolong Wang, AliFarhadi, Ivan Laptev, and Abhinav Gupta.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0094",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 94,
+      "section": "preamble",
+      "text": "Hollywood inhomes: Crowdsourcing data collection for activity under-standing. In ECCV, 2016. 2, 6, 7, 14[87] Karen Simonyan and Andrew Zisserman. Two-stream con-volutional networks for action recognition in videos. InNIPS, 2014. 2, 5[88] Karen Simonyan and Andrew Zisserman. Very deep convo-lutional networks for large-scale image recognition. In Proc.ICLR, 2015. 2[89] Chen Sun, Abhinav Shrivastava, Carl Vondrick, Kevin Mur-phy, Rahul Sukthankar, and Cordelia Schmid. Actor-centricrelation network. In ECCV, 2018. 14[90] Christian Szegedy, Wei Liu, Yangqing Jia, Pierre Sermanet,Scott Reed, Dragomir Anguelov, Dumitru Erhan, VincentVanhoucke, and Andrew Rabinovich. Going deeper withconvolutions. In Proc. CVPR, 2015. 2[91] Christian Szegedy, Wei Liu, Yangqing Jia, Pierre Sermanet,Scott Reed, Dragomir Anguelov, Dumitru Erhan, VincentVanhoucke, and Andrew Rabinovich. Going deeper withconvolutions. In Proc.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0095",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 95,
+      "section": "preamble",
+      "text": "Going deeper withconvolutions. In Proc. CVPR, 2015. 13[92] Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe,Jonathon Shlens, and Zbigniew Wojna. Rethinking the in-ception architecture for computer vision. arXiv:1512.00567,2015. 13, 14[93] Mingxing Tan and Quoc V Le. Ef\ufb01cientnet: Rethinkingmodel scaling for convolutional neural networks. arXivpreprint arXiv:1905.11946, 2019. 2, 9[94] Yi Tay, Dara Bahri, Liu Yang, Donald Metzler, and Da-Cheng Juan. Sparse sinkhorn attention. In Proc. ICML,pages 9438\u20139447. PMLR, 2020. 3[95] Hugo Touvron, Matthieu Cord, Matthijs Douze, FranciscoMassa, Alexandre Sablayrolles, and Herv\u00e9 J\u00e9gou.",
+      "token_count": 222
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0096",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 96,
+      "section": "preamble",
+      "text": "PMLR, 2020. 3[95] Hugo Touvron, Matthieu Cord, Matthijs Douze, FranciscoMassa, Alexandre Sablayrolles, and Herv\u00e9 J\u00e9gou. Trainingdata-ef\ufb01cient image transformers & distillation through at-tention. arXiv preprint arXiv:2012.12877, 2020. 1, 2, 6, 9,13, 14[96] Du Tran, Heng Wang, Lorenzo Torresani, and Matt Feiszli.Video classi\ufb01cation with channel-separated convolutionalnetworks. In Proc. ICCV, 2019. 2, 6[97] Jeya Maria Jose Valanarasu, Poojan Oza, Ilker Hacihaliloglu,and Vishal M Patel.Medical transformer: Gated axial-attention for medical image segmentation. arXiv preprintarXiv:2102.10662, 2021. 2[98] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszko-reit, Llion Jones, Aidan N Gomez, Lukasz Kaiser, and Il-lia Polosukhin.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0097",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 97,
+      "section": "preamble",
+      "text": "Attention is all you need. arXiv preprintarXiv:1706.03762, 2017. 1, 2, 3, 4[99] Huiyu Wang, Yukun Zhu, Hartwig Adam, Alan Yuille,and Liang-Chieh Chen. Max-deeplab: End-to-end panop-tic segmentation with mask transformers. arXiv preprintarXiv:2012.00759, 2020. 2[100] Sinong Wang, Belinda Li, Madian Khabsa, Han Fang, andHao Ma. Linformer: Self-attention with linear complexity.arXiv preprint arXiv:2006.04768, 2020. 3[101] Xiaolong Wang, Ross Girshick, Abhinav Gupta, and Kaim-ing He. Non-local neural networks. In Proc. CVPR, 2018.2, 7[102] Xiaolong Wang and Abhinav Gupta. Videos as space-timeregion graphs. In Proc. ECCV, 2018. 7[103] Yuqing Wang, Zhaoliang Xu, Xinlong Wang, ChunhuaShen, Baoshan Cheng, Hao Shen, and Huaxia Xia.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0098",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 98,
+      "section": "preamble",
+      "text": "In Proc. ECCV, 2018. 7[103] Yuqing Wang, Zhaoliang Xu, Xinlong Wang, ChunhuaShen, Baoshan Cheng, Hao Shen, and Huaxia Xia. End-to-end video instance segmentation with transformers. arXivpreprint arXiv:2011.14503, 2020. 2[104] Bichen Wu, Chenfeng Xu, Xiaoliang Dai, Alvin Wan,Peizhao Zhang, Masayoshi Tomizuka, Kurt Keutzer, andPeter Vajda. Visual transformers: Token-based image repre-sentation and processing for computer vision. arXiv preprintarXiv:2006.03677, 2020. 2[105] Chao-Yuan Wu, Christoph Feichtenhofer, Haoqi Fan, Kaim-ing He, Philipp Kr\u00e4henb\u00fchl, and Ross Girshick. Long-termfeature banks for detailed video understanding. In Proc.CVPR, 2019. 2, 7[106] Saining Xie, Chen Sun, Jonathan Huang, Zhuowen Tu, andKevin Murphy. Rethinking spatiotemporal feature learningfor video understanding. arXiv:1712.04851, 2017. 2[107] Sen Yang, Zhibin Quan, Mu Nie, and Wankou Yang.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0099",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 99,
+      "section": "preamble",
+      "text": "Trans-pose: Towards explainable human pose estimation by trans-former. arXiv preprint arXiv:2012.14214, 2020. 2[108] Jun Yu, Jing Li, Zhou Yu, and Qingming Huang. Multimodaltransformer with multi-view visual representation for imagecaptioning. IEEE transactions on circuits and systems forvideo technology, 30(12):4467\u20134480, 2019. 2[109] Li Yuan, Yunpeng Chen, Tao Wang, Weihao Yu, Yujun Shi,Francis EH Tay, Jiashi Feng, and Shuicheng Yan. Tokens-to-token vit: Training vision transformers from scratch onimagenet. arXiv preprint arXiv:2101.11986, 2021. 2[110] Zhenxun Yuan, Xiao Song, Lei Bai, Wengang Zhou, ZheWang, and Wanli Ouyang. Temporal-channel transformer for3d lidar-based video object detection in autonomous driving.arXiv preprint arXiv:2011.13628, 2020. 2[111] Boxiang Yun, Yan Wang, Jieneng Chen, Huiyu Wang, WeiShen, and Qingli Li.",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0100",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 100,
+      "section": "preamble",
+      "text": "Spectr: Spectral transformer for hy-perspectral pathology image segmentation. arXiv preprintarXiv:2103.03604, 2021. 2[112] Sangdoo Yun, Dongyoon Han, Seong Joon Oh, SanghyukChun, Junsuk Choe, and Youngjoon Yoo. Cutmix: Regu-larization strategy to train strong classi\ufb01ers with localizablefeatures. In Proc. ICCV, 2019. 13, 14[113] Hongyi Zhang, Moustapha Cisse, Yann N Dauphin, andDavid Lopez-Paz. Mixup: Beyond empirical risk minimiza-tion. In Proc. ICLR, 2018. 13, 14[114] Hengshuang Zhao, Jiaya Jia, and Vladlen Koltun. Exploringself-attention for image recognition. In Proc. CVPR, pages10076\u201310085, 2020. 2[115] Hengshuang Zhao, Li Jiang, Jiaya Jia, Philip Torr, andVladlen Koltun.Point transformer.arXiv preprintarXiv:2012.09164, 2020. 2[116] Zhun Zhong, Liang Zheng, Guoliang Kang, Shaozi Li, andYi Yang. Random erasing data augmentation.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2104.11227_chunk_0101",
+      "arxiv_id": "2104.11227",
+      "chunk_index": 101,
+      "section": "preamble",
+      "text": "Random erasing data augmentation. In Proceedingsof the AAAI Conference on Arti\ufb01cial Intelligence, volume 34,pages 13001\u201313008, 2020. 13, 14[117] Bolei Zhou, Alex Andonian, Aude Oliva, and Antonio Tor-ralba. Temporal relational reasoning in videos. In ECCV,2018. 2",
+      "token_count": 84
+    }
+  ]
+}

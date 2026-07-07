@@ -1,0 +1,561 @@
+{
+  "arxiv_id": "2005.12872",
+  "title": "End-to-End Object Detection with Transformers",
+  "authors": [
+    "Nicolas Carion",
+    "Francisco Massa",
+    "Gabriel Synnaeve",
+    "Nicolas Usunier",
+    "Alexander Kirillov",
+    "Sergey Zagoruyko"
+  ],
+  "year": 2020,
+  "abstract": "We present a new method that views object detection as a direct set prediction problem. Our approach streamlines the detection pipeline, effectively removing the need for many hand-designed components like a non-maximum suppression procedure or anchor generation that explicitly encode our prior knowledge about the task. The main ingredients of the new framework, called DEtection TRansformer or DETR, are a set-based global loss that forces unique predictions via bipartite matching, and a transformer encoder-decoder architecture. Given a fixed small set of learned object queries, DETR reasons about the relations of the objects and the global image context to directly output the final set of predictions in parallel. The new model is conceptually simple and does not require a specialized library, unlike many other modern detectors. DETR demonstrates accuracy and run-time performance on par with the well-established and highly-optimized Faster RCNN baseline on the challenging COCO object detection dataset. Moreover, DETR can be easily generalized to produce panoptic segmentation in a unified manner. We show that it significantly outperforms competitive baselines. Training code and pretrained models are available at https://github.com/facebookresearch/detr.",
+  "categories": [
+    "cs.CV"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2005.12872v3",
+  "page_count": 26,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 67,
+  "chunks": [
+    {
+      "chunk_id": "2005.12872_chunk_0000",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "End-to-End Object Detection with TransformersNicolas Carion\u22c6, Francisco Massa\u22c6, Gabriel Synnaeve, Nicolas Usunier,Alexander Kirillov, and Sergey ZagoruykoFacebook AIAbstract. We present a new method that views object detection as adirect set prediction problem. Our approach streamlines the detectionpipeline, e\ufb00ectively removing the need for many hand-designed compo-nents like a non-maximum suppression procedure or anchor generationthat explicitly encode our prior knowledge about the task. The mainingredients of the new framework, called DEtection TRansformer orDETR, are a set-based global loss that forces unique predictions via bi-partite matching, and a transformer encoder-decoder architecture. Givena \ufb01xed small set of learned object queries, DETR reasons about the re-lations of the objects and the global image context to directly outputthe \ufb01nal set of predictions in parallel. The new model is conceptuallysimple and does not require a specialized library, unlike many othermodern detectors. DETR demonstrates accuracy and run-time perfor-mance on par with the well-established and highly-optimized Faster R-CNN baseline on the challenging COCO object detection dataset. More-over, DETR can be easily generalized to produce panoptic segmentationin a uni\ufb01ed manner. We show that it signi\ufb01cantly outperforms com-petitive baselines.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0001",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "More-over, DETR can be easily generalized to produce panoptic segmentationin a uni\ufb01ed manner. We show that it signi\ufb01cantly outperforms com-petitive baselines. Training code and pretrained models are available athttps://github.com/facebookresearch/detr.1IntroductionThe goal of object detection is to predict a set of bounding boxes and categorylabels for each object of interest. Modern detectors address this set predictiontask in an indirect way, by de\ufb01ning surrogate regression and classi\ufb01cation prob-lems on a large set of proposals [37,5], anchors [23], or window centers [53,46].Their performances are signi\ufb01cantly in\ufb02uenced by postprocessing steps to col-lapse near-duplicate predictions, by the design of the anchor sets and by theheuristics that assign target boxes to anchors [52]. To simplify these pipelines,we propose a direct set prediction approach to bypass the surrogate tasks. Thisend-to-end philosophy has led to signi\ufb01cant advances in complex structured pre-diction tasks such as machine translation or speech recognition, but not yet inobject detection: previous attempts [43,16,4,39] either add other forms of priorknowledge, or have not proven to be competitive with strong baselines on chal-lenging benchmarks.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0002",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "This paper aims to bridge this gap.\u22c6Equal contribution2Carion et al.no object (\u00f8)no object (\u00f8)transformerdecoderCNNencoder-set of image featuresset of box predictionsbipartite matching lossFig. 1: DETR directly predicts (in parallel) the \ufb01nal set of detections by combininga common CNN with a transformer architecture. During training, bipartite matchinguniquely assigns predictions with ground truth boxes. Prediction with no match shouldyield a \u201cno object\u201d (\u2205) class prediction.We streamline the training pipeline by viewing object detection as a direct setprediction problem. We adopt an encoder-decoder architecture based on trans-formers [47], a popular architecture for sequence prediction. The self-attentionmechanisms of transformers, which explicitly model all pairwise interactions be-tween elements in a sequence, make these architectures particularly suitable forspeci\ufb01c constraints of set prediction such as removing duplicate predictions.Our DEtection TRansformer (DETR, see Figure 1) predicts all objects atonce, and is trained end-to-end with a set loss function which performs bipar-tite matching between predicted and ground-truth objects. DETR simpli\ufb01es thedetection pipeline by dropping multiple hand-designed components that encodeprior knowledge, like spatial anchors or non-maximal suppression.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0003",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "DETR simpli\ufb01es thedetection pipeline by dropping multiple hand-designed components that encodeprior knowledge, like spatial anchors or non-maximal suppression. Unlike mostexisting detection methods, DETR doesn\u2019t require any customized layers, andthus can be reproduced easily in any framework that contains standard CNNand transformer classes.1.Compared to most previous work on direct set prediction, the main features ofDETR are the conjunction of the bipartite matching loss and transformers with(non-autoregressive) parallel decoding [29,12,10,8]. In contrast, previous workfocused on autoregressive decoding with RNNs [43,41,30,36,42]. Our matchingloss function uniquely assigns a prediction to a ground truth object, and isinvariant to a permutation of predicted objects, so we can emit them in parallel.We evaluate DETR on one of the most popular object detection datasets,COCO [24], against a very competitive Faster R-CNN baseline [37]. Faster R-CNN has undergone many design iterations and its performance was greatlyimproved since the original publication. Our experiments show that our newmodel achieves comparable performances. More precisely, DETR demonstratessigni\ufb01cantly better performance on large objects, a result likely enabled by thenon-local computations of the transformer. It obtains, however, lower perfor-mances on small objects.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0004",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "More precisely, DETR demonstratessigni\ufb01cantly better performance on large objects, a result likely enabled by thenon-local computations of the transformer. It obtains, however, lower perfor-mances on small objects. We expect that future work will improve this aspectin the same way the development of FPN [22] did for Faster R-CNN.Training settings for DETR di\ufb00er from standard object detectors in mul-tiple ways. The new model requires extra-long training schedule and bene\ufb01ts1 In our work we use standard implementations of Transformers [47] and ResNet [15]backbones from standard deep learning libraries.End-to-End Object Detection with Transformers3from auxiliary decoding losses in the transformer. We thoroughly explore whatcomponents are crucial for the demonstrated performance.The design ethos of DETR easily extend to more complex tasks. In ourexperiments, we show that a simple segmentation head trained on top of a pre-trained DETR outperfoms competitive baselines on Panoptic Segmentation [19],a challenging pixel-level recognition task that has recently gained popularity.2Related workOur work build on prior work in several domains: bipartite matching losses forset prediction, encoder-decoder architectures based on the transformer, paralleldecoding, and object detection methods.2.1Set PredictionThere is no canonical deep learning model to directly predict sets.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0005",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "The basic setprediction task is multilabel classi\ufb01cation (see e.g., [40,33] for references in thecontext of computer vision) for which the baseline approach, one-vs-rest, doesnot apply to problems such as detection where there is an underlying structurebetween elements (i.e., near-identical boxes). The \ufb01rst di\ufb03culty in these tasksis to avoid near-duplicates. Most current detectors use postprocessings such asnon-maximal suppression to address this issue, but direct set prediction arepostprocessing-free. They need global inference schemes that model interactionsbetween all predicted elements to avoid redundancy. For constant-size set pre-diction, dense fully connected networks [9] are su\ufb03cient but costly. A generalapproach is to use auto-regressive sequence models such as recurrent neural net-works [48]. In all cases, the loss function should be invariant by a permutation ofthe predictions. The usual solution is to design a loss based on the Hungarian al-gorithm [20], to \ufb01nd a bipartite matching between ground-truth and prediction.This enforces permutation-invariance, and guarantees that each target elementhas a unique match. We follow the bipartite matching loss approach.",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0006",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "We follow the bipartite matching loss approach. In contrastto most prior work however, we step away from autoregressive models and usetransformers with parallel decoding, which we describe below.2.2Transformers and Parallel DecodingTransformers were introduced by Vaswani et al. [47] as a new attention-basedbuilding block for machine translation. Attention mechanisms [2] are neural net-work layers that aggregate information from the entire input sequence. Trans-formers introduced self-attention layers, which, similarly to Non-Local NeuralNetworks [49], scan through each element of a sequence and update it by ag-gregating information from the whole sequence. One of the main advantages ofattention-based models is their global computations and perfect memory, whichmakes them more suitable than RNNs on long sequences. Transformers are now4Carion et al.replacing RNNs in many problems in natural language processing, speech pro-cessing and computer vision [8,27,45,34,31].Transformers were \ufb01rst used in auto-regressive models, following early sequence-to-sequence models [44], generating output tokens one by one. However, the pro-hibitive inference cost (proportional to output length, and hard to batch) leadto the development of parallel sequence generation, in the domains of audio [29],machine translation [12,10], word representation learning [8], and more recentlyspeech recognition [6].",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0007",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "We also combine transformers and parallel decoding fortheir suitable trade-o\ufb00between computational cost and the ability to performthe global computations required for set prediction.2.3Object detectionMost modern object detection methods make predictions relative to some ini-tial guesses. Two-stage detectors [37,5] predict boxes w.r.t. proposals, whereassingle-stage methods make predictions w.r.t. anchors [23] or a grid of possibleobject centers [53,46]. Recent work [52] demonstrate that the \ufb01nal performanceof these systems heavily depends on the exact way these initial guesses are set.In our model we are able to remove this hand-crafted process and streamline thedetection process by directly predicting the set of detections with absolute boxprediction w.r.t. the input image rather than an anchor.Set-based loss. Several object detectors [9,25,35] used the bipartite matchingloss. However, in these early deep learning models, the relation between di\ufb00erentprediction was modeled with convolutional or fully-connected layers only and ahand-designed NMS post-processing can improve their performance. More recentdetectors [37,23,53] use non-unique assignment rules between ground truth andpredictions together with an NMS.Learnable NMS methods [16,4] and relation networks [17] explicitly modelrelations between di\ufb00erent predictions with attention. Using direct set losses,they do not require any post-processing steps.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0008",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "Using direct set losses,they do not require any post-processing steps. However, these methods employadditional hand-crafted context features like proposal box coordinates to modelrelations between detections e\ufb03ciently, while we look for solutions that reducethe prior knowledge encoded in the model.Recurrent detectors. Closest to our approach are end-to-end set predictionsfor object detection [43] and instance segmentation [41,30,36,42]. Similarly to us,they use bipartite-matching losses with encoder-decoder architectures based onCNN activations to directly produce a set of bounding boxes. These approaches,however, were only evaluated on small datasets and not against modern baselines.In particular, they are based on autoregressive models (more precisely RNNs),so they do not leverage the recent transformers with parallel decoding.3The DETR modelTwo ingredients are essential for direct set predictions in detection: (1) a setprediction loss that forces unique matching between predicted and ground truthEnd-to-End Object Detection with Transformers5boxes; (2) an architecture that predicts (in a single pass) a set of objects andmodels their relation. We describe our architecture in detail in Figure 2.3.1Object detection set prediction lossDETR infers a \ufb01xed-size set of N predictions, in a single pass through thedecoder, where N is set to be signi\ufb01cantly larger than the typical number ofobjects in an image.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0009",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "One of the main di\ufb03culties of training is to score predictedobjects (class, position, size) with respect to the ground truth. Our loss producesan optimal bipartite matching between predicted and ground truth objects, andthen optimize object-speci\ufb01c (bounding box) losses.Let us denote by y the ground truth set of objects, and \u02c6y = {\u02c6yi}Ni=1 theset of N predictions. Assuming N is larger than the number of objects in theimage, we consider y also as a set of size N padded with \u2205(no object). To \ufb01nda bipartite matching between these two sets we search for a permutation of Nelements \u03c3 \u2208SN with the lowest cost:NX\u02c6\u03c3 = arg min\u03c3\u2208SNiLmatch(yi, \u02c6y\u03c3(i)),(1)where Lmatch(yi, \u02c6y\u03c3(i)) is a pair-wise matching cost between ground truth yi anda prediction with index \u03c3(i). This optimal assignment is computed e\ufb03cientlywith the Hungarian algorithm, following prior work (e.g. [43]).The matching cost takes into account both the class prediction and the sim-ilarity of predicted and ground truth boxes.",
+      "token_count": 258
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0010",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "This optimal assignment is computed e\ufb03cientlywith the Hungarian algorithm, following prior work (e.g. [43]).The matching cost takes into account both the class prediction and the sim-ilarity of predicted and ground truth boxes. Each element i of the ground truthset can be seen as a yi = (ci, bi) where ci is the target class label (whichmay be \u2205) and bi \u2208[0, 1]4 is a vector that de\ufb01nes ground truth box cen-ter coordinates and its height and width relative to the image size. For theprediction with index \u03c3(i) we de\ufb01ne probability of class ci as \u02c6p\u03c3(i)(ci) andthe predicted box as \u02c6b\u03c3(i). With these notations we de\ufb01ne Lmatch(yi, \u02c6y\u03c3(i)) as\u22121{ci\u0338=\u2205}\u02c6p\u03c3(i)(ci) + 1{ci\u0338=\u2205}Lbox(bi,\u02c6b\u03c3(i)).This procedure of \ufb01nding matching plays the same role as the heuristic assign-ment rules used to match proposal [37] or anchors [22] to ground truth objectsin modern detectors.",
+      "token_count": 258
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0011",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "The main di\ufb00erence is that we need to \ufb01nd one-to-onematching for direct set prediction without duplicates.The second step is to compute the loss function, the Hungarian loss for allpairs matched in the previous step. We de\ufb01ne the loss similarly to the losses ofcommon object detectors, i.e. a linear combination of a negative log-likelihoodfor class prediction and a box loss de\ufb01ned later:NXLHungarian(y, \u02c6y) =h\u2212log \u02c6p\u02c6\u03c3(i)(ci) + 1{ci\u0338=\u2205}Lbox(bi,\u02c6b\u02c6\u03c3(i))i,(2)i=1where \u02c6\u03c3 is the optimal assignment computed in the \ufb01rst step (1). In practice, wedown-weight the log-probability term when ci = \u2205by a factor 10 to account for6Carion et al.class imbalance. This is analogous to how Faster R-CNN training procedure bal-ances positive/negative proposals by subsampling [37]. Notice that the matchingcost between an object and \u2205doesn\u2019t depend on the prediction, which meansthat in that case the cost is a constant. In the matching cost we use probabil-ities \u02c6p\u02c6\u03c3(i)(ci) instead of log-probabilities.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0012",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "In the matching cost we use probabil-ities \u02c6p\u02c6\u03c3(i)(ci) instead of log-probabilities. This makes the class prediction termcommensurable to Lbox(\u00b7, \u00b7) (described below), and we observed better empiricalperformances.Bounding box loss. The second part of the matching cost and the Hungarianloss is Lbox(\u00b7) that scores the bounding boxes. Unlike many detectors that do boxpredictions as a \u2206w.r.t. some initial guesses, we make box predictions directly.While such approach simplify the implementation it poses an issue with relativescaling of the loss. The most commonly-used \u21131 loss will have di\ufb00erent scales forsmall and large boxes even if their relative errors are similar. To mitigate thisissue we use a linear combination of the \u21131 loss and the generalized IoU loss [38]Liou(\u00b7, \u00b7) that is scale-invariant. Overall, our box loss is Lbox(bi,\u02c6b\u03c3(i)) de\ufb01ned as\u03bbiouLiou(bi,\u02c6b\u03c3(i)) + \u03bbL1||bi \u2212\u02c6b\u03c3(i)||1 where \u03bbiou, \u03bbL1 \u2208R are hyperparameters.These two losses are normalized by the number of objects inside the batch.3.2DETR architectureThe overall DETR architecture is surprisingly simple and depicted in Figure 2.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0013",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "Itcontains three main components, which we describe below: a CNN backbone toextract a compact feature representation, an encoder-decoder transformer, anda simple feed forward network (FFN) that makes the \ufb01nal detection prediction.Unlike many modern detectors, DETR can be implemented in any deep learn-ing framework that provides a common CNN backbone and a transformer archi-tecture implementation with just a few hundred lines. Inference code for DETRcan be implemented in less than 50 lines in PyTorch [32]. We hope that the sim-plicity of our method will attract new researchers to the detection community.Backbone. Starting from the initial image ximg \u2208R3\u00d7H0\u00d7W0 (with 3 colorchannels2), a conventional CNN backbone generates a lower-resolution activationmap f \u2208RC\u00d7H\u00d7W . Typical values we use are C = 2048 and H, W = H032 , W032 .Transformer encoder. First, a 1x1 convolution reduces the channel dimensionof the high-level activation map f from C to a smaller dimension d. creating anew feature map z0 \u2208Rd\u00d7H\u00d7W . The encoder expects a sequence as input, hencewe collapse the spatial dimensions of z0 into one dimension, resulting in a d\u00d7HWfeature map. Each encoder layer has a standard architecture and consists of amulti-head self-attention module and a feed forward network (FFN).",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0014",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "Each encoder layer has a standard architecture and consists of amulti-head self-attention module and a feed forward network (FFN). Since thetransformer architecture is permutation-invariant, we supplement it with \ufb01xedpositional encodings [31,3] that are added to the input of each attention layer. Wedefer to the supplementary material the detailed de\ufb01nition of the architecture,which follows the one described in [47].2 The input images are batched together, applying 0-padding adequately to ensurethey all have the same dimensions (H0, W0) as the largest image of the batch.End-to-End Object Detection with Transformers7backboneencoderdecoderprediction headsset of image featuresclass,FFNboxCNN+transformertransformerFFNno objectencoderdecoderFFNclass,boxFFNno objectpositional encodingobject queriesFig. 2: DETR uses a conventional CNN backbone to learn a 2D representation of aninput image. The model \ufb02attens it and supplements it with a positional encoding beforepassing it into a transformer encoder. A transformer decoder then takes as input asmall \ufb01xed number of learned positional embeddings, which we call object queries, andadditionally attends to the encoder output. We pass each output embedding of thedecoder to a shared feed forward network (FFN) that predicts either a detection (classand bounding box) or a \u201cno object\u201d class.Transformer decoder.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0015",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "We pass each output embedding of thedecoder to a shared feed forward network (FFN) that predicts either a detection (classand bounding box) or a \u201cno object\u201d class.Transformer decoder. The decoder follows the standard architecture of thetransformer, transforming N embeddings of size d using multi-headed self- andencoder-decoder attention mechanisms. The di\ufb00erence with the original trans-former is that our model decodes the N objects in parallel at each decoder layer,while Vaswani et al. [47] use an autoregressive model that predicts the outputsequence one element at a time. We refer the reader unfamiliar with the conceptsto the supplementary material. Since the decoder is also permutation-invariant,the N input embeddings must be di\ufb00erent to produce di\ufb00erent results. These in-put embeddings are learnt positional encodings that we refer to as object queries,and similarly to the encoder, we add them to the input of each attention layer.The N object queries are transformed into an output embedding by the decoder.They are then independently decoded into box coordinates and class labels bya feed forward network (described in the next subsection), resulting N \ufb01nalpredictions. Using self- and encoder-decoder attention over these embeddings,the model globally reasons about all objects together using pair-wise relationsbetween them, while being able to use the whole image as context.Prediction feed-forward networks (FFNs).",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0016",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "Using self- and encoder-decoder attention over these embeddings,the model globally reasons about all objects together using pair-wise relationsbetween them, while being able to use the whole image as context.Prediction feed-forward networks (FFNs). The \ufb01nal prediction is com-puted by a 3-layer perceptron with ReLU activation function and hidden dimen-sion d, and a linear projection layer. The FFN predicts the normalized centercoordinates, height and width of the box w.r.t. the input image, and the lin-ear layer predicts the class label using a softmax function. Since we predict a\ufb01xed-size set of N bounding boxes, where N is usually much larger than theactual number of objects of interest in an image, an additional special class la-bel \u2205is used to represent that no object is detected within a slot. This classplays a similar role to the \u201cbackground\u201d class in the standard object detectionapproaches.Auxiliary decoding losses. We found helpful to use auxiliary losses [1] indecoder during training, especially to help the model output the correct number8Carion et al.of objects of each class. We add prediction FFNs and Hungarian loss after eachdecoder layer. All predictions FFNs share their parameters.",
+      "token_count": 253
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0017",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "We add prediction FFNs and Hungarian loss after eachdecoder layer. All predictions FFNs share their parameters. We use an additionalshared layer-norm to normalize the input to the prediction FFNs from di\ufb00erentdecoder layers.4ExperimentsWe show that DETR achieves competitive results compared to Faster R-CNNin quantitative evaluation on COCO. Then, we provide a detailed ablationstudy of the architecture and loss, with insights and qualitative results. Fi-nally, to show that DETR is a versatile and extensible model, we present resultson panoptic segmentation, training only a small extension on a \ufb01xed DETRmodel. We provide code and pretrained models to reproduce our experiments athttps://github.com/facebookresearch/detr.Dataset. We perform experiments on COCO 2017 detection and panoptic seg-mentation datasets [24,18], containing 118k training images and 5k validationimages. Each image is annotated with bounding boxes and panoptic segmenta-tion. There are 7 instances per image on average, up to 63 instances in a singleimage in training set, ranging from small to large on the same images. If notspeci\ufb01ed, we report AP as bbox AP, the integral metric over multiple thresholds.For comparison with Faster R-CNN we report validation AP at the last trainingepoch, for ablations we report median over validation results from the last 10epochs.Technical details.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0018",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "We train DETR with AdamW [26] setting the initial trans-former\u2019s learning rate to 10\u22124, the backbone\u2019s to 10\u22125, and weight decay to 10\u22124.All transformer weights are initialized with Xavier init [11], and the backboneis with ImageNet-pretrained ResNet model [15] from torchvision with frozenbatchnorm layers. We report results with two di\ufb00erent backbones: a ResNet-50 and a ResNet-101. The corresponding models are called respectively DETRand DETR-R101. Following[21], we also increase the feature resolution byadding a dilation to the last stage of the backbone and removing a stride fromthe \ufb01rst convolution of this stage. The corresponding models are called respec-tively DETR-DC5 and DETR-DC5-R101 (dilated C5 stage). This modi\ufb01cationincreases the resolution by a factor of two, thus improving performance for smallobjects, at the cost of a 16x higher cost in the self-attentions of the encoder,leading to an overall 2x increase in computational cost.",
+      "token_count": 236
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0019",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "A full comparison ofFLOPs of these models and Faster R-CNN is given in Table 1.We use scale augmentation, resizing the input images such that the shortestside is at least 480 and at most 800 pixels while the longest at most 1333 [50].To help learning global relationships through the self-attention of the encoder,we also apply random crop augmentations during training, improving the per-formance by approximately 1 AP. Speci\ufb01cally, a train image is cropped withprobability 0.5 to a random rectangular patch which is then resized again to800-1333. The transformer is trained with default dropout of 0.1.",
+      "token_count": 139
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0020",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "Speci\ufb01cally, a train image is cropped withprobability 0.5 to a random rectangular patch which is then resized again to800-1333. The transformer is trained with default dropout of 0.1. At inferenceEnd-to-End Object Detection with Transformers9ModelGFLOPS/FPS #params AP AP50 AP75 APS APM APLFaster RCNN-DC5320/16166M39.0 60.542.3 21.4 43.5 52.5Faster RCNN-FPN180/2642M40.2 61.043.8 24.2 43.5 52.0Faster RCNN-R101-FPN246/2060M42.0 62.545.9 25.2 45.6 54.6Faster RCNN-DC5+320/16166M41.1 61.444.3 22.9 45.9 55.0Faster RCNN-FPN+180/2642M42.0 62.145.5 26.6 45.4 53.4Faster RCNN-R101-FPN+246/2060M44.0 63.9 47.8 27.2 48.1 56.0DETR86/2841M42.0 62.444.2 20.5 45.8 61.1DETR-DC5187/1241M43.3 63.145.9 22.5 47.3 61.1DETR-R101152/2060M43.5 63.846.4 21.9 48.0 61.8DETR-DC5-R101253/1060M44.9 64.7 47.7 23.7 49.5 62.3time, some slots predict empty class.",
+      "token_count": 411
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0021",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "To optimize for AP, we override the predic-tion of these slots with the second highest scoring class, using the correspondingcon\ufb01dence. This improves AP by 2 points compared to \ufb01ltering out empty slots.Other training hyperparameters can be found in section A.4. For our ablationexperiments we use training schedule of 300 epochs with a learning rate dropby a factor of 10 after 200 epochs, where a single epoch is a pass over all train-ing images once. Training the baseline model for 300 epochs on 16 V100 GPUstakes 3 days, with 4 images per GPU (hence a total batch size of 64). For thelonger schedule used to compare with Faster R-CNN we train for 500 epochswith learning rate drop after 400 epochs. This schedule adds 1.5 AP comparedto the shorter schedule.4.1Comparison with Faster R-CNNTransformers are typically trained with Adam or Adagrad optimizers with verylong training schedules and dropout, and this is true for DETR as well. FasterR-CNN, however, is trained with SGD with minimal data augmentation andwe are not aware of successful applications of Adam or dropout. Despite thesedi\ufb00erences we attempt to make a Faster R-CNN baseline stronger.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0022",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "FasterR-CNN, however, is trained with SGD with minimal data augmentation andwe are not aware of successful applications of Adam or dropout. Despite thesedi\ufb00erences we attempt to make a Faster R-CNN baseline stronger. To align itwith DETR, we add generalized IoU [38] to the box loss, the same randomcrop augmentation and long training known to improve results [13]. Resultsare presented in Table 1. In the top section we show Faster R-CNN resultsfrom Detectron2 Model Zoo [50] for models trained with the 3x schedule. In themiddle section we show results (with a \u201c+\u201d) for the same models but trained10Carion et al.#layersGFLOPS/FPS#paramsAPAP50APSAPMAPL076/2833.4M36.757.416.839.654.2381/2537.4M40.160.618.543.858.6686/2341.3M40.661.619.944.360.21295/2049.2M41.662.119.844.961.9with the 9x schedule (109 epochs) and the described enhancements, which intotal adds 1-2 AP. In the last section of Table 1 we show the results for multipleDETR models.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0023",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "In the last section of Table 1 we show the results for multipleDETR models. To be comparable in the number of parameters we choose amodel with 6 transformer and 6 decoder layers of width 256 with 8 attentionheads. Like Faster R-CNN with FPN this model has 41.3M parameters, out ofwhich 23.5M are in ResNet-50, and 17.8M are in the transformer. Even thoughboth Faster R-CNN and DETR are still likely to further improve with longertraining, we can conclude that DETR can be competitive with Faster R-CNNwith the same number of parameters, achieving 42 AP on the COCO val subset.The way DETR achieves this is by improving APL (+7.8), however note that themodel is still lagging behind in APS (-5.5). DETR-DC5 with the same numberof parameters and similar FLOP count has higher AP, but is still signi\ufb01cantlybehind in APS too. Faster R-CNN and DETR with ResNet-101 backbone showcomparable results as well.4.2AblationsAttention mechanisms in the transformer decoder are the key components whichmodel relations between feature representations of di\ufb00erent detections. In ourablation analysis, we explore how other components of our architecture and lossin\ufb02uence the \ufb01nal performance.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0024",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "In ourablation analysis, we explore how other components of our architecture and lossin\ufb02uence the \ufb01nal performance. For the study we choose ResNet-50-based DETRmodel with 6 encoder, 6 decoder layers and width 256. The model has 41.3Mparameters, achieves 40.6 and 42.0 AP on short and long schedules respectively,and runs at 28 FPS, similarly to Faster R-CNN-FPN with the same backbone.Number of encoder layers. We evaluate the importance of global image-level self-attention by changing the number of encoder layers (Table 2). Withoutencoder layers, overall AP drops by 3.9 points, with a more signi\ufb01cant drop of6.0 AP on large objects. We hypothesize that, by using global scene reasoning,the encoder is important for disentangling objects. In Figure 3, we visualize theattention maps of the last encoder layer of a trained model, focusing on a fewpoints in the image. The encoder seems to separate instances already, whichlikely simpli\ufb01es object extraction and localization for the decoder.Number of decoder layers.",
+      "token_count": 237
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0025",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "The encoder seems to separate instances already, whichlikely simpli\ufb01es object extraction and localization for the decoder.Number of decoder layers. We apply auxiliary losses after each decodinglayer (see Section 3.2), hence, the prediction FFNs are trained by design to pre-End-to-End Object Detection with Transformers11self-attention(430, 600)self-attention(450, 830)self-attention(520, 450)self-attention(440, 1200)Fig. 3: Encoder self-attention for a set of reference points. The encoder is able to sep-arate individual instances. Predictions are made with baseline DETR model on a vali-dation set image.dict objects out of the outputs of every decoder layer. We analyze the importanceof each decoder layer by evaluating the objects that would be predicted at eachstage of the decoding (Fig. 4). Both AP and AP50 improve after every layer,totalling into a very signi\ufb01cant +8.2/9.5 AP improvement between the \ufb01rst andthe last layer. With its set-based loss, DETR does not need NMS by design. Toverify this we run a standard NMS procedure with default parameters [50] forthe outputs after each decoder. NMS improves performance for the predictionsfrom the \ufb01rst decoder.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0026",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "Toverify this we run a standard NMS procedure with default parameters [50] forthe outputs after each decoder. NMS improves performance for the predictionsfrom the \ufb01rst decoder. This can be explained by the fact that a single decodinglayer of the transformer is not able to compute any cross-correlations betweenthe output elements, and thus it is prone to making multiple predictions for thesame object. In the second and subsequent layers, the self-attention mechanismover the activations allows the model to inhibit duplicate predictions. We ob-serve that the improvement brought by NMS diminishes as depth increases. Atthe last layers, we observe a small loss in AP as NMS incorrectly removes truepositive predictions.Similarly to visualizing encoder attention, we visualize decoder attentions inFig. 6, coloring attention maps for each predicted object in di\ufb00erent colors. Weobserve that decoder attention is fairly local, meaning that it mostly attends toobject extremities such as heads or legs. We hypothesise that after the encoderhas separated instances via global attention, the decoder only needs to attendto the extremities to extract the class and object boundaries.Importance of FFN. FFN inside tranformers can be seen as 1 \u00d7 1 convo-lutional layers, making encoder similar to attention augmented convolutionalnetworks [3]. We attempt to remove it completely leaving only attention in thetransformer layers.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0027",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "FFN inside tranformers can be seen as 1 \u00d7 1 convo-lutional layers, making encoder similar to attention augmented convolutionalnetworks [3]. We attempt to remove it completely leaving only attention in thetransformer layers. By reducing the number of network parameters from 41.3Mto 28.7M, leaving only 10.8M in the transformer, performance drops by 2.3 AP,we thus conclude that FFN are important for achieving good results.Importance of positional encodings. There are two kinds of positional en-codings in our model: spatial positional encodings and output positional encod-12Carion et al.AP50AP No NMSAP NMS=0.7AP50 No NMSAP50 NMS=0.7AP No NMSAP NMS=0.712345634123456decoder layerdecoder layerFig. 4: AP and AP50 performance after each de-coder layer. A single long schedule baseline modelis evaluated. DETR does not need NMS by de-sign, which is validated by this \ufb01gure.",
+      "token_count": 228
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0028",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "A single long schedule baseline modelis evaluated. DETR does not need NMS by de-sign, which is validated by this \ufb01gure. NMS lowersAP in the \ufb01nal layers, removing TP predictions,but improves AP in the \ufb01rst decoder layers, re-moving double predictions, as there is no commu-nication in the \ufb01rst layer, and slightly improvesAP50.Fig. 5: Out of distribution gen-eralizationforrareclasses.Even though no image in thetraining set has more than 13gira\ufb00es, DETR has no di\ufb03-culty generalizing to 24 andmore instances of the sameclass.ings (object queries). We experiment with various combinations of \ufb01xed andlearned encodings, results can be found in table 3. Output positional encodingsare required and cannot be removed, so we experiment with either passing themonce at decoder input or adding to queries at every decoder attention layer. Inthe \ufb01rst experiment we completely remove spatial positional encodings and passoutput positional encodings at input and, interestingly, the model still achievesmore than 32 AP, losing 7.8 AP to the baseline.",
+      "token_count": 248
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0029",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "Inthe \ufb01rst experiment we completely remove spatial positional encodings and passoutput positional encodings at input and, interestingly, the model still achievesmore than 32 AP, losing 7.8 AP to the baseline. Then, we pass \ufb01xed sine spatialpositional encodings and the output encodings at input once, as in the originaltransformer [47], and \ufb01nd that this leads to 1.4 AP drop compared to passingthe positional encodings directly in attention. Learned spatial encodings passedto the attentions give similar results. Surprisingly, we \ufb01nd that not passing anyspatial encodings in the encoder only leads to a minor AP drop of 1.3 AP. Whenwe pass the encodings to the attentions, they are shared across all layers, andthe output encodings (object queries) are always learned.Given these ablations, we conclude that transformer components: the globalself-attention in encoder, FFN, multiple decoder layers, and positional encodings,all signi\ufb01cantly contribute to the \ufb01nal object detection performance.Loss ablations. To evaluate the importance of di\ufb00erent components of thematching cost and the loss, we train several models turning them on and o\ufb00.There are three components to the loss: classi\ufb01cation loss, \u21131 bounding boxdistance loss, and GIoU [38] loss.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0030",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "The classi\ufb01cation loss is essential for trainingand cannot be turned o\ufb00, so we train a model without bounding box distanceloss, and a model without the GIoU loss, and compare with baseline, trained withall three losses. Results are presented in table 4. GIoU loss on its own accountsEnd-to-End Object Detection with Transformers13Fig. 6: Visualizing decoder attention for every predicted object (images from COCOval set). Predictions are made with DETR-DC5 model. Attention scores are coded withdi\ufb00erent colors for di\ufb00erent objects. Decoder typically attends to object extremities,such as legs and heads.",
+      "token_count": 146
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0031",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "Predictions are made with DETR-DC5 model. Attention scores are coded withdi\ufb00erent colors for di\ufb00erent objects. Decoder typically attends to object extremities,such as legs and heads. Best viewed in color.spatial pos. enc.output pos. enc.encoderdecoderdecoderAP\u2206AP50\u2206nonenonelearned at input32.8-7.855.2-6.5sine at inputsine at inputlearned at input39.2-1.460.0-1.6learned at attn.learned at attn.learned at attn.39.6-1.060.7-0.9nonesine at attn.learned at attn.39.3-1.360.3-1.4sine at attn.sine at attn.learned at attn.40.6-61.6-class\u21131GIoUAP\u2206AP50\u2206APSAPMAPL\u2713\u271335.8-4.857.3-4.413.739.857.9\u2713\u271339.9-0.761.6019.943.257.9\u2713\u2713\u271340.6-61.6-19.944.360.2for most of the model performance, losing only 0.7 AP to the baseline withcombined losses. Using \u21131 without GIoU shows poor results.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0032",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "Using \u21131 without GIoU shows poor results. We only studied14Carion et al.Fig. 7: Visualization of all box predictions on all images from COCO 2017 val setfor 20 out of total N = 100 prediction slots in DETR decoder. Each box prediction isrepresented as a point with the coordinates of its center in the 1-by-1 square normalizedby each image size. The points are color-coded so that green color corresponds to smallboxes, red to large horizontal boxes and blue to large vertical boxes. We observe thateach slot learns to specialize on certain areas and box sizes with several operatingmodes. We note that almost all slots have a mode of predicting large image-wide boxesthat are common in COCO dataset.simple ablations of di\ufb00erent losses (using the same weighting every time), butother means of combining them may achieve di\ufb00erent results.4.3AnalysisDecoder output slot analysis In Fig. 7 we visualize the boxes predictedby di\ufb00erent slots for all images in COCO 2017 val set. DETR learns di\ufb00erentspecialization for each query slot. We observe that each slot has several modes ofoperation focusing on di\ufb00erent areas and box sizes. In particular, all slots havethe mode for predicting image-wide boxes (visible as the red dots aligned in themiddle of the plot).",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0033",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "We observe that each slot has several modes ofoperation focusing on di\ufb00erent areas and box sizes. In particular, all slots havethe mode for predicting image-wide boxes (visible as the red dots aligned in themiddle of the plot). We hypothesize that this is related to the distribution ofobjects in COCO.Generalization to unseen numbers of instances. Some classes in COCOare not well represented with many instances of the same class in the sameimage. For example, there is no image with more than 13 gira\ufb00es in the trainingset. We create a synthetic image3 to verify the generalization ability of DETR(see Figure 5). Our model is able to \ufb01nd all 24 gira\ufb00es on the image whichis clearly out of distribution. This experiment con\ufb01rms that there is no strongclass-specialization in each object query.4.4DETR for panoptic segmentationPanoptic segmentation [19] has recently attracted a lot of attention from thecomputer vision community. Similarly to the extension of Faster R-CNN [37] toMask R-CNN [14], DETR can be naturally extended by adding a mask head ontop of the decoder outputs.",
+      "token_count": 250
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0034",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "Similarly to the extension of Faster R-CNN [37] toMask R-CNN [14], DETR can be naturally extended by adding a mask head ontop of the decoder outputs. In this section we demonstrate that such a head canbe used to produce panoptic segmentation [19] by treating stu\ufb00and thing classes3 Base picture credit: https://www.piqsels.com/en/public-domain-photo-jzlwuEnd-to-End Object Detection with Transformers15Encoded imageResnet featuresRes5Res4Res3Res2(d x H/32 x W/32)Multi head attention2 x (Conv 3x3 + GN + ReLU)Conv 3x3 + GN + ReLU + Conv 3x3Pixel-wise argmaxConv 3x3 + GN + ReLUConv 3x3 + GN + ReLUConcatenate2x up + add2x up + add2x up + addInput image(3 x H x W)Box embeddingsAttention maps(N x M x H/32 x W/32)FPN-style CNNMasks logits(N x H/4 x W/4)(d x N)Fig. 8: Illustration of the panoptic head. A binary mask is generated in parallel for eachdetected object, then the masks are merged using pixel-wise argmax.Fig. 9: Qualitative results for panoptic segmentation generated by DETR-R101.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0035",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "A binary mask is generated in parallel for eachdetected object, then the masks are merged using pixel-wise argmax.Fig. 9: Qualitative results for panoptic segmentation generated by DETR-R101. DETRproduces aligned mask predictions in a uni\ufb01ed manner for things and stu\ufb00.in a uni\ufb01ed way. We perform our experiments on the panoptic annotations of theCOCO dataset that has 53 stu\ufb00categories in addition to 80 things categories.We train DETR to predict boxes around both stu\ufb00and things classes onCOCO, using the same recipe. Predicting boxes is required for the training tobe possible, since the Hungarian matching is computed using distances betweenboxes. We also add a mask head which predicts a binary mask for each of thepredicted boxes, see Figure 8. It takes as input the output of transformer decoderfor each object and computes multi-head (with M heads) attention scores of thisembedding over the output of the encoder, generating M attention heatmapsper object in a small resolution. To make the \ufb01nal prediction and increase theresolution, an FPN-like architecture is used. We describe the architecture inmore details in the supplement.",
+      "token_count": 251
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0036",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "To make the \ufb01nal prediction and increase theresolution, an FPN-like architecture is used. We describe the architecture inmore details in the supplement. The \ufb01nal resolution of the masks has stride 4and each mask is supervised independently using the DICE/F-1 loss [28] andFocal loss [23].The mask head can be trained either jointly, or in a two steps process, wherewe train DETR for boxes only, then freeze all the weights and train only the maskhead for 25 epochs.",
+      "token_count": 109
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0037",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "Experimentally, these two approaches give similar results, wereport results using the latter method since it results in a shorter total wall-clocktime training.16Carion et al.ModelBackbonePQSQRQPQth SQth RQth PQst SQst RQstAPPanopticFPN++R5042.479.351.649.282.458.832.374.840.637.7UPSnetR5042.578.052.548.679.459.633.475.941.734.3UPSnet-MR5043.079.152.848.979.759.734.178.242.334.3PanopticFPN++R10144.179.553.351.083.260.633.674.042.139.7DETRR5043.479.353.848.279.859.536.378.545.331.1DETR-DC5R5044.679.855.049.480.560.637.3 78.7 46.531.9DETR-R101R10145.1 79.9 55.550.580.961.737.078.546.033.0To predict the \ufb01nal panoptic segmentation we simply use an argmax overthe mask scores at each pixel, and assign the corresponding categories to theresulting masks.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0038",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "This procedure guarantees that the \ufb01nal masks have no overlapsand, therefore, DETR does not require a heuristic [19] that is often used to aligndi\ufb00erent masks.Training details. We train DETR, DETR-DC5 and DETR-R101 models fol-lowing the recipe for bounding box detection to predict boxes around stu\ufb00andthings classes in COCO dataset. The new mask head is trained for 25 epochs(see supplementary for details). During inference we \ufb01rst \ufb01lter out the detectionwith a con\ufb01dence below 85%, then compute the per-pixel argmax to determinein which mask each pixel belongs. We then collapse di\ufb00erent mask predictionsof the same stu\ufb00category in one, and \ufb01lter the empty ones (less than 4 pixels).Main results. Qualitative results are shown in Figure 9. In table 5 we compareour uni\ufb01ed panoptic segmenation approach with several established methodsthat treat things and stu\ufb00di\ufb00erently. We report the Panoptic Quality (PQ) andthe break-down on things (PQth) and stu\ufb00(PQst). We also report the maskAP (computed on the things classes), before any panoptic post-treatment (inour case, before taking the pixel-wise argmax).",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0039",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "We also report the maskAP (computed on the things classes), before any panoptic post-treatment (inour case, before taking the pixel-wise argmax). We show that DETR outper-forms published results on COCO-val 2017, as well as our strong PanopticFPNbaseline (trained with same data-augmentation as DETR, for fair comparison).The result break-down shows that DETR is especially dominant on stu\ufb00classes,and we hypothesize that the global reasoning allowed by the encoder attentionis the key element to this result. For things class, despite a severe de\ufb01cit ofup to 8 mAP compared to the baselines on the mask AP computation, DETRobtains competitive PQth. We also evaluated our method on the test set of theCOCO dataset, and obtained 46 PQ. We hope that our approach will inspire theexploration of fully uni\ufb01ed models for panoptic segmentation in future work.End-to-End Object Detection with Transformers175ConclusionWe presented DETR, a new design for object detection systems based on trans-formers and bipartite matching loss for direct set prediction. The approachachieves comparable results to an optimized Faster R-CNN baseline on the chal-lenging COCO dataset. DETR is straightforward to implement and has a \ufb02exiblearchitecture that is easily extensible to panoptic segmentation, with competitiveresults.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0040",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "DETR is straightforward to implement and has a \ufb02exiblearchitecture that is easily extensible to panoptic segmentation, with competitiveresults. In addition, it achieves signi\ufb01cantly better performance on large objectsthan Faster R-CNN, likely thanks to the processing of global information per-formed by the self-attention.This new design for detectors also comes with new challenges, in particularregarding training, optimization and performances on small objects. Currentdetectors required several years of improvements to cope with similar issues,and we expect future work to successfully address them for DETR.6AcknowledgementsWe thank Sainbayar Sukhbaatar, Piotr Bojanowski, Natalia Neverova, DavidLopez-Paz, Guillaume Lample, Danielle Rothermel, Kaiming He, Ross Girshick,Xinlei Chen and the whole Facebook AI Research Paris team for discussions andadvices without which this work would not be possible.References1. Al-Rfou, R., Choe, D., Constant, N., Guo, M., Jones, L.: Character-level languagemodeling with deeper self-attention. In: AAAI Conference on Arti\ufb01cial Intelligence(2019)2. Bahdanau, D., Cho, K., Bengio, Y.: Neural machine translation by jointly learningto align and translate. In: ICLR (2015)3.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0041",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "Bahdanau, D., Cho, K., Bengio, Y.: Neural machine translation by jointly learningto align and translate. In: ICLR (2015)3. Bello, I., Zoph, B., Vaswani, A., Shlens, J., Le, Q.V.: Attention augmented convo-lutional networks. In: ICCV (2019)4. Bodla, N., Singh, B., Chellappa, R., Davis, L.S.: Soft-NMSimproving objectdetection with one line of code. In: ICCV (2017)5. Cai, Z., Vasconcelos, N.: Cascade R-CNN: High quality object detection and in-stance segmentation. PAMI (2019)6. Chan, W., Saharia, C., Hinton, G., Norouzi, M., Jaitly, N.: Imputer: Sequencemodelling via imputation and dynamic programming. arXiv:2002.08926 (2020)7. Cordonnier, J.B., Loukas, A., Jaggi, M.: On the relationship between self-attentionand convolutional layers. In: ICLR (2020)8. Devlin, J., Chang, M.W., Lee, K., Toutanova, K.: BERT: Pre-training of deepbidirectional transformers for language understanding.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0042",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "In: ICLR (2020)8. Devlin, J., Chang, M.W., Lee, K., Toutanova, K.: BERT: Pre-training of deepbidirectional transformers for language understanding. In: NAACL-HLT (2019)9. Erhan, D., Szegedy, C., Toshev, A., Anguelov, D.: Scalable object detection usingdeep neural networks. In: CVPR (2014)10. Ghazvininejad, M., Levy, O., Liu, Y., Zettlemoyer, L.: Mask-predict: Parallel de-coding of conditional masked language models. arXiv:1904.09324 (2019)11. Glorot, X., Bengio, Y.: Understanding the di\ufb03culty of training deep feedforwardneural networks. In: AISTATS (2010)18Carion et al.12. Gu, J., Bradbury, J., Xiong, C., Li, V.O., Socher, R.: Non-autoregressive neuralmachine translation. In: ICLR (2018)13. He, K., Girshick, R., Doll\u00b4ar, P.: Rethinking imagenet pre-training. In: ICCV (2019)14. He, K., Gkioxari, G., Doll\u00b4ar, P., Girshick, R.B.: Mask R-CNN.",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0043",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "In: ICCV (2019)14. He, K., Gkioxari, G., Doll\u00b4ar, P., Girshick, R.B.: Mask R-CNN. In: ICCV (2017)15. He, K., Zhang, X., Ren, S., Sun, J.: Deep residual learning for image recognition.In: CVPR (2016)16. Hosang, J.H., Benenson, R., Schiele, B.: Learning non-maximum suppression. In:CVPR (2017)17. Hu, H., Gu, J., Zhang, Z., Dai, J., Wei, Y.: Relation networks for object detection.In: CVPR (2018)18. Kirillov, A., Girshick, R., He, K., Doll\u00b4ar, P.: Panoptic feature pyramid networks.In: CVPR (2019)19. Kirillov, A., He, K., Girshick, R., Rother, C., Dollar, P.: Panoptic segmentation.In: CVPR (2019)20. Kuhn, H.W.: The hungarian method for the assignment problem (1955)21. Li, Y., Qi, H., Dai, J., Ji, X., Wei, Y.: Fully convolutional instance-aware semanticsegmentation. In: CVPR (2017)22.",
+      "token_count": 282
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0044",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "Li, Y., Qi, H., Dai, J., Ji, X., Wei, Y.: Fully convolutional instance-aware semanticsegmentation. In: CVPR (2017)22. Lin, T.Y., Doll\u00b4ar, P., Girshick, R., He, K., Hariharan, B., Belongie, S.: Featurepyramid networks for object detection. In: CVPR (2017)23. Lin, T.Y., Goyal, P., Girshick, R.B., He, K., Doll\u00b4ar, P.: Focal loss for dense objectdetection. In: ICCV (2017)24. Lin, T.Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Doll\u00b4ar, P.,Zitnick, C.L.: Microsoft COCO: Common objects in context. In: ECCV (2014)25. Liu, W., Anguelov, D., Erhan, D., Szegedy, C., Reed, S.E., Fu, C.Y., Berg, A.C.:Ssd: Single shot multibox detector. In: ECCV (2016)26. Loshchilov, I., Hutter, F.: Decoupled weight decay regularization. In: ICLR (2017)27.",
+      "token_count": 285
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0045",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "In: ECCV (2016)26. Loshchilov, I., Hutter, F.: Decoupled weight decay regularization. In: ICLR (2017)27. L\u00a8uscher, C., Beck, E., Irie, K., Kitza, M., Michel, W., Zeyer, A., Schl\u00a8uter, R., Ney,H.: Rwth asr systems for librispeech: Hybrid vs attention - w/o data augmentation.arXiv:1905.03072 (2019)28. Milletari, F., Navab, N., Ahmadi, S.A.: V-net: Fully convolutional neural networksfor volumetric medical image segmentation. In: 3DV (2016)29. Oord, A.v.d., Li, Y., Babuschkin, I., Simonyan, K., Vinyals, O., Kavukcuoglu, K.,Driessche, G.v.d., Lockhart, E., Cobo, L.C., Stimberg, F., et al.: Parallel wavenet:Fast high-\ufb01delity speech synthesis. arXiv:1711.10433 (2017)30. Park, E., Berg, A.C.: Learning to decompose for object detection and instancesegmentation. arXiv:1511.06449 (2015)31.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0046",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "Park, E., Berg, A.C.: Learning to decompose for object detection and instancesegmentation. arXiv:1511.06449 (2015)31. Parmar, N., Vaswani, A., Uszkoreit, J., Kaiser, L., Shazeer, N., Ku, A., Tran, D.:Image transformer. In: ICML (2018)32. Paszke, A., Gross, S., Massa, F., Lerer, A., Bradbury, J., Chanan, G., Killeen, T.,Lin, Z., Gimelshein, N., Antiga, L., Desmaison, A., Kopf, A., Yang, E., DeVito, Z.,Raison, M., Tejani, A., Chilamkurthy, S., Steiner, B., Fang, L., Bai, J., Chintala, S.:Pytorch: An imperative style, high-performance deep learning library. In: NeurIPS(2019)33. Pineda, L., Salvador, A., Drozdzal, M., Romero, A.: Elucidating image-to-set pre-diction: An analysis of models, losses and datasets. arXiv:1904.05709 (2019)34.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0047",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "Radford, A., Wu, J., Child, R., Luan, D., Amodei, D., Sutskever, I.: Languagemodels are unsupervised multitask learners (2019)35. Redmon, J., Divvala, S., Girshick, R., Farhadi, A.: You only look once: Uni\ufb01ed,real-time object detection. In: CVPR (2016)36. Ren, M., Zemel, R.S.: End-to-end instance segmentation with recurrent attention.In: CVPR (2017)End-to-End Object Detection with Transformers1937. Ren, S., He, K., Girshick, R.B., Sun, J.: Faster R-CNN: Towards real-time objectdetection with region proposal networks. PAMI (2015)38. Rezato\ufb01ghi, H., Tsoi, N., Gwak, J., Sadeghian, A., Reid, I., Savarese, S.: General-ized intersection over union. In: CVPR (2019)39.",
+      "token_count": 233
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0048",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "In: CVPR (2019)39. Rezato\ufb01ghi, S.H., Kaskman, R., Motlagh, F.T., Shi, Q., Cremers, D., Leal-Taix\u00b4e,L., Reid, I.: Deep perm-set net: Learn to predict sets with unknown permutationand cardinality using deep neural networks. arXiv:1805.00613 (2018)40. Rezato\ufb01ghi, S.H., Milan, A., Abbasnejad, E., Dick, A., Reid, I., Kaskman, R.,Cremers, D., Leal-Taix, l.: Deepsetnet: Predicting sets with deep neural networks.In: ICCV (2017)41. Romera-Paredes, B., Torr, P.H.S.: Recurrent instance segmentation. In: ECCV(2015)42. Salvador, A., Bellver, M., Baradad, M., Marqu\u00b4es, F., Torres, J., Gir\u00b4o, X.: Recurrentneural networks for semantic instance segmentation. arXiv:1712.00617 (2017)43. Stewart, R.J., Andriluka, M., Ng, A.Y.: End-to-end people detection in crowdedscenes. In: CVPR (2015)44.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0049",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "Stewart, R.J., Andriluka, M., Ng, A.Y.: End-to-end people detection in crowdedscenes. In: CVPR (2015)44. Sutskever, I., Vinyals, O., Le, Q.V.: Sequence to sequence learning with neuralnetworks. In: NeurIPS (2014)45. Synnaeve, G., Xu, Q., Kahn, J., Grave, E., Likhomanenko, T., Pratap, V., Sri-ram, A., Liptchinsky, V., Collobert, R.: End-to-end ASR: from supervised to semi-supervised learning with modern architectures. arXiv:1911.08460 (2019)46. Tian, Z., Shen, C., Chen, H., He, T.: FCOS: Fully convolutional one-stage objectdetection. In: ICCV (2019)47. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser,L., Polosukhin, I.: Attention is all you need. In: NeurIPS (2017)48. Vinyals, O., Bengio, S., Kudlur, M.: Order matters: Sequence to sequence for sets.In: ICLR (2016)49.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0050",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "In: NeurIPS (2017)48. Vinyals, O., Bengio, S., Kudlur, M.: Order matters: Sequence to sequence for sets.In: ICLR (2016)49. Wang, X., Girshick, R.B., Gupta, A., He, K.: Non-local neural networks. In: CVPR(2018)50. Wu, Y., Kirillov, A., Massa, F., Lo, W.Y., Girshick, R.: Detectron2. https://github.com/facebookresearch/detectron2 (2019)51. Xiong, Y., Liao, R., Zhao, H., Hu, R., Bai, M., Yumer, E., Urtasun, R.: Upsnet: Auni\ufb01ed panoptic segmentation network. In: CVPR (2019)52. Zhang, S., Chi, C., Yao, Y., Lei, Z., Li, S.Z.: Bridging the gap between anchor-basedand anchor-free detection via adaptive training sample selection. arXiv:1912.02424(2019)53.",
+      "token_count": 238
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0051",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 51,
+      "section": "preamble",
+      "text": "Zhou, X., Wang, D., Kr\u00a8ahenb\u00a8uhl, P.: Objects as points. arXiv:1904.07850 (2019)20Carion et al.AAppendixA.1Preliminaries: Multi-head attention layersSince our model is based on the Transformer architecture, we remind here thegeneral form of attention mechanisms we use for exhaustivity. The attentionmechanism follows [47], except for the details of positional encodings (see Equa-tion 8) that follows [7].Multi-head The general form of multi-head attention with M heads of dimen-sion d is a function with the following signature (using d\u2032 =dM , and givingmatrix/tensors sizes in underbrace)mh-attn : Xq|{z}d\u00d7Nq, Xkv|{z}d\u00d7Nkv,T|{z}M\u00d73\u00d7d\u2032\u00d7d, L|{z}d\u00d7d7\u2192\u02dcXq|{z}d\u00d7Nq(3)where Xq is the query sequence of length Nq, Xkv is the key-value sequence oflength Nkv (with the same number of channels d for simplicity of exposition), Tis the weight tensor to compute the so-called query, key and value embeddings,and L is a projection matrix.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0052",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 52,
+      "section": "preamble",
+      "text": "The output is the same size as the query sequence.To \ufb01x the vocabulary before giving details, multi-head self-attention (mh-s-attn)is the special case Xq = Xkv, i.e.mh-s-attn(X, T, L) = mh-attn(X, X, T, L) .(4)The multi-head attention is simply the concatenation of M single attentionheads followed by a projection with L. The common practice [47] is to use residualconnections, dropout and layer normalization. In other words, denoting \u02dcXq =mh-attn(Xq, Xkv, T, L) and \u00af\u00afX(q) the concatenation of attention heads, we haveX\u2032q = [attn(Xq, Xkv, T1); ...; attn(Xq, Xkv, TM)](5)\u02dcXq = layernormXq + dropout(LX\u2032q),(6)where [;] denotes concatenation on the channel axis.Single head An attention head with weight tensor T \u2032 \u2208R3\u00d7d\u2032\u00d7d, denoted byattn(Xq, Xkv, T \u2032), depends on additional positional encoding Pq \u2208Rd\u00d7Nq andPkv \u2208Rd\u00d7Nkv.",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0053",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 53,
+      "section": "preamble",
+      "text": "It starts by computing so-called query, key and value embeddingsafter adding the query and key positional encodings [7]:[Q; K; V ] = [T \u20321(Xq + Pq); T \u20322(Xkv + Pkv); T \u20323Xkv](7)where T \u2032 is the concatenation of T \u20321, T \u20322, T \u20323. The attention weights \u03b1 are thencomputed based on the softmax of dot products between queries and keys, sothat each element of the query sequence attends to all elements of the key-valuesequence (i is a query index and j a key-value index):1\u221ad\u2032 QTi KjNkvX\u03b1i,j = eZiwhere Zi =j=1e1\u221ad\u2032 QTi Kj .(8)End-to-End Object Detection with Transformers21In our case, the positional encodings may be learnt or \ufb01xed, but are sharedacross all attention layers for a given query/key-value sequence, so we do notexplicitly write them as parameters of the attention. We give more details ontheir exact value when describing the encoder and the decoder.",
+      "token_count": 246
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0054",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 54,
+      "section": "preamble",
+      "text": "We give more details ontheir exact value when describing the encoder and the decoder. The \ufb01nal outputis the aggregation of values weighted by attention weights: The i-th row is givenby attni(Xq, Xkv, T \u2032) = PNkvj=1 \u03b1i,jVj.Feed-forward network (FFN) layers The original transformer alternatesmulti-head attention and so-called FFN layers [47], which are e\ufb00ectively multi-layer 1x1 convolutions, which have Md input and output channels in our case.The FFN we consider is composed of two-layers of 1x1 convolutions with ReLUactivations. There is also a residual connection/dropout/layernorm after the twolayers, similarly to equation 6.A.2LossesFor completeness, we present in detail the losses used in our approach. All lossesare normalized by the number of objects inside the batch. Extra care must betaken for distributed training: since each GPU receives a sub-batch, it is notsu\ufb03cient to normalize by the number of objects in the local batch, since ingeneral the sub-batches are not balanced across GPUs.",
+      "token_count": 244
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0055",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 55,
+      "section": "preamble",
+      "text": "Instead, it is importantto normalize by the total number of objects in all sub-batches.Box loss Similarly to [41,36], we use a soft version of Intersection over Unionin our loss, together with a \u21131 loss on \u02c6b:Lbox(b\u03c3(i),\u02c6bi) = \u03bbiouLiou(b\u03c3(i),\u02c6bi) + \u03bbL1||b\u03c3(i) \u2212\u02c6bi||1 ,(9)where \u03bbiou, \u03bbL1 \u2208R are hyperparameters and Liou(\u00b7) is the generalized IoU [38]:Liou(b\u03c3(i),\u02c6bi) = 1 \u2212|b\u03c3(i) \u2229\u02c6bi||b\u03c3(i) \u222a\u02c6bi|\u2212|B(b\u03c3(i),\u02c6bi) \\ b\u03c3(i) \u222a\u02c6bi|.(10)|B(b\u03c3(i),\u02c6bi)||.| means \u201carea\u201d, and the union and intersection of box coordinates are usedas shorthands for the boxes themselves. The areas of unions or intersectionsare computed by min / max of the linear functions of b\u03c3(i) and \u02c6bi, which makesthe loss su\ufb03ciently well-behaved for stochastic gradients.",
+      "token_count": 258
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0056",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 56,
+      "section": "preamble",
+      "text": "The areas of unions or intersectionsare computed by min / max of the linear functions of b\u03c3(i) and \u02c6bi, which makesthe loss su\ufb03ciently well-behaved for stochastic gradients. B(b\u03c3(i),\u02c6bi) means thelargest box containing b\u03c3(i),\u02c6bi (the areas involving B are also computed basedon min / max of linear functions of the box coordinates).DICE/F-1 loss [28] The DICE coe\ufb03cient is closely related to the Intersectionover Union. If we denote by \u02c6m the raw mask logits prediction of the model, andm the binary target mask, the loss is de\ufb01ned as:LDICE(m, \u02c6m) = 1 \u22122m\u03c3( \u02c6m) + 1\u03c3( \u02c6m) + m + 1(11)where \u03c3 is the sigmoid function. This loss is normalized by the number of objects.22Carion et al.A.3Detailed architectureThe detailed description of the transformer used in DETR, with positional en-codings passed at every attention layer, is given in Fig. 10. Image features fromthe CNN backbone are passed through the transformer encoder, together withspatial positional encoding that are added to queries and keys at every multi-head self-attention layer.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0057",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 57,
+      "section": "preamble",
+      "text": "Image features fromthe CNN backbone are passed through the transformer encoder, together withspatial positional encoding that are added to queries and keys at every multi-head self-attention layer. Then, the decoder receives queries (initially set to zero),output positional encoding (object queries), and encoder memory, and producesthe \ufb01nal set of predicted class labels and bounding boxes through multiple multi-head self-attention and decoder-encoder attention. The \ufb01rst self-attention layerin the \ufb01rst decoder layer can be skipped.ClassBounding BoxFFNFFNM\u00d7DecoderAdd & NormFFNEncoderAdd & NormAdd & NormMulti-Head AttentionFFNKQ++Add & NormAdd & NormMulti-Head Self-AttentionMulti-Head Self-AttentionKQVKQV++++Image featuresSpatial positionalencodingObject queriesFig. 10: Architecture of DETR\u2019s transformer. Please, see Section A.3 for details.Computational complexity Every self-attention in the encoder has complex-ity O(d2HW+d(HW)2): O(d\u2032d) is the cost of computing a single query/key/valueembeddings (and Md\u2032 = d), while O(d\u2032(HW)2) is the cost of computing the at-tention weights for one head. Other computations are negligible.",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0058",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 58,
+      "section": "preamble",
+      "text": "Other computations are negligible. In the decoder,each self-attention is in O(d2N +dN 2), and cross-attention between encoder anddecoder is in O(d2(N + HW) + dNHW), which is much lower than the encodersince N \u226aHW in practice.End-to-End Object Detection with Transformers23FLOPS computation Given that the FLOPS for Faster R-CNN depends onthe number of proposals in the image, we report the average number of FLOPSfor the \ufb01rst 100 images in the COCO 2017 validation set. We compute theFLOPS with the tool flop count operators from Detectron2 [50]. We use itwithout modi\ufb01cations for Detectron2 models, and extend it to take batch matrixmultiply (bmm) into account for DETR models.A.4Training hyperparametersWe train DETR using AdamW [26] with improved weight decay handling, set to10\u22124. We also apply gradient clipping, with a maximal gradient norm of 0.1. Thebackbone and the transformers are treated slightly di\ufb00erently, we now discussthe details for both.Backbone ImageNet pretrained backbone ResNet-50 is imported from Torchvi-sion, discarding the last classi\ufb01cation layer. Backbone batch normalization weightsand statistics are frozen during training, following widely adopted practice in ob-ject detection.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0059",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 59,
+      "section": "preamble",
+      "text": "Backbone batch normalization weightsand statistics are frozen during training, following widely adopted practice in ob-ject detection. We \ufb01ne-tune the backbone using learning rate of 10\u22125. We observethat having the backbone learning rate roughly an order of magnitude smallerthan the rest of the network is important to stabilize training, especially in the\ufb01rst few epochs.Transformer We train the transformer with a learning rate of 10\u22124. Additivedropout of 0.1 is applied after every multi-head attention and FFN before layernormalization. The weights are randomly initialized with Xavier initialization.Losses We use linear combination of \u21131 and GIoU losses for bounding box re-gression with \u03bbL1 = 5 and \u03bbiou = 2 weights respectively. All models were trainedwith N = 100 decoder query slots.Baseline Our enhanced Faster-RCNN+ baselines use GIoU [38] loss along withthe standard \u21131 loss for bounding box regression. We performed a grid searchto \ufb01nd the best weights for the losses and the \ufb01nal models use only GIoU losswith weights 20 and 1 for box and proposal regression tasks respectively. For thebaselines we adopt the same data augmentation as used in DETR and train itwith 9\u00d7 schedule (approximately 109 epochs).",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0060",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 60,
+      "section": "preamble",
+      "text": "For thebaselines we adopt the same data augmentation as used in DETR and train itwith 9\u00d7 schedule (approximately 109 epochs). All other settings are identical tothe same models in the Detectron2 model zoo [50].Spatial positional encoding Encoder activations are associated with corre-sponding spatial positions of image features. In our model we use a \ufb01xed absoluteencoding to represent these spatial positions. We adopt a generalization of theoriginal Transformer [47] encoding to the 2D case [31]. Speci\ufb01cally, for bothspatial coordinates of each embedding we independently use d2 sine and cosinefunctions with di\ufb00erent frequencies. We then concatenate them to get the \ufb01nald channel positional encoding.A.5Additional resultsSome extra qualitative results for the panoptic prediction of the DETR-R101model are shown in Fig.11.24Carion et al.(a) Failure case with overlapping objects. PanopticFPN misses one plane entirely, whileDETR fails to accurately segment 3 of them.(b) Things masks are predicted at full resolution, which allows sharper boundaries thanPanopticFPNFig. 11: Comparison of panoptic predictions.",
+      "token_count": 245
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0061",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 61,
+      "section": "preamble",
+      "text": "From left to right: Ground truth, Panop-ticFPN with ResNet 101, DETR with ResNet 101Increasing the number of instances By design, DETR cannot predict moreobjects than it has query slots, i.e. 100 in our experiments. In this section,we analyze the behavior of DETR when approaching this limit. We select acanonical square image of a given class, repeat it on a 10\u00d710 grid, and computethe percentage of instances that are missed by the model. To test the model withless than 100 instances, we randomly mask some of the cells. This ensures thatthe absolute size of the objects is the same no matter how many are visible. Toaccount for the randomness in the masking, we repeat the experiment 100 timeswith di\ufb00erent masks. The results are shown in Fig.12. The behavior is similaracross classes, and while the model detects all instances when up to 50 arevisible, it then starts saturating and misses more and more instances.",
+      "token_count": 214
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0062",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 62,
+      "section": "preamble",
+      "text": "The results are shown in Fig.12. The behavior is similaracross classes, and while the model detects all instances when up to 50 arevisible, it then starts saturating and misses more and more instances. Notably,when the image contains all 100 instances, the model only detects 30 on average,which is less than if the image contains only 50 instances that are all detected.The counter-intuitive behavior of the model is likely because the images and thedetections are far from the training distribution.Note that this test is a test of generalization out-of-distribution by design,since there are very few example images with a lot of instances of a single class.It is di\ufb03cult to disentangle, from the experiment, two types of out-of-domaingeneralization: the image itself vs the number of object per class. But since fewto no COCO images contain only a lot of objects of the same class, this typeof experiment represents our best e\ufb00ort to understand whether query objectsover\ufb01t the label and position distribution of the dataset.",
+      "token_count": 224
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0063",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 63,
+      "section": "preamble",
+      "text": "But since fewto no COCO images contain only a lot of objects of the same class, this typeof experiment represents our best e\ufb00ort to understand whether query objectsover\ufb01t the label and position distribution of the dataset. Overall, the experimentssuggests that the model does not over\ufb01t on these distributions since it yieldsnear-perfect detections up to 50 objects.End-to-End Object Detection with Transformers25dogpersonapple% of missed instances204060801000Number of visible instancesFig. 12: Analysis of the number of instances of various classes missed by DETR de-pending on how many are present in the image. We report the mean and the standarddeviation. As the number of instances gets close to 100, DETR starts saturating andmisses more and more objectsA.6PyTorch inference codeTo demonstrate the simplicity of the approach, we include inference code withPyTorch and Torchvision libraries in Listing 1. The code runs with Python 3.6+,PyTorch 1.4 and Torchvision 0.5. Note that it does not support batching, henceit is suitable only for inference or training with DistributedDataParallel withone image per GPU. Also note that for clarity, this code uses learnt positionalencodings in the encoder instead of \ufb01xed, and positional encodings are addedto the input only instead of at each transformer layer.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0064",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 64,
+      "section": "preamble",
+      "text": "Also note that for clarity, this code uses learnt positionalencodings in the encoder instead of \ufb01xed, and positional encodings are addedto the input only instead of at each transformer layer. Making these changesrequires going beyond PyTorch implementation of transformers, which hampersreadability.",
+      "token_count": 59
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0065",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 65,
+      "section": "preamble",
+      "text": "Making these changesrequires going beyond PyTorch implementation of transformers, which hampersreadability. The entire code to reproduce the experiments will be made availablebefore the conference.26Carion et al.1import torch2from torch import nn3from torchvision.models import resnet505class DETR(nn.Module):7def __init__(self, num_classes, hidden_dim, nheads,8num_encoder_layers, num_decoder_layers):9super().__init__()10# We take only convolutional layers from ResNet-50 model11self.backbone = nn.Sequential(*list(resnet50(pretrained=True).children())[:-2])12self.conv = nn.Conv2d(2048, hidden_dim, 1)13self.transformer = nn.Transformer(hidden_dim, nheads,14num_encoder_layers, num_decoder_layers)15self.linear_class = nn.Linear(hidden_dim, num_classes + 1)16self.linear_bbox = nn.Linear(hidden_dim, 4)17self.query_pos = nn.Parameter(torch.rand(100, hidden_dim))18self.row_embed = nn.Parameter(torch.rand(50, hidden_dim // 2))19self.col_embed = nn.Parameter(torch.rand(50, hidden_dim // 2))21def forward(self, inputs):22x = self.backbone(inputs)23h = self.conv(x)24H, W = h.shape[-2:]25pos = torch.cat([26self.col_embed[:W].unsqueeze(0).repeat(H, 1, 1),27self.row_embed[:H].unsqueeze(1).repeat(1, W, 1),28], dim=-1).flatten(0, 1).unsqueeze(1)29h = self.transformer(pos + h.flatten(2).permute(2, 0, 1),30self.query_pos.unsqueeze(1))31return self.linear_class(h), self.linear_bbox(h).sigmoid()33detr = DETR(num_classes=91, hidden_dim=256, nheads=8, num_encoder_layers=6, num_decoder_layers=6)34detr.eval()35inputs = torch.randn(1, 3, 800, 1200)36logits, bboxes = detr(inputs)Listing 1: DETR PyTorch inferenc",
+      "token_count": 467
+    },
+    {
+      "chunk_id": "2005.12872_chunk_0066",
+      "arxiv_id": "2005.12872",
+      "chunk_index": 66,
+      "section": "preamble",
+      "text": "For clarity it uses learnt positional encod-ings in the encoder instead of \ufb01xed, and positional encodings are added to the inputonly instead of at each transformer layer. Making these changes requires going beyondPyTorch implementation of transformers, which hampers readability. The entire codeto reproduce the experiments will be made available before the conference.",
+      "token_count": 70
+    }
+  ]
+}

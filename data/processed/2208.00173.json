@@ -1,0 +1,683 @@
+{
+  "arxiv_id": "2208.00173",
+  "title": "A Survey on Masked Autoencoder for Self-supervised Learning in Vision and Beyond",
+  "authors": [
+    "Chaoning Zhang",
+    "Chenshuang Zhang",
+    "Junha Song",
+    "John Seon Keun Yi",
+    "Kang Zhang",
+    "In So Kweon"
+  ],
+  "year": 2022,
+  "abstract": "Masked autoencoders are scalable vision learners, as the title of MAE \\cite{he2022masked}, which suggests that self-supervised learning (SSL) in vision might undertake a similar trajectory as in NLP. Specifically, generative pretext tasks with the masked prediction (e.g., BERT) have become a de facto standard SSL practice in NLP. By contrast, early attempts at generative methods in vision have been buried by their discriminative counterparts (like contrastive learning); however, the success of mask image modeling has revived the masking autoencoder (often termed denoising autoencoder in the past). As a milestone to bridge the gap with BERT in NLP, masked autoencoder has attracted unprecedented attention for SSL in vision and beyond. This work conducts a comprehensive survey of masked autoencoders to shed insight on a promising direction of SSL. As the first to review SSL with masked autoencoders, this work focuses on its application in vision by discussing its historical developments, recent progress, and implications for diverse applications.",
+  "categories": [
+    "cs.CV",
+    "cs.AI",
+    "cs.LG"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2208.00173v1",
+  "page_count": 13,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 82,
+  "chunks": [
+    {
+      "chunk_id": "2208.00173_chunk_0000",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 20151A Survey on Masked Autoencoder forSelf-supervised Learning in Vision and BeyondChaoning Zhang, Chenshuang Zhang, Junha Song, John Seon Keun Yi, Kang Zhang, In So KweonAbstract\u2014Masked autoencoders are scalable vision learners, as the title of MAE [1], which suggests that self-supervised learning(SSL) in vision might undertake a similar trajectory as in NLP. Speci\ufb01cally, generative pretext tasks with the masked prediction (e.g.,BERT) have become a de facto standard SSL practice in NLP. By contrast, early attempts at generative methods in vision have beenburied by their discriminative counterparts (like contrastive learning); however, the success of mask image modeling has revived themasking autoencoder (often termed denoising autoencoder in the past). As a milestone to bridge the gap with BERT in NLP, maskedautoencoder has attracted unprecedented attention for SSL in vision and beyond. This work conducts a comprehensive survey ofmasked autoencoders to shed insight on a promising direction of SSL.",
+      "token_count": 246
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0001",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "As a milestone to bridge the gap with BERT in NLP, maskedautoencoder has attracted unprecedented attention for SSL in vision and beyond. This work conducts a comprehensive survey ofmasked autoencoders to shed insight on a promising direction of SSL. As the \ufb01rst to review SSL with masked autoencoders, this workfocuses on its application in vision by discussing its historical developments, recent progress, and implications for diverse applications.Index Terms\u2014Survey, Masked Autoencoder, Self-supervised Learning, Masked Image Modeling.1INTRODUCTIONDEEP learning [2] has revolutionized arti\ufb01cial intelli-gence in the past decade. Early developments focusedon the architecture design with scalable size like increasingmodel depth, from AlexNet [3] to VGG [4] and ResNet [5].In recent years, the attention has gradually shifted fromdesigning better models to solving the data-hungry issue indeep learning.",
+      "token_count": 191
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0002",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "For example, ImageNet [6] with more thanone million labeled images has become a typical benchmarkdataset for vision models, and vision transformer (ViT) [7] isreported to demand hundreds of times more labeled images.A common way to perform satisfactorily with a relativelysmall labeled dataset is to pre-train the model on anotherlarger dataset, which is widely known as transfer learning.Self-supervised learning (SSL) [8], [9], outperforming itssupervised counterpart for visual pre-training, has attractedsigni\ufb01cant attention.With the advent of contrastive SSL in 2018, joint-embedding methods have become a dominant visual pre-trainign framework; however, this status has been recentlychallenged by the success of a generative method termedmasked image modeling (MIM) [10]. BEiT [10] adopts amask-then-predict strategy to train the model with the targetvisual tokens generated by an off-the-shelf tokenizer. Thetokenizer is pretrained by a discrete variational autoencoder(dVAE) [11], and therefore BEiT can be seen as a two-stage training of denoising autoencoder [12].",
+      "token_count": 243
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0003",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "Thetokenizer is pretrained by a discrete variational autoencoder(dVAE) [11], and therefore BEiT can be seen as a two-stage training of denoising autoencoder [12]. Furthermore,an end-to-end masked autoencoder in the vision is proposedin MAE [1], which has attracted unprecedented attention.As the term suggests, a masked autoencoder is an au-toencoder with masked prediction, i.e. predicting a propertyof masked input from unmasked input content. It is worthmentioning that masked autoencoder is not something newin unsupervised visual pretraining. Dating back to 2008, anearly work [12] predicted masked pixels from unmaskedones but was referred to as denoising autoencoder [12], [13].A similar investigation was conducted again in 2016 withthe task of image inpainting [14]. Its reviving success inrecent MAE [1], outperforming joint-embedding methods,inspires numerous works to understand its success in visionand to apply it in various applications, such as video, pointcloud, and graph.The reason for high popularity of masked autoencoderin visual pretraining is that a similar generative SSL frame-work termed masked language modeling (like BERT [15])has been widely used in NLP.",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0004",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "In other words, the successof masked autoencoder in vision paves a path that SSLin vision\u201cmay now be embarking on a similar trajectory as inNLP\u201d [1] by generative pretext task with masked prediction.Moreover, since NLP and computer vision are two domi-nant branches in modern AI, many researchers believe thatmasked autoencoder might be the future for SSL.To this end, this work conducts a comprehensive surveyof masked autoencoders in SSL. This survey covers itsapplication with various data types; however, it focuseson understanding its reviving success in vision. Note thatautoencoder-based masked prediction started to become ade facto standard practice in language understanding in2018/2019 [15]; thus, it is less relevant to discuss it in the2020s. Moreover, it is the success of masked autoencoder invision that shows visual SSL can embark on the same path asthat in language, which somewhat revolutionizes visual SSLand then inspires the investigation of masked autoencoderin a wide range of applications. With masked autoencoderin vision as the focus, this survey mainly contains threeparts. (1) Sec. 3 summarizes its historical development andrelation with masked language modeling; (2) Sec. 4 dis-cusses the masked modeling principle in vision and theunderstanding of its success from various perspectives. (3)Sec. 5 summarizes its implications on pre-training in diverseapplications beyond natural images.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0005",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "To facilitate discussionwithout ambiguity, we include a terminology section (i.e.Sec. 2) to discuss essential terms in this survey.Message to the readers. This survey will be updated on\u2022The authors are with KAIST.E-mail: chaoningzhang1990@gmail.comJOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 20152a regular basis to re\ufb02ect the dynamic progress of maskedautoencoder in its development. Since masked autoencoderis a fast-evolving \ufb01eld, and we might not be able to graspall recent development. Therefore, we encourage researchersto contact us to inform us with their new works, eitherpublished ones or arXiv ones, on this topic. Those newworks will be included and discussed in the revised version.types and downstream tasks, vision and language commu-nities have often inspired each other. Towards a uni\ufb01edunderstanding of language and image, it is interesting to askwhether they can adopt a similar backbone architecture andtraining strategy. For the backbone architecture, the adventof vision Transformer (ViT) in [7] and its application tovarious vision tasks demonstrate that Transformers [28] canserve as a uni\ufb01ed backbone architecture for both languageand vision. Numerous works have further attempted tobridge the gap in their SSL training strategies.2BACKGROUND AND TERMINOLOGYGenerative SSL v.s. discriminative SSL.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0006",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "Numerous works have further attempted tobridge the gap in their SSL training strategies.2BACKGROUND AND TERMINOLOGYGenerative SSL v.s. discriminative SSL. In self-supervisedlearning, modelling methods can be roughly categorizedinto: discriminative or generative. Generative SSL typicallyrelies on an autoeocnder that consists of encoding (i.e. map-ping an input to a latent representation with an encoder)and decoding (i.e. generating the input from the latent repre-sentation with an decoder) [16]. Discriminative SSL typicallyfollows its supervised couterpart to design a discriminativeloss. Without ground-truth labels, a discrimiantive pretexttask can be designed as solving jigsaw puzzles [17] orpredicting rotation [18]. Later, the trend of discriminativevisual SSL shifts from such geometry-based prediction tojoint-embedding emthods [19], [20], [21].Denoising autoencoder v.s. masked autoencoder. Asa classical generative SSL method, denoising autoencoderis a class of autoencoders that reconstruct the originalclean input from a corrupted input [12], [13]. Note thatdenoising in this context (and in this whole survey) refersto reconstruction from general corruption (including butnot limited to noise).",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0007",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "Note thatdenoising in this context (and in this whole survey) refersto reconstruction from general corruption (including butnot limited to noise). Since masked prediction refers to thepractice of predicting a property of masked input fromunmasked input, it can be seen as a form of denoisingprocess [22]. This predicted property can be the originalinput [22], handcrafted feature [23], or latent representa-tion [24]. Since masked prediction is a form of denoisingprocess and thus masked autoencoder can be seen as a formof general denoising autoencoder. In this work, we use MAEexclusively to refer to the method in [1] not as shorthand formasked autoencoder to avoid confusion.Masked autoencoding v.s. masked modeling. Maskedprediction can be used to both generative and discriminativemodeling methods. However, the term masked X modeling,namely masked modeling on X-type data, often refers tothe generative case, such as masked language modeling [15],masked image modeling [25], masked point modeling [26].Motivated by its success in generative modeling, a fewworks [22], [24], [27] have also applied masked prediction indiscriminative SSL frameworks, demonstrating competitiveperformance. In other words, masked modeling is not neces-sarily masked autoencoding.",
+      "token_count": 273
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0008",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "In other words, masked modeling is not neces-sarily masked autoencoding. Take image data, for example,MSN [27] and data2vec [24] can be categorized as maskedimage modeling but not masked autoencoding since theirmodel architectures are decoder-free. In this work, we stillperceive BEiT [10] as a variant of masked autoencoder eventhough it decouples the pretext task of masked predictionfrom autoencoder training.3.1NLP and vision followed different SSL pathsGenerative SSL in NLP. In NLP there exist two leadinglanguage models: GPT [29], [30], [31] and BERT [15]. Theyare both based on the transformer architecture but withnotable differences [32]: GPT works by predicting the nextword based on previous words and thus is autoregressive innature, while BERT uses the entire surrounding context ofwords all at once. In essence, they both remove a portion ofthe data and predict the removed content, and they can beboth perceived to rely on masked prediction as the pretexttask.Discriminative SSL in vision. Before 2018, there wasan active investigation of unsupervised visual pretrainingwith both generative and discriminative modeling. Jigsawand rotation prediction is designed as the pretext task onthe discriminative side, while inpainting and colorizationhave been actively investigated on the generative side(see Sec.3.2).",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0009",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "Jigsawand rotation prediction is designed as the pretext task onthe discriminative side, while inpainting and colorizationhave been actively investigated on the generative side(see Sec.3.2). Since 2018, joint-embedding methods, namelyaligning the embedded representations of augmented viewsof the same image [21], have demonstrated substantial per-formance boost over prior generative methods. Contrastivelearning [33], [34], which makes the representations of pos-itive samples close and those of negative samples far fromeach other, has emerged as a dominant visual SSL method,especially after the advent of MoCo [8] and SimCLR [9].Negative-free (i.e. non-contrastive) joint-embedding meth-ods have also been investigated [19], [35], [36], demon-strating comparable performance of contrastive learningmethods. A uni\ufb01ed perspective on contrastive learningand negative-free joint-embedding is extensively discussedin [19], [20].3.2Is generative SSL suitable for vision?Very early attempts. Images have spatial and channel di-mensions, and therefore we can either predict masked spa-tial patches from unmasked ones [12], [13], [14] or predictmasked channels from unmasked ones [37], [38], [39], [40].A standard autoencoder takes an image as the input andreconstructs it after the information passes through a low-dimensional bottleneck layer.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0010",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "Without corrupting the input,the encoder focuses on content compression instead of ex-tracting semantically meaningful representations. Denoisingautoencoder was proposed in [12], [13] to perform maskedautoencoding in the spatial dimension by randomly mask-ing some pixels. To make it a harder task to avoid learningonly low-level representation, [14] proposed feature learn-ing by inpainting, i.e. to \ufb01ll in large missing areas of theimage and thus prevent hints from nearby pixels. Later, [37],3MASKED AUTOENCODING: NLP TO VISIONNLP and (computer) vision are two dominant research \ufb01eldsfor arti\ufb01cial intelligence.",
+      "token_count": 140
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0011",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "Later, [37],3MASKED AUTOENCODING: NLP TO VISIONNLP and (computer) vision are two dominant research \ufb01eldsfor arti\ufb01cial intelligence. Despite the difference in the dataJOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 201532008\u20262010\u2026 \u20262016201720182019202020212022Generative SSLDenoising autoencoderMasked modelingMasked autoencoderDenoising AutoencoderStacked denoisingImpaintingCVPR 2016LanguageiGPTICML 2020MAE [37]CVPR 2022ICML 2008AutoencoderJMLR 20102019GPTv1GPTv3NeurIPS 2020GPTv2Automatic colorizationECCV 2016Colorizationas proxy taskBERT [23]NAACL 2018ViT (iBERT)ICLR 2021BEiT [6]ICLR 2022CVPR 2017ColorizationSplit brain autoencodersECCV 2016CVPR 2017Vision[ None ]Discriminative SSLPretext taskJoint-embedding methodsMoCoCVPR 2020Jigsaw puzzlesECCV 2016Image rotationICLR 2018SimCLRICML 2020Fig. 1.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0012",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "Timeline of Visual SSL.[39] showed that masked channel prediction yielded supe-rior performance on downstream tasks, especially for densesemantic segmentation, since it keeps the spatial content.They were further improved in [38], [40]. The investigationin this direction has been less active since the emergence ofcontrastive learning (see discussion in Sec.3.1).Inspiration from NLP. The above investigation [12],[13], [14], [37], [38], [39], [40] was before 2017. With GPTand BERT emerging in 2018/2019 to show the success ofmasked prediction in language understanding, a naturalquestion is: can we transfer the success of masked modelingfrom language to image? iGPT [41] is the \ufb01rst successfulattempt in this direction; however, as highlighted in [42],their work is for proof-of-concept and cannot be used inpractice due to two reasons: (1) it takes two orders higherpre-training compute than contrastive methods and (2) itperforms worse than contrastive methods based on CNN.As the \ufb01rst attempt to replace CNN with a transformer invision, [7] identi\ufb01ed that the success of transformer in NLPtasks stems from excellent scalability and self-supervisedpre-training.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0013",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "Since the self-supervised pre-training practicein [7] mimicked the masked language modeling task inBERT, we call it iBERT in analogy to iGPT entending GPTfrom language to vision. iBERT performs a masked patchprediction for visual SSL. However, this preliminary inves-tigation of ViT for SSL also shows inferior performance overjoint-embedding methods. This challenge was \ufb01nally brokenby BEiT [10] as well as MAE [1] (see Sec.4 for their details).denoising autoencoder [12]masked autoencoder [1]Training datasetMNISTImageNetModel ArchitectureCNNViTCorruption sizepixelspatchesCorruption ratiomaximum 50%patchesRemark. Early denoising autoencoder [12] and recentmasked autoencoder [1] both attempt to reconstruct a cleaninput from a corrupted one, precisely predicting masked in-put content from unmasked input content. Despite high sim-ilarity regarding pretext task, the masked autoencoder intro-duced in [1] differs from early denoising autoencoder [12]in numerous ways, which are summarized in Table 1.4MASKED AUTOENCODER FOR IMAGE MODELINGAs discussed in Sec.3, iGPT and iBERT have shown thepossibility of transferring the pretext task of masked pre-diction from language to image data.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0014",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "However, their per-formance is inferior to joint-embedding methods and thushas caught less attention. BEiT is the \ufb01rst to show thesuccess of autoencoder-based masked prediction outper-forming DINO, a SOTA joint-embedding method. Therefore,this section starts with introducing BEiT with its improvedvariants.4.1BEiT and its improved variantsBEiT. The overview of BEiT is shown in Figure 2. In contrastto iBERT [7] that directly reconstructs the masked patches,BEiT mimicks BERT [15] to reconstruct visual tokens. SinceImage patches do not have off-the-shelf tokens as words inthe language, BEiT trains an image tokenizer via discretevariational autoencoder (dVAE) [11] before the second-stepmasked image modeling where the tokenizer is used toguide the learning of BEiT encoder (note that decoder isunused). Speci\ufb01cally, the tokenizer takes the original image,and the BEiT encoder takes a corrupted image, includingunmasked patches and masked patches. Then, it outputs the3.3Summary and remarkSummary. Figure 1 shows the overall timeline for the de-velopment of unsupervised visual pretraining (includingGPT and BERT for NLP). Interestingly, unsupervised visualpretraining started with generative SSL in 2008.",
+      "token_count": 276
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0015",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "Figure 1 shows the overall timeline for the de-velopment of unsupervised visual pretraining (includingGPT and BERT for NLP). Interestingly, unsupervised visualpretraining started with generative SSL in 2008. Its revivingattempt in 2016 and 2017 was then buried by discriminativeSSL, especially after the advent of joint-embedding meth-ods. However, with the inspiration from NLP, generativeSSL with masked prediction comes back again.JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 20154visual tokens of masked patches to match the correspondingvisual tokens from the tokenizer (staying \ufb01xed in this pro-cess). BEiT is the \ufb01rst to show that masked image modelinghas downstream task performance superior to SOTA con-trastive DINO [43]. Despite its success, it remains unknownwhether directly predicting masked image patches as iniBERT [7] might be a simpler alternative.However, HOG is only compatible with visual data andlimits its applications in other data modalities.4.2End-to-end masked autoencoderA drawback of the two-stage methods is that their approachrelies on a pretrained dVAE to generate originally continu-ous but intentionally discretized target visual tokens [22], andthus is not end-to-end.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0016",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "In essence, BEiT separates maskedprediction from autoendoer training, which leaves room forimproving effectiveness and ef\ufb01ciency. To this end, MAE [1]experiments with end-to-end training of masked autoen-coder. We highlight that SimMIM [25] has conducted a verysimilar investigation. MAE and SimMIM appear on arXivconcurrently (MAE being one week earlier) and are bothaccepted at CVPR\u20192022. Here, we summarize the two worksand compare their nuanced difference.MAE. The overview of MAE [1] is shown in Fig-ure 3. MAE revisits the pretext task of predicting maskedpatches. Speci\ufb01cally, their proposed MAE [1] directly pre-dicts masked patches from the unmasked ones with a simpleloss of mean squared error (MSE). Moreover, the maskingratio is set to 75%, which is signi\ufb01cantly higher than thatin BERT (typically 15%) [15] or prior MIM (20% to 50%) [7],[10], [41]. The ablation \ufb01ndings support such a high maskingratio is bene\ufb01cial for \ufb01ne-tuning and linear probing. It isworth mentioning that this also motivates a recent work toexperiment with a higher masking rate in masked languagemodeling for higher effectiveness [48].",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0017",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "It isworth mentioning that this also motivates a recent work toexperiment with a higher masking rate in masked languagemodeling for higher effectiveness [48]. To save computation,the encoder of MAE only operates on the unmasked patches.Moreover, MAE designs an asymmetric encoder-decoderarchitecture with a lightweight decoder. With the abovetechnical tricks, their proposed simple MAE is (3 \u00d7 or more)faster than BEiT [10] while achieving superior performance.Stage1123 234 456 567DecoderTokenizer987 876 765 543112 223 334 445211 322 433 544Stage2456876 765322Fig. 2. Overview of BEIT pre-training. The \ufb01gure is edited from [10].BEiT [10] consists of two stages: token-based MIM asthe main stage and tokenizer training as the preparationstage. Multiple works [44], [45], [46] have followed thistwo-stage approach by either improving the tokenizer-basedMIM process or seeking an alternative tokenizer.Tokenizer-based MIM. mc-BEiT [45] attempts to ef-fectively utilize the visual tokenizer generated by dVAE.Speci\ufb01cally, it observes that unlike linguistic vocabularyconsisting of discrete words, the image tokenizer is continu-ous.",
+      "token_count": 270
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0018",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "Under visual discretization, visual patches with similarsemantics can have different token IDs, and visual patcheswith different semantics can have the token ID, which is notdesired. Therefore, mc-BEiT recasts the MIM in BEiT froma single-choice classi\ufb01cation problem to a multiple-choiceone by softening the training objective from a hard-labelcross-entropy loss to a soft-label one. Following BEiT [10],CAE [46] \ufb01rst trains a image tokenizer via dVAE to generatetarget visual tokens. BEiT performs the encoding and decod-ing role implicitly and simultaneously, while CAE performsthe two tasks explicitly and separately. A key componentrealizes this termed latent contextual regressor to introducealignment between the representations of masked patchesand unmasked ones. The CAE encoder exclusively focuses onfeature extraction without making predictions for maskedpatches. The CAE encoder exploits the full representationcapability by letting the latent contextual regressor handlethe prediction pretext task.Better target tokenizer. PeCo [44] identi\ufb01es that thevisual tokenizer generated by dVAE [11] does not considersemantic level. PeCo adds the distance between deep visualfeatures as an extra loss to enforce perceptual similaritybetween the original image and the reconstructed imageto make the target visual tokens more semantically mean-ingful. For studying masked prediction, [23] follows thetwo-stage approach as BEiT and investigates various targettokenizers.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0019",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "For studying masked prediction, [23] follows thetwo-stage approach as BEiT and investigates various targettokenizers. Interestingly, it is found that handcrafted HOGfeatures [47] achieve a competitive performance, suggestinga target tokenizer generated by dVAE might be unnecessary.Fig. 3. Overview of a masked autoencoder with the \ufb01gure borrowed fromthe original work MAE [1].SimMIM. Independently and concurrently, a similararchitecture termed Simple Masked Image Modeling (Sim-MIM) is proposed in[25], where similar \ufb01ndings arereported. Speci\ufb01cally, SimMIM con\ufb01rms that directly pre-dicting the pixels as in MAE performs no worse than othermethods with complex design, such as tokenization, clus-tering, or discretization. It is also found that moderatelyincreasing the patch size (32, for instance) is bene\ufb01cial fora more powerful pretext task. A high masking ratio is alsocon\ufb01rmed in MAE to be helpful for performance, especiallyfor a relatively small patch size. Moreover, as shown in Fig-ure 4, SimSIM investigates multiple masking strategies, suchJOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 20155as square, block-wise, and random.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0020",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "Their best performanceis achieved with the random masking strategy, which is thesame as that in MAE.al.[51] present a unique masking strategy called groupwindow attention that gathers unmasked patches into sev-eral equal-sized groups to perform masked attention. Theirmethod, based on a Swin transformer, combines the multi-scale feature learnability of hViT and the ef\ufb01ciency ofmasked image modeling by making the hierarchical trans-former compatible with MAE. Similarly, Uniform MaskingMAE (UM-MAE) [52] introduced a two-stage sampling andmasking process. The proposed Uniform Masking strategy\ufb01rst uniformly samples a quarter (25%) of patches in eachblock, then further masks random patches on top of thesampled patches. The \ufb01rst step maintains similar elementsacross the non-overlapped local windows, while the secondstep makes the self-supervisory task more challenging byavoiding shortcuts for pixel reconstruction from neighbor-ing low-level features. HiViT [53] proposes a new hViT ar-chitecture to substitute window attention layers in Swin [50]with MLP layers which enables masking as in MAE. Theabove works [51], [52], [53] achieve comparable perfor-mance to the baselines (MAE, SimMIM) while requiring lesstraining time as well as less GPU memory.Input manipulation.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0021",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "Theabove works [51], [52], [53] achieve comparable perfor-mance to the baselines (MAE, SimMIM) while requiring lesstraining time as well as less GPU memory.Input manipulation. Several methods attempt to im-prove the ef\ufb01ciency of MAE by changing the input. Specif-ically, they aim to reduce the input size by attending tosmall windows [54] or objects in the image [55]. Thesemethods reduce the required computation while achievingcomparable or better downstream task performance.Local masked reconstruction (LoMaR) [54] is inspiredfrom the fact that local information is enough for recon-structing masked patches. Instead of relying on the entireimage for mask reconstruction, a number of small win-dows with 7x7 patches are sampled to restrict attentionto local regions. LoMaR achieves higher downstream taskperformance faster compared with MAE. It excels on high-resolution images since the required compute increase lin-early with image size where it is quadratic for MAE. Obj-MAE [55] achieves input ef\ufb01ciency by dropping non-objectpatches and learning object-wise representations. A classactivation map (CAM) [56] is used to identify a rough objectregion, and the object regions are masked and used as inputfor the MAE. ObjMAE reduces the pre-training computecost by 72% while achieving comparable performance toMAE, which masks the whole scene.",
+      "token_count": 300
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0022",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "ObjMAE reduces the pre-training computecost by 72% while achieving comparable performance toMAE, which masks the whole scene. MixMIM [57] takesa slightly different approach: to replace an image\u2019s maskedtokens with tokens from another image. The mixed imageis then fed into a encoder then the decoder reconstructsthe two original images. Because of the absence of uninfor-mative masked tokens, [57] is not only able to be suitablefor hierarchical ViTs such as Swin [50] but also achievesstronger results ef\ufb01ciently compared to existing MIM works.Fig. 4. Various masking strategies in SimMIM with the \ufb01gure borrowedfrom the original paper [25].Difference between MAE and SimMIM. One of theirnon-trivial differences lies in the position of masked patchtokens. Speci\ufb01cally, masked patch tokens are adopted asthe input of decoder and decoder in MAE [1] and Sim-MIM [25], respectively. With the pretext task of maskedprediction, the autoencoder in MAE and SimMIM ful\ufb01llstwo roles: representation encoding (for unmasked patches)and pretext prediction (for masked patches). With bothmasked and unmasked patches as the input, the encoderof SimMIM [25] simultaneously performs representationencoding and pretext prediction, due to which the decodercan be designed as simple as a single layer.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0023",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "With bothmasked and unmasked patches as the input, the encoderof SimMIM [25] simultaneously performs representationencoding and pretext prediction, due to which the decodercan be designed as simple as a single layer. By contrast, theencoder in MAE [1] exclusively realizes representation en-coding, leaving the role of pretext prediction to the decoder.As a result, MAE still relies on a transformer decoder, asreported in [1], even though it does not need to be as heavyas the encoder. Due to this, MAE achieves signi\ufb01cantlyhigher linear probing accuracy than SimMIM; however, thissuperiority diminishes with \ufb01netuning. For example, withViT-B as the backbone on ImageNet, SimMIM achieves a\ufb01netuning performance of 83.8%, slightly higher than thereported 83.6% for MAE. Another merit of MAE by feedingonly the unmasked patches into the encoder is its higheref\ufb01ciency, especially when the masking ratio is high. UnlikeSimMIM with Swin-B as the default backbone, MAE is notcompatible with hierarchical ViT (like Swin [49], [50]).",
+      "token_count": 249
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0024",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "UnlikeSimMIM with Swin-B as the default backbone, MAE is notcompatible with hierarchical ViT (like Swin [49], [50]). Thereason for its incompatibility and solutions to address themare discussed in the following.4.3Towards improving ef\ufb01ciencyDespite the impressive performance, a signi\ufb01cant bottleneckof masked autoencoder for visual SSL is that it requireslarge computation. In this section, we introduce multipleworks that attempt to improve the ef\ufb01ciency of masked au-toencoders from roughly two perspectives: (1) hierarchicalstructure and (2) input manipulation.Hierarchical structure. Since ViT [7] used in MAE has acrucial issue that decreasing the patch size will quadraticallyincrease computing resources, hierarchical ViT (hViT) [49],[50] was introduced. Speci\ufb01cally, Swin and PVT [49], [50]use a shrinking pyramid structure with additional trickssuch as shifted windows [50] to learn local feature corre-lations or spacial reduction attention [49] to reduce com-putation in the attention layer used to further improveperformance.",
+      "token_count": 237
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0025",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "Unfortunately, it is not intuitive to adapt hViTto enable MAE pre-training since the local window attentionused in hViT is challenging to handle randomly maskedpatches as in MAE.Several works [51], [52], [53] attempt to boost the powerof hViTs while achieving ef\ufb01ciency in MAE. Huang et4.4Various perspectives on the success of maskedautoencoder in visionTo explain why BEIT [10] helps the \ufb01netuning on down-stream tasks, its authors analyze the self-attention mapand show that BEiT distinguishes semantic regions usingself-attention heads without any task-speci\ufb01c supervision.Moreover, [1] shows that an MAE, pretrained with a mask-ing ratio of 75%, infers complex and holistic reconstruc-tions even when 95% of pixels are masked, suggesting itJOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 20156learns various concepts, i.e.,semantics. The authors ofMAE [1] \u201chypothesize that this behavior occurs through arich hidden representation inside the MAE\u201d. Given that themasked and reconstructed visual patches are not semanticentities as words in languages, this behavior is somewhatunexpected and is hypothesized to occur \u201cby way of a richhidden representation\u201d [1].",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0026",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "Given that themasked and reconstructed visual patches are not semanticentities as words in languages, this behavior is somewhatunexpected and is hypothesized to occur \u201cby way of a richhidden representation\u201d [1]. However, which component inmasked autoencoder makes the model learn such a \u201crichhidden representation\u201d remains unclear. Numerous workshave investigated from various perspectives for a betterunderstanding of its success.Backbone perspective: Is masked autoencoder compat-ible with CNN? With ViT [7] as the default backbone inMAE [1], a natural question is whether masked autoen-coder works only with a transformer backbone instead ofCNN. Since CNN cannot tackle the masked inputs andpositional embedding directly, multiple works [58], [59],[60], [61] have attempted to unify ViT and CNN in acompatible masked autoencoder framework. Inspired bythe observation that early convolutions help transformerssee better [62], ConvMAE [58] utilizes hybrid convolution-transformer architectures: convolution blocks at early stagesand transformer blocks at later stages are in charge ofhigh-resolution token embedding and low-resolution tokenembedding, respectively. Towards a uni\ufb01ed framework ofMIM with both transformer and CNN architecture, [61] pro-poses corrupted image modeling (CIM), which replaces theinput images arti\ufb01cially masked in MIM with a corruptedimage generated by a trainable generator (BEiT).",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0027",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "Therefore,the reconstruction task in MIM can be extended to eithergenerative or discriminative objectives trained by a ViT orCNN enhancer. CIM is the \ufb01rst to unify ViT and CNN ina non-Siamese framework and yields compelling results invision benchmarks. More recently, it has been highlightedin [60] that the success of masked image modeling canbe agnostic to the architecture. The proposed ArchitectureAgnostic Masked Image Modeling framework (A2MIM) iscompatible with ViT and CNN in a uni\ufb01ed way [60]. Itis found in [60] that the success of masked autoencoderlies in learning middle-level patch interaction, which isagnostic to architecture choices. Early attempts of CNN-based inpainting [14] resembles masked autoencoder butfocuses on reconstruction task with low-level interactions,which causes higher feature uncertainty [60].Data perspective: does masked autoencoder require avery large dataset? A popular belief regarding the bene\ufb01tof transfer learning comes from pretraining on a muchlarger dataset than the target dataset. Challenging this be-lief, [63] investigates whether self-supervised pretrainingon a smaller dataset can yield the same bene\ufb01t. The factthat their investigation is performed with ViT-based maskedautoencoder makes it more interesting because, comparedwith its CNN, ViT is found to require much more sam-ples [7].",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0028",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "The factthat their investigation is performed with ViT-based maskedautoencoder makes it more interesting because, comparedwith its CNN, ViT is found to require much more sam-ples [7]. Interestingly, [7] shows that pretraining maskedautoencoder (either BEiT or SplitMakk [63] ) on 1% of Ima-geNet dataset achieves comparable transfer performance tothe iNaturalist-2019 dataset as pretraining on full ImageNetdataset. By contrast, prior DINO [43] is much more sensitiveto the data size (as well as the data type). More recently, [64]performed a comprehensive study on data scaling (from10% of ImageNet to full ImageNet-22K) on masked autoen-coder models of various sizes ranging from 49 million to 1billion parameters. It shows that MIM is also demanding onlarger data, especially for larger models with longer trainingepochs [64]. Beyond size, some works have also investigateddomain issues in data and found that they can be alleviatedby training the masked autoencoder on images of mixed-style [65] or multi-tasks [66].Denoising perspective: Does masked autoencoder ben-e\ufb01t from other corruptions?",
+      "token_count": 257
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0029",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "Given that masked autoen-coder is a class of denoising autoencoder, [67] investi-gates a general question: are there other effective imagedegradation methods beyond masking for effective visualpretraining? Five methods, namely zoom-in, zoom-out, dis-tortion, blurring, and de-colorizing, have been investigated,and they are found to perform better than None (i.e.,nopretraining), suggesting a uni\ufb01ed denoising perspective onthe success of masked autoencoder. Nonetheless, blurringand de-colorizing perform worse than other degradationmethods with spatial transformation because they causeimage style shift from the pretext task to the downstreamtask. Among them, zoom-in performs the best and is com-plementary with masking to further boost the performance.In contrast to existing spatial masking, [68] also investigatesfrequency masking by predicting masked high-frequencyfrom the unmasked low-frequency content, or vice versa,demonstrating competitive performance. Moreover, super-resolution, deblur, and denoise have also been investigatedbut they yield inferior performance.Theoretical perspective: can masked autoencoder beexplained with rigorous mathematics? Towards a math-ematical understanding, [69] was the \ufb01rst to propose auni\ufb01ed theoretical framework for understanding maskedautoencoder in vision. Particularly, each image\u2019s embeddingin MAE can be interpreted not as a 2D pixel grid but as alearned basis function in certain Hilbert spaces.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0030",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "Particularly, each image\u2019s embeddingin MAE can be interpreted not as a 2D pixel grid but as alearned basis function in certain Hilbert spaces. Moreover,under a non-overlapping domain decomposition setting, thepatch-based attention in ViT can be understood from theoperator theoretic perspective of an integral kernel. Withattention as the focus, [69] further proves that the stability ofinternal representations and that masked latent representa-tions are interpolated globally with an inter-patch topology.To understand why MAE helps in downstream tasks, basedon an autoencoder of a two/one-layered CNN, [70] theoret-ically shows that it can capture discriminative semantics inthe pretraining dataset. Deviating from the focus on atten-tion [69], it provides insight on what features MAE learnsand why MAE beats conventional supervised learning (SL).Particularly, MAE encoder captures all discriminative se-mantics in the pretraining dataset, including samples thathave either single or multiple independent discriminativesemantics, and therefore provably outperforms SL on down-stream tasks.4.5Relationship with joint-embedding methodsBefore the success of masked autoencoder, visual self-supervised pretraining had been dominated by joint-embedding methods, either contrastive ones ( [9], [71]) ornegative-free ones [43], [72].",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0031",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "Thus, it is highly relevantto compare masked autoencoder with joint-embedding forvisual self-supervised pretraining.JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 201574.5.1Masked autoencoder and joint embedding: boostingeach otherAn intriguing observation regarding their difference is asfollows: compared with joint-embedding methods [43], [71],masked autoencoders [1], [25] have stronger \ufb01netuningperformance on the downstream tasks but weaker linearprobing accuracy. A popular understanding is that maskedautoencoder lacks in learning semantically-meaningful fea-tures because it focuses on low-level patch match with alocal loss [1], [25]. On the other hand, high-level semanticfeatures have the property of being robust to spatial trans-formation (like random crop) and style change (like colorjittering) [73], and thus joint embedding approaches adopta global loss on the features after global average pooling toencourage the learned representation to be augmentation-invariant.Improving masked autoencoder with global loss. Split-Mask [63] consists of three steps: split, inpaint, and match.The patches are divided into two disjoint subsets in the splitstep: A and . For inpainting, it adopts a similar architectureas MAE in that a lightweight (shallow) ViT decoder is usedto recover the masked patches from the representation ofunmasked patches [63].",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0032",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "For inpainting, it adopts a similar architectureas MAE in that a lightweight (shallow) ViT decoder is usedto recover the masked patches from the representation ofunmasked patches [63]. What differentiates SplitMask [63]from MAE [1] lies in the third match step, which encouragesthe global prediction of A and B subsets of patches to matcheach other. This global match aligns with the augmentation-invariant goal in joint-embedding approaches, thus mak-ing the representation more semantically meaningful. [74]improves MAE by combining it with joint-embedding ap-proaches. Speci\ufb01cally, it predicts the masked tokens tomatch those from another augmented view to encouragesemantic learning with an optional global loss.Improving joint-embedding methods with local loss.Multiple works in the above analysis show that theglobal loss in joint-embedding methods can be utilizedto improve the semantic meaning of the learned repre-sentations. Intuitively, it is possible to improve the joint-embedding techniques by adding a local loss. For example,MST [75] extends the DINO framework by combining itwith a masked prediction task. It is worth mentioningthat MST [75] came out earlier than BEiT and MAE.",
+      "token_count": 258
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0033",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "For example,MST [75] extends the DINO framework by combining itwith a masked prediction task. It is worth mentioningthat MST [75] came out earlier than BEiT and MAE. Morerecently, RePre [76] improves MoCO v3 [71] with a recon-struction loss by using a decoder to reconstruct the originalimage from the multi-hierarchy features in the encoder. [77]shows that their inferior \ufb01ne-tuning performance can besigni\ufb01cantly improved by a simple post-processing withfeature distillation (FD). After FD, their representations aremore suitable for optimization and thus \ufb01netuning friendly.the gap between joint-embedding and masked autoencoderfor visual pretraining.Decoder-freeMIM.Beyondmaskedautoencoder,decoder-free MIM can be seen as another line of simplifyingBEiT from two stages to single stage. To keep the patch-levelvisual context, ConMIM [22] follows the principle of de-signing the training objective to be masked patch predictionas in [10]. Speci\ufb01cally, resembling MoCo [8], [71], ConMIMadopts a Siamese encoder, which is updated by the (student)encoder with EMA, as a teacher model to guide the trainingof the encoder. ConMIM [22] feeds an unmasked image anda masked image of the same view into teacher and studentencoders, respectively.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0034",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "ConMIM [22] feeds an unmasked image anda masked image of the same view into teacher and studentencoders, respectively. The teacher encoder can be seen asa dynamic tokenizer as a static one in BEiT [10]. There-fore, the embedded representations of masked patches arepredicted to match the dynamic tokenizer corresponding tothe same position [22]. A similar teacher-student frameworkis adopted in MSN [27] and data2vec [24]. In contrast toConMIM [22], MSN [27] adopts a global loss to encouragelearning semantic-aware representation. CNN-based MSNhas also been investigated in [78]. It has also been demon-strated in data2vec [24] that this simple framework workswell in the vision \ufb01eld and can be generalized to other datamodalities, including speech and language. MSN [27] workswell for linear probing and few-shot learning but might beinferior to masked autoencoder for the \ufb01netuning perfor-mance on downstream tasks since patch-level visual contextis discarded. To get the merits on both sides, iBOT [79]adopts two losses: a local loss to distill in-view patch to-kens and another global loss to distill between cross-view[CLS] tokens, which makes the target patch tokens moresemantically-meaningful [79].",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0035",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "More recently, AttMask [80]shows that iBOT can be further improved by performing anattention-guided masking instead of random masking onthe student side. Particularly, the teacher model indicatesthe attention with full image as the input and masking onthe attended areas improves the performance on a varietyof downstream tasks.Collapse issue. A shared issue in the above decoder-freeMIM methods [22], [24], [27] is the potential feature collapse,i.e. outputting a constant for all inputs. They adopt differentapproaches to avoid this issue. For example, ConMIM [22]adopts a contrastive loss with those feature representationscorresponding to different positions in the same image asnegative samples. MSN [27] follows [81] to do cluster assign-ments, while data2vec [24] achieves this goal by carefully\ufb01ne-tuning the hyperparameters like momentum coef\ufb01cientin EMA and learning rate. Note that autoencoder-basedMIM methods do not have the collapse issue by default.4.5.2Masked autoencoder and joint embedding: bridgingtheir gapMasked autoencoder and joint-embedding perform maskedprediction (predicting a property of masked patches fromunmasked patches) and augmented alignment (aligningthe embedded representation of different augmentations),respectively.",
+      "token_count": 269
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0036",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "From the perspective of the architecture com-ponent, the encoder training in masked autoencoder relieson a decoder, while that in joint-embedding uses a Siameseencoder for generating the self-supervision. Motivated bytheir success, multiple works have attempted masked pre-diction without a decoder, decoder-free MIM, which bridges5OTHER APPLICATIONS: VISION AND BEYONDInspired by the success of MAE [1], numerous works haveapplied masked autoencoder to various applications. Wecategorize them into two classes. The \ufb01rst class is related tovision, for which pure natural images have been extensivelycovered in the above section. Thus, this section covers itsother aspects, including images with medical applications,images with temporal information, images with language.Going beyond vision, the second class focuses on differentJOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 20158types of data, such as point clouds, graph, audio, reinforce-ment learning, etc.Since MAE is found to be more simple yet effectivethan BEiT, the works in[90], [91] follow the architectureof MAE for simplicity and ef\ufb01ciency. With a similar modelarchitecture to MAE, VideoMAE [90] \ufb01nds that it learnsuseful spatio-temporal structures with a very high maskingratio (90% to 95%) in tube masking strategy.",
+      "token_count": 299
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0037",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "With a similar modelarchitecture to MAE, VideoMAE [90] \ufb01nds that it learnsuseful spatio-temporal structures with a very high maskingratio (90% to 95%) in tube masking strategy. Experimen-tal results show that VideoMAE [90] achieves impressiveperformance on tiny datasets. Similar investigation hasalso been investigated in [92] but with spacetime-agnosticrandom masking. Beyond video understanding for existingframes, [93] investigates masked visual modeling for futureframe prediction. The gap between masked prediction forpartial existing frames and full future frames is addressedby a variable masking ratio. OmniMAE [91] extends MAEto a uni\ufb01ed pre-training of image and video modalities.Trained on images and video with a single ViT encoder, Om-niMAE achieves competitive performance on both imageand video recognition benchmarks, outperforming modelsexplicitly trained for a single modality.5.1Vision related applications5.1.1Medical imagesMedical images are a class of data for medical analysiswith data distribution different from natural images. Mul-tiple works have shown that masked autoencoders canalso work well in medical applications by either applyingMAE directly to medical data [82], [83] or improving theloss design [84], [85], [86], [87].",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0038",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "Mul-tiple works have shown that masked autoencoders canalso work well in medical applications by either applyingMAE directly to medical data [82], [83] or improving theloss design [84], [85], [86], [87]. With MAE [1] and Sim-MIM [25] as the architecture, [82] and [83] apply maskedautoencoders directly in medical images, showing the ef-fectiveness of masked autoencoder in medical applications,e.g. CT images. Speci\ufb01cally,[82] shows that MAE pre-trained on medical dataset achieves superior performanceto its counterpart pretrained on ImageNet, which can beexplained from the perspective domain shift.[83] showsthat a moderately large patch size (32) achieves satisfactoryperformance, which aligns with the \ufb01nding in [25]. Thereare also attempts to enhance MAE [1] by improving theloss [84], [85], [86], [87], including global loss and self-distillation loss. It is shown in [84], [85] that an additionalglobal loss on top of a local loss makes the representationsmore semantically meaningful for medical images, whichresembles the principle in iBOT and SplitMask. [86] viewsthe output of MAE encoder as a bag of instances and aggre-gates the most informative tokens into global representation(slide-level) for further classi\ufb01cation.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0039",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "To make full use of vis-ible patches, Self-distillation MAE(SD-MAE) [87] improvesMAE by adding a self-distillation loss of visible patchesbetween latent representations after encoding and decoding,which achieves competitive performance compared withcontrastive methods.5.1.3Vision and languagePrior to masked autoencoder, contrastive learning is apopular approach to learn language and vision represen-tations jointly. Contrastive Language-Image Pre-training(CLIP) [94] is a pioneering work that propose learningimages with language as supervision. By jointly learningan image and text encoder, CLIP takes the pair of imageand text as a prediction target during contrastive pre-training and often achieves competitive results compared tofully supervised baselines. Other works extend of CLIP byadding self-supervision [95], data scaling [96] or enabling\ufb02exibility to the encoders [97]. Contrastive learning intro-duces sampling bias due to data augmentations and cannottackle unpaired samples [98]. To solve these problems, [98]proposes Multimodal Masked Autoencoder (M3AE), whichencodes a \ufb02exible mixture of inputs, including image-textpairs and image-only inputs. Experimental results show thatM3AE learns generalizable vision representations and uni-\ufb01ed information from images and languages.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0040",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "Experimental results show thatM3AE learns generalizable vision representations and uni-\ufb01ed information from images and languages. To investigatehow to design an effective vision-language model with anend-to-end manner, Multimodal End-to-end TransformER(METER) [99] implements comprehensive experiments andanalyses on multiple designs, including encoders, multi-modal fusion module, pre-training objectives. However,adding MIM loss does not improve downstream task per-formance in their settings [99]. [100] also investigates themasking strategies of text data in language-vision tasks,which improves performance on downstream tasks.Moreover, [101] presents a uni\ufb01ed task-agnostic modelthat can perform various vision and language tasks. It isable to tackle different tasks with a uni\ufb01ed model withoutemploying task-speci\ufb01c branches by tokenizing the inputsand outputs of every given task. A standard transformer en-coder/decoder is pre-trained with masked language mod-eling and masked image modeling, then further trainedon a large multi-task dataset that encompasses differentlanguage/vision tasks. Similarly, [102] proposes VL-BEiTthat can tackle both monomodal and multimodal vision-language tasks.",
+      "token_count": 245
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0041",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "Similarly, [102] proposes VL-BEiTthat can tackle both monomodal and multimodal vision-language tasks. A single bidirectional multimodal trans-former [97] is pre-trained on mask prediction of monomodal(language, vision) and multimodal (image-text pair) data5.1.2VideoNumerous works have applied SSL frameworks built onimages to videos since videos are essentially a clip of se-quential images. This trend is also observed after the successof masked autoencoders, with works in[23], [88], [89]and [90], [91] applying videos to BEiT [10] and MAE [1]respectively.To learn spatial and temporal priors of videos in adecoupled way, BEVT[88] proposes a two-stage solu-tion that learns spatial representations with masked imagemodeling, then learns temporal representations with jointlymasked image modeling and masked video modeling.BEVT achieves comparable or superior results to baselinemethods on three video datasets. VIMPAC [89] proposesa different single-stage masked video modeling method,which includes a block-wise masking strategy for videosand augmentation-free contrastive learning loss to learn theglobal features. Experimental results verify the effectivenessand scalability of the proposed VIMPAC. Both BEVT [88]and VIMPAC[89] rely on an external tokenizer whichcan be limited in compute-intensive video understandingscenarios.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0042",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "Experimental results verify the effectivenessand scalability of the proposed VIMPAC. Both BEVT [88]and VIMPAC[89] rely on an external tokenizer whichcan be limited in compute-intensive video understandingscenarios. Therefore,[23] proposes to replace the tokenswith features and investigates \ufb01ve types of features, amongwhich hand-crafted HOG is found to work effectively andef\ufb01ciently.JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 20159to be jointly optimized to different types of data. VL-BEiTachieves strong results on various vision-language bench-marks and image tasks.reconstructs masked edges, and GMAE reconstructs thefeatures of masked nodes. [109] also argues that rebuildingthe features is more bene\ufb01cial. Beyond empirical resultswith experimental trial-and-error, MaskGAE [110] furtherprovides theoretical justi\ufb01cations for the potential bene\ufb01tsof masked graph modeling.5.2Beyond vision5.2.1Point cloudsMotivated by the success of BEiT in vision, [26] extendsmasked modeling strategy to point cloud with masked pointmodeling termed Point-BERT. Following BEiT, Point-BERT\ufb01rst trains a discrete VAE to generate discrete point tokenscontaining meaningful local information and then predictsthe tokens of masked point patches from the unmaskedpoint patches.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0043",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "Following BEiT, Point-BERT\ufb01rst trains a discrete VAE to generate discrete point tokenscontaining meaningful local information and then predictsthe tokens of masked point patches from the unmaskedpoint patches. With a pure transformer architecture sur-passing carefully designed point cloud models, Point-BERTachieves 93.8% accuracy on ModelNet40 and 83.1% accuracyon the complicated setting of ScanObjectNN, suggestingthe BERT-style pre-training technique also works for pointcloud. Point-BERT relies on dVAE, which is trained byaugmentation-based contrastive learning and thus is so-phisticated. Moreover, the masked tokens from their inputsare processed as the input of Transformers, causing highcompute and early leakage of location information [103].MaskPoint [104] alleviates this issue by pre-training witha decoder to contrast masked points and noise. Moreover,Point-MAE [103] follows MAE [1] to adopt a more straight-forward approach to directly predict the locations of maskedpoints. Resembling Point-MAE, [105] proposes Point-M2AE,a Multi-scale MAE for point clouds. Different from Point-MAE, Point-M2AE adopts an encoder-decoder with pyra-mid architectures to capture both \ufb01ne-grained and high-level semantics in a progressive manner. Accordingly, Point-M2AE also adopts a multi-scale masking strategy to yieldvisible patches consistent across scales.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0044",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "Accordingly, Point-M2AE also adopts a multi-scale masking strategy to yieldvisible patches consistent across scales. Moreover, a localspatial self-attention mechanism is also adopted to makethe encoder focus on neighboring patterns. [106] has pro-posed Voxel-MAE to pre-train on large-scale point clouds toimprove downstream 3D object detection. The key idea liesin dividing the point clouds into voxel representations andclassify whether they contain point clouds.5.2.3Reinforcement learningThe auxiliary tasks and RL updates [111] are jointly trainedin [112], where the performances of ViT models is comparedto that of a CNN-based RL method [113]. The results indi-cate that CNN-based RAD [113] performs better on mostimage-based deep RL tasks, but reconstruction-based ViTmodels [1], [24] outperform RAD on some tasks. With ViTarchitecture, Xiao et. al [114] adopted pre-trained visualrepresentations to train various motor control tasks. First,MAE [1] is used to learn visual representations from real-world images. Then, the encoder is freezed and the featurevector is used alongside propropceptive robot informationto train task-speci\ufb01c motor cotrolling policies with model-free reinforcement learning [115].",
+      "token_count": 263
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0045",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "Then, the encoder is freezed and the featurevector is used alongside propropceptive robot informationto train task-speci\ufb01c motor cotrolling policies with model-free reinforcement learning [115]. The authors demonstratethat a single encoder can be used to learn various taskswithout task-speci\ufb01c \ufb01ne-tuning, and achieves superior per-formance compared to supervised baselines. Seo et. al [116]demonstrate a similar approach, but show that convolu-tional feature masking is more effective than pixel patchmasking since it learns \ufb01ne-grained features within patches.5.2.4AudioRecent works learning audio representations create differentinput views by temporal relationships or data augmenta-tions, which cannot provide information from the intactinput. Inspired by the success of MAE in vision, [117], [118]apply masked autoencoders successfully on the maskedaudio spectrogram to learn audio representations from bothtime and frequency axes. Moreover, [118] is trained jointlyon discriminative and generative loss for instance-wise clas-si\ufb01cation and reconstruction, respectively.5.2.5More diverse applicationsMasked autoencoder has also been attempted in more di-verse applications. For example,[119] experiments withmasked autoencoder with extrapolator (ExtraMAE) to re-cover complex original time series signals from maskedobservations.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0046",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "For example,[119] experiments withmasked autoencoder with extrapolator (ExtraMAE) to re-cover complex original time series signals from maskedobservations. Recognizing contrastive tabular-SSL does notsuf\ufb01ciently capture the underlying manifold due to thead-hoc fashion of its augmentation design, [120] proposesMasked Encoding for Tabular data (MET). With the MAE [1]in vision as the baseline, MET adopts individual represen-tation for each coordinate with an additional adversarialloss by considering the property of tabular data. Someworks [61], [121] have also adopted a pretrained maskedautoencoder as an augmentation generator. For example,the reconstructed views from MAE are found to outperformhand-crafted augmentations (like scale, \ufb02ip, and color jitter)in both supervised and semi-supervised setups [121].5.2.2GraphMGAE [107] is the \ufb01rst to investigate masked autoen-coder for graphs. Prior to its advent, works on learninggraph node representations in an unsupervised mannercan be categorized into two classes: graph autoencoderand graph self-supervised learning (GSSL). They focus ondesigning effective encoder networks and advanced pre-text tasks, respectively.",
+      "token_count": 258
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0047",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "They focus ondesigning effective encoder networks and advanced pre-text tasks, respectively. Even though edge dropping andedge reconstruction are commonly adopted in both linesof investigations, masked autoencoding by recovering themasked edges from randomly masked input graph structurehas never been explored until the advent of MGAE [107].Following MAE [1], MGAE operates only on convolution-based partial network structure (without masked edges).Moreover, the decoder is designed to capture the cross-correlation between an anchor edge\u2019s head and tail nodes.MGAE performs better or on par with graph autoencoderand GSSL. GMAE [108] further investigates masked autoen-coders for a graph with transformer instead of convolu-tion. Another item that distinguishes them is that MGAE6CONCLUSIONThis survey is the \ufb01rst to review the progress of maskedautoencoder for SSL. We summarize the early attempts ofJOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 201510masked autoencoder in vision and its relation with maskedlanguage modeling. With the focus on the reviving successof masked autoencoder in unsupervised visual pretraining,we summarize and compare the seminal methods as wellas those follow-up works to improve them. We also provideinsight on the success of masked autoencoder in vision fromvarious perspectives, including backbone perspective, dataperspective, denosing perspective and theoretical perspec-tive.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0048",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "We also provideinsight on the success of masked autoencoder in vision fromvarious perspectives, including backbone perspective, dataperspective, denosing perspective and theoretical perspec-tive. Finally, we summarize its application in vision andbeyond. Preliminary summarization of the works in tableformat is provided in the appendix.[22]K. Yi, Y. Ge, X. Li, S. Yang, D. Li, J. Wu, Y. Shan, andX. Qie, \u201cMasked image modeling with denoising contrast,\u201d arXivpreprint arXiv:2205.09616, 2022. 2, 4, 7, 13[23]C. Wei, H. Fan, S. Xie, C.-Y. Wu, A. Yuille, and C. Feichten-hofer, \u201cMasked feature prediction for self-supervised visual pre-training,\u201d in CVPR, 2022. 2, 4, 8, 13[24]A. Baevski, W.-N. Hsu, Q. Xu, A. Babu, J. Gu, and M.",
+      "token_count": 242
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0049",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "Baevski, W.-N. Hsu, Q. Xu, A. Babu, J. Gu, and M. Auli,\u201cData2vec: A general framework for self-supervised learning inspeech, vision and language,\u201d arXiv preprint arXiv:2202.03555,2022. 2, 7, 9[25]Z. Xie, Z. Zhang, Y. Cao, Y. Lin, J. Bao, Z. Yao, Q. Dai, and H. Hu,\u201cSimmim: A simple framework for masked image modeling,\u201d inCVPR, 2022. 2, 4, 5, 7, 8, 13[26]X. Yu, L. Tang, Y. Rao, T. Huang, J. Zhou, and J. Lu, \u201cPoint-bert: Pre-training 3d point cloud transformers with masked pointmodeling,\u201d in CVPR, 2022. 2, 9[27]M. Assran, M. Caron, I. Misra, P. Bojanowski, F. Bordes,P. Vincent, A. Joulin, M. Rabbat, and N.",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0050",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "Assran, M. Caron, I. Misra, P. Bojanowski, F. Bordes,P. Vincent, A. Joulin, M. Rabbat, and N. Ballas, \u201cMaskedsiamese networks for label-ef\ufb01cient learning,\u201d arXiv preprintarXiv:2204.07141, 2022. 2, 7[28]A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N.Gomez, L. Kaiser, and I. Polosukhin, \u201cAttention is all you need,\u201din NeurIPS, 2017. 2, 13[29]A. Radford, K. Narasimhan, T. Salimans, I. Sutskever et al.,\u201cImproving language understanding by generative pre-training,\u201d2018. 2[30]A. Radford, J. Wu, R. Child, D. Luan, D. Amodei, I. Sutskeveret al., \u201cLanguage models are unsupervised multitask learners,\u201dOpenAI blog, 2019. 2[31]T. Brown, B. Mann, N. Ryder, M. Subbiah, J. D. Kaplan, P.",
+      "token_count": 286
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0051",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 51,
+      "section": "preamble",
+      "text": "Brown, B. Mann, N. Ryder, M. Subbiah, J. D. Kaplan, P. Dhari-wal, A. Neelakantan, P. Shyam, G. Sastry, A. Askell et al.,\u201cLanguage models are few-shot learners,\u201d Advances in neuralinformation processing systems, 2020. 2[32]A. Bilogur, \u201cNotes on gpt-2 and bert models,\u201d Kaggle blog, 2019.2[33]Z. Wu, Y. Xiong, S. X. Yu, and D. Lin, \u201cUnsupervised featurelearning via non-parametric instance discrimination,\u201d in CVPR,2018. 2[34]A. v. d. Oord, Y. Li, and O. Vinyals, \u201cRepresentation learning withcontrastive predictive coding,\u201d arXiv preprint arXiv:1807.03748,2018. 2[35]J. Zbontar, L. Jing, I. Misra, Y. LeCun, and S. Deny, \u201cBarlow twins:Self-supervised learning via redundancy reduction,\u201d ICML, 2021.2[36]X. Chen and K. He, \u201cExploring simple siamese representationlearning,\u201d in CVPR, 2021. 2[37]G.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0052",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 52,
+      "section": "preamble",
+      "text": "Chen and K. He, \u201cExploring simple siamese representationlearning,\u201d in CVPR, 2021. 2[37]G. Larsson, M. Maire, and G. Shakhnarovich, \u201cLearning repre-sentations for automatic colorization,\u201d in ECCV, 2016. 2, 3[38]\u2014\u2014, \u201cColorization as a proxy task for visual understanding,\u201d inCVPR, 2017. 2, 3[39]R. Zhang, P. Isola, and A. A. Efros, \u201cColorful image colorization,\u201din ECCV, 2016. 2, 3[40]\u2014\u2014, \u201cSplit-brain autoencoders: Unsupervised learning by cross-channel prediction,\u201d in CVPR, 2017. 2, 3[41]M. Chen, A. Radford, R. Child, J. Wu, H. Jun, D. Luan, andI. Sutskever, \u201cGenerative pretraining from pixels,\u201d in ICML, 2020.3, 4[42]\u2014\u2014, \u201cGenerative pretraining from pixels,\u201d in OpenAI blog, 2020.3[43]M. Caron, H. Touvron, I. Misra, H. J\u00b4egou, J. Mairal, P.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0053",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 53,
+      "section": "preamble",
+      "text": "Caron, H. Touvron, I. Misra, H. J\u00b4egou, J. Mairal, P. Bojanowski,and A. Joulin, \u201cEmerging properties in self-supervised visiontransformers,\u201d arXiv preprint arXiv:2104.14294, 2021. 4, 6, 7[44]X. Dong, J. Bao, T. Zhang, D. Chen, W. Zhang, L. Yuan, D. Chen,F. Wen, and N. Yu, \u201cPeco: Perceptual codebook for bert pre-training of vision transformers,\u201d arXiv preprint arXiv:2111.12710,2021. 4, 13[45]X. Li, Y. Ge, K. Yi, Z. Hu, Y. Shan, and L.-Y. Duan, \u201cmc-beit: Multi-choice discretization for image bert pre-training,\u201d arXiv preprintarXiv:2203.15371, 2022. 4[46]X. Chen, M. Ding, X. Wang, Y. Xin, S. Mo, Y. Wang, S. Han, P. Luo,G. Zeng, and J.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0054",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 54,
+      "section": "preamble",
+      "text": "Chen, M. Ding, X. Wang, Y. Xin, S. Mo, Y. Wang, S. Han, P. Luo,G. Zeng, and J. Wang, \u201cContext autoencoder for self-supervisedrepresentation learning,\u201d arXiv preprint arXiv:2202.03026, 2022. 4,13[47]N. Dalal and B. Triggs, \u201cHistograms of oriented gradients forhuman detection,\u201d in CVPR, 2005. 4REFERENCES[1]K. He, X. Chen, S. Xie, Y. Li, P. Doll\u00b4ar, and R. Girshick, \u201cMaskedautoencoders are scalable vision learners,\u201d in CVPR, 2022. 1, 2, 3,4, 5, 6, 7, 8, 9, 13[2]Y. LeCun, Y. Bengio, and G. Hinton, \u201cDeep learning,\u201d nature,2015. 1[3]A. Krizhevsky, I. Sutskever, and G. E. Hinton, \u201cImageNet classi-\ufb01cation with deep convolutional neural networks,\u201d in NeurIPS,2012. 1[4]K. Simonyan and A.",
+      "token_count": 281
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0055",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 55,
+      "section": "preamble",
+      "text": "Sutskever, and G. E. Hinton, \u201cImageNet classi-\ufb01cation with deep convolutional neural networks,\u201d in NeurIPS,2012. 1[4]K. Simonyan and A. Zisserman, \u201cVery deep convolutional net-works for large-scale image recognition,\u201d in ICLR, 2015. 1[5]K. He, X. Zhang, S. Ren, and J. Sun, \u201cDeep residual learning forimage recognition,\u201d in CVPR, 2016. 1[6]J. Deng, W. Dong, R. Socher, L.-J. Li, K. Li, and L. Fei-Fei,\u201cImageNet: A large-scale hierarchical image database,\u201d in CVPR,2009. 1[7]A. Dosovitskiy, L. Beyer, A. Kolesnikov, D. Weissenborn, X. Zhai,T. Unterthiner, M. Dehghani, M. Minderer, G. Heigold, S. Gelly,J. Uszkoreit, and N. Houlsby, \u201cAn image is worth 16x16 words:Transformers for image recognition at scale,\u201d in ICLR, 2021. 1, 2,3, 4, 5, 6[8]K.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0056",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 56,
+      "section": "preamble",
+      "text": "He, H. Fan, Y. Wu, S. Xie, and R. Girshick, \u201cMomentum con-trast for unsupervised visual representation learning,\u201d in CVPR,2020. 1, 2, 7[9]T. Chen, S. Kornblith, M. Norouzi, and G. Hinton, \u201cA simpleframework for contrastive learning of visual representations,\u201d inICML, 2020. 1, 2, 6[10]H. Bao, L. Dong, and F. Wei, \u201cBeit: Bert pre-training of imagetransformers,\u201d ICLR, 2022. 1, 2, 3, 4, 5, 7, 8, 13[11]A. Ramesh, M. Pavlov, G. Goh, S. Gray, C. Voss, A. Radford,M. Chen, and I. Sutskever, \u201cZero-shot text-to-image generation,\u201din ICML, 2021. 1, 3, 4[12]P. Vincent, H. Larochelle, Y. Bengio, and P.-A.",
+      "token_count": 257
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0057",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 57,
+      "section": "preamble",
+      "text": "Vincent, H. Larochelle, Y. Bengio, and P.-A. Manzagol, \u201cEx-tracting and composing robust features with denoising autoen-coders,\u201d in ICML, 2008. 1, 2, 3[13]P. Vincent, H. Larochelle, I. Lajoie, Y. Bengio, P.-A. Manzagol, andL. Bottou, \u201cStacked denoising autoencoders: Learning useful rep-resentations in a deep network with a local denoising criterion.\u201dJournal of machine learning research, 2010. 1, 2, 3[14]D. Pathak, P. Krahenbuhl, J. Donahue, T. Darrell, and A. A. Efros,\u201cContext encoders: Feature learning by inpainting,\u201d in CVPR,2016. 1, 2, 3, 6[15]J. Devlin, M.-W. Chang, K. Lee, and K. Toutanova, \u201cBert: Pre-training of deep bidirectional transformers for language under-standing,\u201d NAACL, 2019. 1, 2, 3, 4[16]A.",
+      "token_count": 267
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0058",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 58,
+      "section": "preamble",
+      "text": "Lee, and K. Toutanova, \u201cBert: Pre-training of deep bidirectional transformers for language under-standing,\u201d NAACL, 2019. 1, 2, 3, 4[16]A. Ng et al., \u201cSparse autoencoder,\u201d CS294A Lecture notes, 2011. 2[17]M. Noroozi and P. Favaro, \u201cUnsupervised learning of visualrepresentations by solving jigsaw puzzles,\u201d in ECCV, 2016. 2[18]S. Gidaris, P. Singh, and N. Komodakis, \u201cUnsupervised represen-tation learning by predicting image rotations,\u201d ICLR, 2018. 2[19]C. Zhang, K. Zhang, C. Zhang, T. X. Pham, C. D. Yoo, andI. S. Kweon, \u201cHow does simsiam avoid collapse without neg-ative samples? a uni\ufb01ed understanding with self-supervisedcontrastive learning,\u201d in ICLR, 2022. 2[20]C. Zhang, K. Zhang, T. X. Pham, C. Yoo, and I.-S.",
+      "token_count": 254
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0059",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 59,
+      "section": "preamble",
+      "text": "Zhang, K. Zhang, T. X. Pham, C. Yoo, and I.-S. Kweon, \u201cDualtemperature helps contrastive learning without many negativesamples: Towards understanding and simplifying moco,\u201d inCVPR, 2022. 2[21]L. Jing, P. Vincent, Y. LeCun, and Y. Tian, \u201cUnderstanding di-mensional collapse in contrastive self-supervised learning,\u201d arXivpreprint arXiv:2110.09348, 2021. 2JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 201511[48]A. Wettig, T. Gao, Z. Zhong, and D. Chen, \u201cShould you mask 15%in masked language modeling?\u201d arXiv preprint arXiv:2202.08005,2022. 4[49]W. Wang, E. Xie, X. Li, D.-P. Fan, K. Song, D. Liang, T. Lu, P. Luo,and L. Shao, \u201cPyramid vision transformer: A versatile backbonefor dense prediction without convolutions,\u201d 2021. 5[50]Z. Liu, Y. Lin, Y. Cao, H. Hu, Y. Wei, Z.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0060",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 60,
+      "section": "preamble",
+      "text": "Liu, Y. Lin, Y. Cao, H. Hu, Y. Wei, Z. Zhang, S. Lin, and B. Guo,\u201cSwin transformer: Hierarchical vision transformer using shiftedwindows,\u201d 2021. 5[51]L. Huang, S. You, M. Zheng, F. Wang, C. Qian, and T. Yamasaki,\u201cGreen hierarchical vision transformer for masked image model-ing,\u201d arXiv preprint arXiv:2205.13515, 2022. 5, 13[52]X. Li, W. Wang, L. Yang, and J. Yang, \u201cUniform masking: Enablingmae pre-training for pyramid-based vision transformers withlocality,\u201d arXiv preprint arXiv:2205.10063, 2022. 5, 13[53]X. Zhang, Y. Tian, W. Huang, Q. Ye, Q. Dai, L. Xie, and Q. Tian,\u201cHivit: Hierarchical vision transformer meets masked imagemodeling,\u201d arXiv preprint arXiv:2205.14949, 2022. 5, 13[54]J. Chen, M. Hu, B. Li, and M.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0061",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 61,
+      "section": "preamble",
+      "text": "Chen, M. Hu, B. Li, and M. Elhoseiny, \u201cEf\ufb01cient self-supervisedvision pretraining with local masked reconstruction,\u201d arXivpreprint arXiv:2206.00790, 2022. 5, 13[55]J. Wu and S. Mo, \u201cObject-wise masked autoencoders for fast pre-training,\u201d arXiv preprint arXiv:2205.14338, 2022. 5, 13[56]B. Zhou, A. Khosla, A. Lapedriza, A. Oliva, and A. Torralba,\u201cLearning deep features for discriminative localization,\u201d inCVPR, 2016. 5[57]J. Liu, X. Huang, Y. Liu, and H. Li, \u201cMixmim: Mixed and maskedimage modeling for ef\ufb01cient visual representation learning,\u201darXiv preprint arXiv:2205.13137, 2022. 5, 13[58]P.Gao,T.Ma,H.Li,J.Dai,andY.Qiao,\u201cConvmae:Masked convolution meets masked autoencoders,\u201d arXiv preprintarXiv:2205.03892, 2022. 6[59]Y. Fang, S. Yang, S. Wang, Y.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0062",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 62,
+      "section": "preamble",
+      "text": "Fang, S. Yang, S. Wang, Y. Ge, Y. Shan, and X. Wang, \u201cUnleash-ing vanilla vision transformer with masked image modeling forobject detection,\u201d arXiv preprint arXiv:2204.02964, 2022. 6[60]S. Li, D. Wu, F. Wu, Z. Zang, K. Wang, L. Shang, B. Sun, H. Li,S. Li et al., \u201cArchitecture-agnostic masked image modeling\u2013fromvit back to cnn,\u201d arXiv preprint arXiv:2205.13943, 2022. 6[61]Y. Fang, L. Dong, H. Bao, X. Wang, and F. Wei, \u201cCorrupted imagemodeling for self-supervised visual pre-training,\u201d arXiv preprintarXiv:2202.03382, 2022. 6, 9, 13[62]T. Xiao, M. Singh, E. Mintun, T. Darrell, P. Doll\u00b4ar, and R. Girshick,\u201cEarly convolutions help transformers see better,\u201d NeurIPS, 2021.6[63]A. El-Nouby, G. Izacard, H. Touvron, I.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0063",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 63,
+      "section": "preamble",
+      "text": "Girshick,\u201cEarly convolutions help transformers see better,\u201d NeurIPS, 2021.6[63]A. El-Nouby, G. Izacard, H. Touvron, I. Laptev, H. Jegou, andE. Grave, \u201cAre large-scale datasets necessary for self-supervisedpre-training?\u201d arXiv preprint arXiv:2112.10740, 2021. 6, 7, 13[64]Z. Xie, Z. Zhang, Y. Cao, Y. Lin, Y. Wei, Q. Dai, and H. Hu,\u201cOn data scaling in masked image modeling,\u201d arXiv preprintarXiv:2206.04664, 2022. 6[65]H. Yang, M. Chen, Y. Wang, S. Tang, F. Zhu, L. Bai, R. Zhao,and W. Ouyang, \u201cDomain invariant masked autoencoders forself-supervised learning from multi-domains,\u201d arXiv preprintarXiv:2205.04771, 2022. 6[66]R. Bachmann, D. Mizrahi, A. Atanov, and A.",
+      "token_count": 262
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0064",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 64,
+      "section": "preamble",
+      "text": "Bachmann, D. Mizrahi, A. Atanov, and A. Zamir, \u201cMultimae:Multi-modal multi-task masked autoencoders,\u201d arXiv preprintarXiv:2204.01678, 2022. 6, 13[67]Y. Tian, L. Xie, J. Fang, M. Shi, J. Peng, X. Zhang, J. Jiao, Q. Tian,and Q. Ye, \u201cBeyond masking: Demystifying token-based pre-training for vision transformers,\u201d arXiv preprint arXiv:2203.14313,2022. 6, 13[68]J. Xie, W. Li, X. Zhan, Z. Liu, Y. S. Ong, and C. C. Loy,\u201cMasked frequency modeling for self-supervised visual pre-training,\u201d arXiv preprint arXiv:2206.07706, 2022. 6[69]S. Cao, P. Xu, and D. A. Clifton, \u201cHow to understand maskedautoencoders,\u201d arXiv preprint arXiv:2202.03670, 2022. 6[70]J. Pan, P. Zhou, and S.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0065",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 65,
+      "section": "preamble",
+      "text": "A. Clifton, \u201cHow to understand maskedautoencoders,\u201d arXiv preprint arXiv:2202.03670, 2022. 6[70]J. Pan, P. Zhou, and S. Yan, \u201cTowards understanding why mask-reconstruction pretraining helps in downstream tasks,\u201d arXivpreprint arXiv:2206.03826, 2022. 6[71]X. Chen, S. Xie, and K. He, \u201cAn empirical study of training self-supervised vision transformers,\u201d ICCV, 2021. 6, 7[72]J.-B.Grill,F.Strub,F.Altch\u00b4e,C.Tallec,P.Richemond,E. Buchatskaya, C. Doersch, B. Avila Pires, Z. Guo, M. Ghesh-laghi Azar et al., \u201cBootstrap your own latent-a new approach toself-supervised learning,\u201d Advances in Neural Information Process-ing Systems, 2020. 6[73]I. Misra and L. v. d. Maaten, \u201cSelf-supervised learning of pretext-invariant representations,\u201d in CVPR, 2020. 7[74]C. Tao, X. Zhu, G. Huang, Y. Qiao, X. Wang, and J.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0066",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 66,
+      "section": "preamble",
+      "text": "Tao, X. Zhu, G. Huang, Y. Qiao, X. Wang, and J. Dai, \u201cSiameseimage modeling for self-supervised vision representation learn-ing,\u201d arXiv preprint arXiv:2206.01204, 2022. 7, 13[75]Z. Li, Z. Chen, F. Yang, W. Li, Y. Zhu, C. Zhao, R. Deng, L. Wu,R. Zhao, M. Tang et al., \u201cMst: Masked self-supervised transformerfor visual representation,\u201d NeurIPS, 2021. 7, 13[76]L. Wang, F. Liang, Y. Li, W. Ouyang, H. Zhang, and J. Shao,\u201cRepre: Improving self-supervised vision transformer with re-constructive pre-training,\u201d arXiv preprint arXiv:2201.06857, 2022.7, 13[77]Y. Wei, H. Hu, Z. Xie, Z. Zhang, Y. Cao, J. Bao, D. Chen,and B.",
+      "token_count": 245
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0067",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 67,
+      "section": "preamble",
+      "text": "Wei, H. Hu, Z. Xie, Z. Zhang, Y. Cao, J. Bao, D. Chen,and B. Guo, \u201cContrastive learning rivals masked image mod-eling in \ufb01ne-tuning via feature distillation,\u201d arXiv preprintarXiv:2205.14141, 2022. 7[78]L. Jing, J. Zhu, and Y. LeCun, \u201cMasked siamese convnets,\u201d arXivpreprint arXiv:2206.07700, 2022. 7[79]J. Zhou, C. Wei, H. Wang, W. Shen, C. Xie, A. Yuille, and T. Kong,\u201cibot: Image bert pre-training with online tokenizer,\u201d ICLR, 2022.7, 13[80]I. Kakogeorgiou, S. Gidaris, B. Psomas, Y. Avrithis, A. Bursuc,K. Karantzalos, and N. Komodakis, \u201cWhat to hide from your stu-dents: Attention-guided masked image modeling,\u201d arXiv preprintarXiv:2203.12719, 2022. 7, 13[81]M. Caron, I. Misra, J. Mairal, P.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0068",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 68,
+      "section": "preamble",
+      "text": "Caron, I. Misra, J. Mairal, P. Goyal, P. Bojanowski, andA. Joulin, \u201cUnsupervised learning of visual features by contrast-ing cluster assignments,\u201d arXiv preprint arXiv:2006.09882, 2020.7[82]L. Zhou, H. Liu, J. Bae, J. He, D. Samaras, and P. Prasanna,\u201cSelf pre-training with masked autoencoders for medical imageanalysis,\u201d arXiv preprint arXiv:2203.05573, 2022. 8, 13[83]Z.Chen,D.Agarwal,K.Aggarwal,W.Safta,M.M.Balan, V. Sethuraman, and K. Brown, \u201cMasked image mod-eling advances 3d medical image analysis,\u201d arXiv preprintarXiv:2204.11716, 2022. 8, 13[84]S. T. Ly, B. Lin, H. Q. Vo, D. Maric, B. Roysam, and H. V.",
+      "token_count": 244
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0069",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 69,
+      "section": "preamble",
+      "text": "T. Ly, B. Lin, H. Q. Vo, D. Maric, B. Roysam, and H. V. Nguyen,\u201cStudent collaboration improves self-supervised learning: Dual-loss adaptive masked autoencoder for brain cell image analysis,\u201darXiv preprint arXiv:2205.05194, 2022. 8, 13[85]H. Quan, X. Li, W. Chen, M. Zou, R. Yang, T. Zheng, R. Qi,X. Gao, and X. Cui, \u201cGlobal contrast masked autoencoders arepowerful pathological representation learners,\u201d arXiv preprintarXiv:2205.09048, 2022. 8, 13[86]J. An, Y. Bai, H. Chen, Z. Gao, and G. Litjens, \u201cMasked autoen-coders pre-training in multiple instance learning for whole slideimage classi\ufb01cation,\u201d in Medical Imaging with Deep Learning, 2022.8, 13[87]Y. Luo, Z. Chen, and X. Gao, \u201cSelf-distillation augmented maskedautoencoders for histopathological image classi\ufb01cation,\u201d arXivpreprint arXiv:2203.16983, 2022. 8, 13[88]R.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0070",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 70,
+      "section": "preamble",
+      "text": "Wang, D. Chen, Z. Wu, Y. Chen, X. Dai, M. Liu, Y.-G. Jiang,L. Zhou, and L. Yuan, \u201cBevt: Bert pretraining of video transform-ers,\u201d in Proceedings of the IEEE/CVF Conference on Computer Visionand Pattern Recognition, 2022, pp. 14 733\u201314 743. 8, 13[89]H. Tan, J. Lei, T. Wolf, and M. Bansal, \u201cVimpac: Video pre-trainingvia masked token prediction and contrastive learning,\u201d arXivpreprint arXiv:2106.11250, 2021. 8[90]Z. Tong, Y. Song, J. Wang, and L. Wang, \u201cVideomae: Maskedautoencoders are data-ef\ufb01cient learners for self-supervised videopre-training,\u201d arXiv preprint arXiv:2203.12602, 2022. 8, 13[91]R. Girdhar, A. El-Nouby, M. Singh, K. V. Alwala, A. Joulin, andI.",
+      "token_count": 252
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0071",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 71,
+      "section": "preamble",
+      "text": "Girdhar, A. El-Nouby, M. Singh, K. V. Alwala, A. Joulin, andI. Misra, \u201cOmnimae: Single model masked pretraining on imagesand videos,\u201d arXiv preprint arXiv:2206.08356, 2022. 8, 13[92]C. Feichtenhofer, H. Fan, Y. Li, and K. He, \u201cMasked autoencodersas spatiotemporal learners,\u201d arXiv preprint arXiv:2205.09113, 2022.8, 13[93]A. Gupta, S. Tian, Y. Zhang, J. Wu, R. Mart\u00b4\u0131n-Mart\u00b4\u0131n, and L. Fei-Fei, \u201cMaskvit: Masked visual pre-training for video prediction,\u201darXiv preprint arXiv:2206.11894, 2022. 8[94]A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agar-wal, G. Sastry, A. Askell, P. Mishkin, J.",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0072",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 72,
+      "section": "preamble",
+      "text": "Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agar-wal, G. Sastry, A. Askell, P. Mishkin, J. Clark et al., \u201cLearningtransferable visual models from natural language supervision,\u201din ICML, 2021. 8[95]N.Mu,A.Kirillov,D.Wagner,andS.Xie,\u201cSlip:Self-supervision meets language-image pre-training,\u201d arXiv preprintarXiv:2112.12750, 2021. 8JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 201512[96]C. Jia, Y. Yang, Y. Xia, Y.-T. Chen, Z. Parekh, H. Pham, Q. Le,Y.-H. Sung, Z. Li, and T. Duerig, \u201cScaling up visual and vision-language representation learning with noisy text supervision,\u201d inICML, 2021. 8[97]H. Bao, W. Wang, L. Dong, Q. Liu, O. K. Mohammed, K. Ag-garwal, S. Som, and F.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0073",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 73,
+      "section": "preamble",
+      "text": "Bao, W. Wang, L. Dong, Q. Liu, O. K. Mohammed, K. Ag-garwal, S. Som, and F. Wei, \u201cVlmo: Uni\ufb01ed vision-languagepre-training with mixture-of-modality-experts,\u201d arXiv preprintarXiv:2111.02358, 2022. 8[98]X. Geng, H. Liu, L. Lee, D. Schuurams, S. Levine, and P. Abbeel,\u201cMultimodal masked autoencoders learn transferable represen-tations,\u201d arXiv preprint arXiv:2205.14204, 2022. 8[99]Z.-Y. Dou, Y. Xu, Z. Gan, J. Wang, S. Wang, L. Wang, C. Zhu,P. Zhang, L. Yuan, N. Peng et al., \u201cAn empirical study of trainingend-to-end vision-and-language transformers,\u201d in CVPR, 2022. 8[100] Y. Bitton, G. Stanovsky, M. Elhadad, and R.",
+      "token_count": 242
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0074",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 74,
+      "section": "preamble",
+      "text": "Bitton, G. Stanovsky, M. Elhadad, and R. Schwartz, \u201cDataef\ufb01cient masked language modeling for vision and language,\u201darXiv preprint arXiv:2109.02040, 2021. 8[101] J. Lu, C. Clark, R. Zellers, R. Mottaghi, and A. Kembhavi,\u201cUni\ufb01ed-io: A uni\ufb01ed model for vision, language, and multi-modal tasks,\u201d arXiv preprint arXiv:2206.08916, 2022. 8[102] H. Bao, W. Wang, L. Dong, and F. Wei, \u201cVl-beit: Generativevision-language pretraining,\u201d arXiv preprint arXiv:2206.01127,2022. 8[103] Y. Pang, W. Wang, F. E. Tay, W. Liu, Y. Tian, and L.",
+      "token_count": 211
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0075",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 75,
+      "section": "preamble",
+      "text": "Pang, W. Wang, F. E. Tay, W. Liu, Y. Tian, and L. Yuan, \u201cMaskedautoencoders for point cloud self-supervised learning,\u201d arXivpreprint arXiv:2203.06604, 2022. 9, 13[104] H.Liu,M.Cai,andY.J.Lee,\u201cMaskeddiscriminationfor self-supervised learning on point clouds,\u201d arXiv preprintarXiv:2203.11183, 2022. 9, 13[105] R. Zhang, Z. Guo, P. Gao, R. Fang, B. Zhao, D. Wang, Y. Qiao, andH. Li, \u201cPoint-m2ae: Multi-scale masked autoencoders for hierar-chical point cloud pre-training,\u201d arXiv preprint arXiv:2205.14401,2022. 9, 13[106] C. Min, D. Zhao, L. Xiao, Y. Nie, and B. Dai, \u201cVoxel-mae: Maskedautoencoders for pre-training large-scale point clouds,\u201d arXiv e-prints, pp. arXiv\u20132206, 2022. 9[107] Q. Tan, N. Liu, X. Huang, R.",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0076",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 76,
+      "section": "preamble",
+      "text": "Tan, N. Liu, X. Huang, R. Chen, S.-H. Choi, and X. Hu, \u201cMgae:Masked autoencoders for self-supervised learning on graphs,\u201darXiv preprint arXiv:2201.02534, 2022. 9, 13[108] H. Chen, S. Zhang, and G. Xu, \u201cGraph masked autoencoder,\u201darXiv preprint arXiv:2202.08391, 2022. 9, 13[109] Z. Hou, X. Liu, Y. Dong, C. Wang, J. Tang et al., \u201cGraph-mae: Self-supervised masked graph autoencoders,\u201d arXiv preprintarXiv:2205.10803, 2022. 9, 13[110] J. Li, R. Wu, W. Sun, L. Chen, S. Tian, L. Zhu, C. Meng, Z. Zheng,and W. Wang, \u201cMaskgae: Masked graph modeling meets graphautoencoders,\u201d arXiv preprint arXiv:2205.10053, 2022. 9, 13[111] T. Haarnoja, A. Zhou, K. Hartikainen, G. Tucker, S.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0077",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 77,
+      "section": "preamble",
+      "text": "Haarnoja, A. Zhou, K. Hartikainen, G. Tucker, S. Ha, J. Tan,V. Kumar, H. Zhu, A. Gupta, P. Abbeel et al., \u201cSoft actor-criticalgorithms and applications,\u201d arXiv preprint arXiv:1812.05905,2018. 9[112] T. Tao, D. Reda, and M. van de Panne, \u201cEvaluating vision trans-former methods for deep reinforcement learning from pixels,\u201darXiv preprint arXiv:2204.04905, 2022. 9[113] M. Laskin, K. Lee, A. Stooke, L. Pinto, P. Abbeel, and A. Srinivas,\u201cReinforcement learning with augmented data,\u201d Advances in neu-ral information processing systems, vol. 33, pp. 19 884\u201319 895, 2020.9[114] T. Xiao, I. Radosavovic, T. Darrell, and J. Malik, \u201cMasked visualpre-training for motor control,\u201d arXiv preprint arXiv:2203.06173,2022. 9[115] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0078",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 78,
+      "section": "preamble",
+      "text": "Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov,\u201cProximalpolicyoptimizationalgorithms,\u201darXivpreprintarXiv:1707.06347, 2017. 9[116] Y. Seo, D. Hafner, H. Liu, F. Liu, S. James, K. Lee, andP. Abbeel, \u201cMasked world models for visual control,\u201d arXivpreprint arXiv:2206.14244, 2022. 9[117] D. Niizumi, D. Takeuchi, Y. Ohishi, N. Harada, and K. Kashino,\u201cMasked spectrogram modeling using masked autoencoders forlearning general-purpose audio representation,\u201d arXiv preprintarXiv:2204.12260, 2022. 9[118] A. Baade, P. Peng, and D. Harwath, \u201cMae-ast: Masked au-toencodingaudiospectrogramtransformer,\u201darXivpreprintarXiv:2203.16691, 2022. 9[119] M. Zha, \u201cTime series generation with masked autoencoder,\u201darXiv preprint arXiv:2201.07006, 2022. 9[120] K.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0079",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 79,
+      "section": "preamble",
+      "text": "Zha, \u201cTime series generation with masked autoencoder,\u201darXiv preprint arXiv:2201.07006, 2022. 9[120] K. Majmundar, S. Goyal, P. Netrapalli, and P. Jain, \u201cMet: Maskedencoding for tabular data,\u201d arXiv preprint arXiv:2206.08564, 2022.9[121] H. Xu, S. Ding, X. Zhang, H. Xiong, and Q. Tian, \u201cMaskedautoencodersarerobustdataaugmentors,\u201darXivpreprintarXiv:2206.04846, 2022. 9, 13[122] C. R. Qi, H. Su, K. Mo, and L. J. Guibas, \u201cPointnet: Deep learningon point sets for 3d classi\ufb01cation and segmentation,\u201d in CVPR,2017. 13[123] W. L. Hamilton, R. Ying, and J. Leskovec, \u201cInductive representa-tion learning on large graphs,\u201d in NeurIPS, 2017. 13[124] T. N. Kipf and M.",
+      "token_count": 265
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0080",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 80,
+      "section": "preamble",
+      "text": "Hamilton, R. Ying, and J. Leskovec, \u201cInductive representa-tion learning on large graphs,\u201d in NeurIPS, 2017. 13[124] T. N. Kipf and M. Welling, \u201cSemi-supervised classi\ufb01cation withgraph convolutional networks,\u201d in ICLR, 2017. 13[125] P. Veli\u02c7ckovi\u00b4c, G. Cucurull, A. Casanova, A. Romero, P. Lio, andY. Bengio, \u201cGraph attention networks,\u201d ICLR, 2018. 13[126] K. Xu, W. Hu, J. Leskovec, and S.",
+      "token_count": 154
+    },
+    {
+      "chunk_id": "2208.00173_chunk_0081",
+      "arxiv_id": "2208.00173",
+      "chunk_index": 81,
+      "section": "preamble",
+      "text": "Lio, andY. Bengio, \u201cGraph attention networks,\u201d ICLR, 2018. 13[126] K. Xu, W. Hu, J. Leskovec, and S. Jegelka, \u201cHow powerful aregraph neural networks?\u201d ICLR, 2019. 137APPENDIXJOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 201513modelmasking strategyinput typeprediction targetpretrain dataset(resolution)lossencoderdecoderFinetune Accuracyarxiv timepublish statusBEiT [10]block-wiseall patchestokensImageNet-1K(224)dVAEViT-BdVAE86.2%2021.06.15ICLR 2022ViT-L85.2%MAE [1]randomvisiblepixelImageNet-1K(224)MSEViT-B83.6%2021.11.11CVPR 2022ViT-L8 block,width 51285.9%ViT-H86.9%CAE [46]block-wisevisibletokensImageNet-1K(224)CE(MIM), MSE(align)VIT-S4 blocks82.0%2022.02.07arxivVIT-B4 blocks83.9%VIT-L4 blocks86.3%SimMIM [25]randomall patchespixelImageNet-1K(224)ViT-Blinear layer83.8%2021.11.18CVPR 2022Peco [44]randomalltoken from proposed tokenizerImageNet-1K (800epoch)same as BEiTViT-Bdecoder84.5%21.11.24With joint embeddinglossiBOT [79]block-wisevisibletokensImageNet-1K(224)VIT-BNone87.8%2021.11.15ICLR2022SplitMask [63]block-wiseall patchestokensImageNet-1K(224)CE(MIM);InfoNCEVIT-S2 blocks81.5%2021.12.20arxivImageNet-1K(224)VIT-B2 blocks83.6%AttMask [80]attention-guided maskmasked(student)&unmasked(teacher)teacher\u2019s featureImageNet-1Kdistillation(KLdiv)iBOT, ViT-S for attentionNoneIncomparable22.05.23arXiv=object-bias maskConMIM [22]randommasked(student)&unmasked(teacher)teacher\u2019s featureImageNet-1K(300)InfoNCEViT-Sdecoder82.0%22.05.19arXivVIT-B83.7%SIM [74]randommasked(student)&unmasked(teacher)teacher\u2019s featuredatasetcosine similarityViT-BdecoderIncomparable22.06.02arXivContrastive",
+      "token_count": 602
+    }
+  ]
+}

@@ -1,0 +1,564 @@
+{
+  "arxiv_id": "2102.12122",
+  "title": "Pyramid Vision Transformer: A Versatile Backbone for Dense Prediction without Convolutions",
+  "authors": [
+    "Wenhai Wang",
+    "Enze Xie",
+    "Xiang Li",
+    "Deng-Ping Fan",
+    "Kaitao Song",
+    "Ding Liang",
+    "Tong Lu",
+    "Ping Luo",
+    "Ling Shao"
+  ],
+  "year": 2021,
+  "abstract": "Although using convolutional neural networks (CNNs) as backbones achieves great successes in computer vision, this work investigates a simple backbone network useful for many dense prediction tasks without convolutions. Unlike the recently-proposed Transformer model (e.g., ViT) that is specially designed for image classification, we propose Pyramid Vision Transformer~(PVT), which overcomes the difficulties of porting Transformer to various dense prediction tasks. PVT has several merits compared to prior arts. (1) Different from ViT that typically has low-resolution outputs and high computational and memory cost, PVT can be not only trained on dense partitions of the image to achieve high output resolution, which is important for dense predictions but also using a progressive shrinking pyramid to reduce computations of large feature maps. (2) PVT inherits the advantages from both CNN and Transformer, making it a unified backbone in various vision tasks without convolutions by simply replacing CNN backbones. (3) We validate PVT by conducting extensive experiments, showing that it boosts the performance of many downstream tasks, e.g., object detection, semantic, and instance segmentation. For example, with a comparable number of parameters, RetinaNet+PVT achieves 40.4 AP on the COCO dataset, surpassing RetinNet+ResNet50 (36.3 AP) by 4.1 absolute AP. We hope PVT could serve as an alternative and useful backbone for pixel-level predictions and facilitate future researches. Code is available at https://github.com/whai362/PVT.",
+  "categories": [
+    "cs.CV"
+  ],
+  "pdf_url": "https://arxiv.org/pdf/2102.12122v2",
+  "page_count": 15,
+  "sections_found": [
+    "preamble"
+  ],
+  "total_chunks": 67,
+  "chunks": [
+    {
+      "chunk_id": "2102.12122_chunk_0000",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 0,
+      "section": "preamble",
+      "text": "Pyramid Vision Transformer: A Versatile Backbone for Dense Predictionwithout ConvolutionsWenhai Wang1, Enze Xie2, Xiang Li3, Deng-Ping Fan4B,Kaitao Song3, Ding Liang5, Tong Lu1B, Ping Luo2, Ling Shao41Nanjing University2The University of Hong Kong3Nanjing University of Science and Technology4IIAI5SenseTime ResearchConv 4TASKTASKTASK1. CLS2. DET3. SEG...1. CLSTF-E 41. CLS2. DET3.",
+      "token_count": 122
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0001",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 1,
+      "section": "preamble",
+      "text": "CLS2. DET3. SEG...1. CLSTF-E 41. CLS2. DET3. SEG...Conv 3TF-E 3Conv 2TF-E 2!!\u00d7Conv 1TF-ETransformerTF-E 1TransformerBlockBlockShrink(c) Pyramid Vision Transformer (ours)Figure 1: Comparisons of different architectures, where \u201cConv\u201d and \u201cTF-E\u201d stand for \u201cconvolution\u201d and \u201cTransformerencoder\u201d, respectively. (a) Many CNN backbones use a pyramid structure for dense prediction tasks such as object detection(DET), instance and semantic segmentation (SEG). (b) The recently proposed Vision Transformer (ViT) [13] is a \u201ccolumnar\u201dstructure speci\ufb01cally designed for image classi\ufb01cation (CLS). (c) By incorporating the pyramid structure from CNNs, wepresent the Pyramid Vision Transformer (PVT), which can be used as a versatile backbone for many computer vision tasks,broadening the scope and impact of ViT.",
+      "token_count": 211
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0002",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 2,
+      "section": "preamble",
+      "text": "Moreover, our experiments also show that PVT can easily be combined withDETR [6] to build an end-to-end object detection system without convolutions.(a) CNNs: VGG [54], ResNet [22], etc.(b) Vision Transformer [13]Abstractous vision tasks without convolutions, where it can be usedas a direct replacement for CNN backbones. (3) We val-idate PVT through extensive experiments, showing that itboosts the performance of many downstream tasks, includ-ing object detection, instance and semantic segmentation.For example, with a comparable number of parameters,PVT+RetinaNet achieves 40.4 AP on the COCO dataset,surpassing ResNet50+RetinNet (36.3 AP) by 4.1 absoluteAP (see Figure 2). We hope that PVT could serve as analternative and useful backbone for pixel-level predictionsand facilitate future research.Although convolutional neural networks (CNNs) haveachieved great success in computer vision, this work inves-tigates a simpler, convolution-free backbone network use-ful for many dense prediction tasks. Unlike the recently-proposed Vision Transformer (ViT) that was designed forimage classi\ufb01cation speci\ufb01cally, we introduce the Pyra-mid Vision Transformer (PVT), which overcomes the dif\ufb01-culties of porting Transformer to various dense predictiontasks.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0003",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 3,
+      "section": "preamble",
+      "text": "PVT has several merits compared to current stateof the arts. (1) Different from ViT that typically yields low-resolution outputs and incurs high computational and mem-ory costs, PVT not only can be trained on dense partitionsof an image to achieve high output resolution, which is im-portant for dense prediction, but also uses a progressiveshrinking pyramid to reduce the computations of large fea-ture maps. (2) PVT inherits the advantages of both CNNand Transformer, making it a uni\ufb01ed backbone for vari-1. IntroductionConvolutional neural network (CNNs) have achieved re-markable success in computer vision, making them a ver-satile and dominant approach for almost all tasks [54, 22,73, 49, 21, 39, 9, 32]. Nevertheless, this work aims to ex-plore an alternative backbone network beyond CNN, whichcan be used for dense prediction tasks such as object detec-B Corresponding authors: Deng-Ping Fan (dengpfan@gmail.com);Tong Lu (lutong@nju.edu.cn).shorter edge of 800 pixels in the COCO benchmark [40]).To address the above limitations, this work proposes apure Transformer backbone, termed Pyramid Vision Trans-former (PVT), which can serve as an alternative to the CNNbackbone in many downstream tasks, including image-levelprediction as well as pixel-level dense predictions.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0004",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 4,
+      "section": "preamble",
+      "text": "Speci\ufb01-cally, as illustrated in Figure 1 (c), our PVT overcomes thedif\ufb01culties of the conventional Transformer by (1) taking\ufb01ne-grained image patches (i.e., 4\u00d74 pixels per patch) as in-put to learn high-resolution representation, which is essen-tial for dense prediction tasks; (2) introducing a progressiveshrinking pyramid to reduce the sequence length of Trans-former as the network deepens, signi\ufb01cantly reducing thecomputational cost, and (3) adopting a spatial-reduction at-tention (SRA) layer to further reduce the resource consump-tion when learning high-resolution features.Overall, the proposed PVT possesses the following mer-its.Firstly, compared to the traditional CNN backbones(see Figure 1 (a)), which have local receptive \ufb01elds that in-crease with the network depth, our PVT always produces aglobal receptive \ufb01eld, which is more suitable for detectionand segmentation. Secondly, compared to ViT (see Fig-ure 1 (b)), thanks to its advanced pyramid structure, ourmethod can more easily be plugged into many represen-tative dense prediction pipelines, e.g., RetinaNet [39] andMask R-CNN [21].",
+      "token_count": 269
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0005",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 5,
+      "section": "preamble",
+      "text": "Thirdly, we can build a convolution-free pipeline by combining our PVT with other task-speci\ufb01cTransformer decoders, such as PVT+DETR [6] for ob-ject detection. To our knowledge, this is the \ufb01rst entirelyconvolution-free object detection pipeline.Our main contributions are as follows:(1) We propose Pyramid Vision Transformer (PVT),which is the \ufb01rst pure Transformer backbone designed forvarious pixel-level dense prediction tasks. Combining ourPVT and DETR, we can construct an end-to-end object de-tection system without convolutions and handcrafted com-ponents such as dense anchors and non-maximum suppres-sion (NMS).(2) We overcome many dif\ufb01culties when porting Trans-former to dense predictions, by designing a progressiveshrinking pyramid and a spatial-reduction attention (SRA).These are able to reduce the resource consumption of Trans-former, making PVT \ufb02exible to learning multi-scale andhigh-resolution features.(3) We evaluate the proposed PVT on several differ-ent tasks, including image classi\ufb01cation, object detection,instance and semantic segmentation, and compare it withpopular ResNets [22] and ResNeXts [73].As presentedin Figure 2, our PVT with different parameter scales canconsistently archived improved performance compared tothe prior arts.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0006",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 6,
+      "section": "preamble",
+      "text": "For example, under a comparable numberof parameters, using RetinaNet [39] for object detection,PVT-Small achieves 40.4 AP on COCO val2017, outper-PVT-MPVT-LPVT-SCOCO BBox AP (%)X101-32x4dX101-64x4dBackbone#Param (M) APR18 [22]21.331.8PVT-T (ours)23.036.7R50 [22]37.736.3PVT-S (ours)34.240.4R101 [22]56.738.5X101-32x4d [73]56.439.9ViT-S/32 [13]60.831.7PVT-M (ours)53.941.9X101-64x4d [73]95.541.0PVT-L (ours)71.142.6PVT-TR101R50R18ViT-S/322030405060708090100110120130#Parameter (M)tion [40, 14], semantic [83] and instance segmentation [40],in addition to image classi\ufb01cation [12].Inspired by the success of Transformer [64] in natu-ral language processing, many researchers have exploredits application in computer vision.For example, someworks [6, 85, 72, 56, 24, 42] model the vision task as a dic-tionary lookup problem with learnable queries, and use theTransformer decoder as a task-speci\ufb01c head on top of theCNN backbone.",
+      "token_count": 339
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0007",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 7,
+      "section": "preamble",
+      "text": "Although some prior arts have also incor-porated attention modules [70, 48, 80] into CNNs, as faras we know, exploring a clean and convolution-free Trans-former backbone to address dense prediction tasks in com-puter vision is rarely studied.Recently, Dosovitskiy et al. [13] introduced the VisionTransformer (ViT) for image classi\ufb01cation. This is an in-teresting and meaningful attempt to replace the CNN back-bone with a convolution-free model. As shown in Figure 1(b), ViT has a columnar structure with coarse image patchesas input.1Although ViT is applicable to image classi\ufb01-cation, it is challenging to directly adapt it to pixel-leveldense predictions such as object detection and segmenta-tion, because (1) its output feature map is single-scale andlow-resolution, and (2) its computational and memory costsare relatively high even for common input image sizes (e.g.,1Due to resource constraints, ViT cannot use \ufb01ne-grained imagepatches (e.g., 4\u00d74 pixels per patch) as input, instead only receive coarsepatches (e.g., 32\u00d732 pixels per patch) as input, which leads to its low out-put resolution (e.g., 32-stride).forming ResNet50 by 4.1 points (40.4 vs. 36.3).",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0008",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 8,
+      "section": "preamble",
+      "text": "Moreover,PVT-Large achieves 42.6 AP, which is 1.6 points better thanResNeXt101-64x4d, with 30% less parameters.resolution or multi-scale feature maps for accurate objectdetection.Semantic Segmentation. CNNs also play an importantrole in semantic segmentation. In the early stages, FCN[44] introduced a fully convolutional architecture to gen-erate a spatial segmentation map for a given image of anysize. After that, the deconvolution operation was introducedby Noh et al. [47] and achieved impressive performance onthe PASCAL VOC 2012 dataset [52]. Inspired by FCN, U-Net [50] was proposed for the medical image segmentationdomain speci\ufb01cally, bridging the information \ufb02ow betweencorresponding low-level and high-level feature maps of thesame spatial sizes. To explore richer global context rep-resentation, Zhao et al. [81] designed a pyramid poolingmodule over various pooling scales, and Kirillov et al. [32]developed a lightweight segmentation head termed Seman-tic FPN, based on FPN [38]. Finally, the DeepLab family[8, 41] applies dilated convolutions to enlarge the receptive\ufb01eld while maintaining the feature map resolution. Similarto object detection methods, semantic segmentation modelsalso rely on high-resolution or multi-scale feature maps.2.",
+      "token_count": 298
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0009",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 9,
+      "section": "preamble",
+      "text": "Similarto object detection methods, semantic segmentation modelsalso rely on high-resolution or multi-scale feature maps.2. Related Work2.1. CNN BackbonesCNNs are the work-horses of deep neural networks in vi-sual recognition. The standard CNN was \ufb01rst introduced in[34] to distinguish handwritten numbers. The model con-tains convolutional kernels with a certain receptive \ufb01eldthat captures favorable visual context. To provide trans-lation equivariance, the weights of convolutional kernelsare shared over the entire image space.More recently,with the rapid development of the computational resources(e.g., GPU), the successful training of stacked convolutionalblocks [33, 54] on large-scale image classi\ufb01cation datasets(e.g., ImageNet [51]) has become possible. For instance,GoogLeNet [59] demonstrated that a convolutional opera-tor containing multiple kernel paths can achieve very com-petitive performance.The effectiveness of a multi-pathconvolutional block was further validated in Inception se-ries [60, 58], ResNeXt [73], DPN [10], MixNet [65] andSKNet [36]. Further, ResNet [22] introduced skip connec-tions into the convolutional block, making it possible to cre-ate/train very deep networks and obtaining impressive re-sults in the \ufb01eld of computer vision.",
+      "token_count": 284
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0010",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 10,
+      "section": "preamble",
+      "text": "Further, ResNet [22] introduced skip connec-tions into the convolutional block, making it possible to cre-ate/train very deep networks and obtaining impressive re-sults in the \ufb01eld of computer vision. DenseNet [25] intro-duced a densely connected topology, which connects eachconvolutional block to all previous blocks. More recent ad-vances can be found in recent survey/review papers [31, 53].Unlike the full-blown CNNs, the vision Transformerbackbone is still in its early stage of development. In thiswork, we try to extend the scope of Vision Transformer bydesigning a new versatile Transformer backbone suitablefor most vision tasks.2.3. Self-Attention and Transformer in VisionAs convolutional \ufb01lter weights are usually \ufb01xed aftertraining, they cannot be dynamically adapted to differentinputs. Many methods have been proposed to alleviate thisproblem using dynamic \ufb01lters [30] or self-attention oper-ations [64].",
+      "token_count": 204
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0011",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 11,
+      "section": "preamble",
+      "text": "Many methods have been proposed to alleviate thisproblem using dynamic \ufb01lters [30] or self-attention oper-ations [64]. The non-local block [70] attempts to modellong-range dependencies in both space and time, whichhas been shown bene\ufb01cial for accurate video classi\ufb01ca-tion.However, despite its success, the non-local opera-tor suffers from the high computational and memory costs.Criss-cross [26] further reduces the complexity by gen-erating sparse attention maps through a criss-cross path.Ramachandran et al. [48] proposed the stand-alone self-attention to replace convolutional layers with local self-attention units.AANet [3] achieves competitive resultswhen combining the self-attention and convolutional oper-ations. LambdaNetworks [2] uses the lambda layer, an ef-\ufb01cient self-attention to replace the convolution in the CNN.DETR [6] utilizes the Transformer decoder to model ob-ject detection as an end-to-end dictionary lookup problemwith learnable queries, successfully removing the need forhandcrafted processes such as NMS. Based on DETR, de-formable DETR [85] further adopts a deformable atten-tion layer to focus on a sparse set of contextual elements,obtaining faster convergence and better performance.",
+      "token_count": 274
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0012",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 12,
+      "section": "preamble",
+      "text": "Based on DETR, de-formable DETR [85] further adopts a deformable atten-tion layer to focus on a sparse set of contextual elements,obtaining faster convergence and better performance. Re-cently, Vision Transformer (ViT) [13] employs a pureTransformer [64] model for image classi\ufb01cation by treat-ing an image as a sequence of patches. DeiT [63] furtherextends ViT using a novel distillation approach. Differentfrom previous models, this work introduces the pyramidstructure into Transformer to present a pure Transformer2.2. Dense Prediction TasksPreliminary. The dense prediction task aims to performpixel-level classi\ufb01cation or regression on a feature map.Object detection and semantic segmentation are two rep-resentative dense prediction tasks.Object Detection.In the era of deep learning,CNNs [34] have become the dominant framework for ob-ject detection, which includes single-stage detectors (e.g.,SSD [43], RetinaNet [39], FCOS [62], GFL [37, 35], Po-larMask [71] and OneNet [55]) and multi-stage detectors(Faster R-CNN [49], Mask R-CNN [21], Cascade R-CNN[4] and Sparse R-CNN [57]). Most of these popular ob-ject detectors are built on high-resolution or multi-scale fea-ture maps to obtain good detection performance.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0013",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 13,
+      "section": "preamble",
+      "text": "Most of these popular ob-ject detectors are built on high-resolution or multi-scale fea-ture maps to obtain good detection performance. Recently,DETR [6] and deformable DETR [85] combined the CNNbackbone and the Transformer decoder to build an end-to-end object detector.",
+      "token_count": 60
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0014",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 14,
+      "section": "preamble",
+      "text": "Recently,DETR [6] and deformable DETR [85] combined the CNNbackbone and the Transformer decoder to build an end-to-end object detector. Likewise, they also require high-32\u00d7\ud835\udc36$\ud835\udc3b\u00d7\ud835\udc4a\u00d73\ud835\udc39!: \ud835\udc3b4 \u00d7 \ud835\udc4a4 \u00d7\ud835\udc36!\ud835\udc39\": \ud835\udc3b8 \u00d7\ud835\udc4a8 \u00d7\ud835\udc36\"\ud835\udc39#: \ud835\udc3b16\u00d7\ud835\udc4a16 \u00d7\ud835\udc36#\ud835\udc39$: \ud835\udc3b32\u00d7 \ud835\udc4aStage 1Stage 2Stage 3Stage 4Patch EmbEncoderPatch EmbEncoderPatch EmbEncoderPatch EmbEncoderStage iSRAMulti-HeadAttentionFeedForwardLinearNormReshapeNormSpacialReductionNormReshapePosition Embedding\ud835\udc3b!\"#\ud835\udc4a!\"#\ud835\udc43!$\u00d7\ud835\udc36!Element-wise AddPatchEmbedding\ud835\udc3b!\"#\u00d7 \ud835\udc4a!\"#\ud835\udc3b!\"#\ud835\udc43!\u00d7(\ud835\udc43!$\ud835\udc36!\"#)\u00d7 \ud835\udc4a!\"#\ud835\udc43!\u00d7\ud835\udc36!Feature MapTransformer Encoder (\ud835\udc3f%\u00d7)backbone for dense prediction tasks, rather than a task-speci\ufb01c head or an image classi\ufb01cation model.downstream tasks, including image classi\ufb01cation, object de-tection, and semantic segmentation.3.2.",
+      "token_count": 306
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0015",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 15,
+      "section": "preamble",
+      "text": "Feature Pyramid for Transformer3. Pyramid Vision Transformer (PVT)Unlike CNN backbone networks [54, 22], which usedifferent convolutional strides to obtain multi-scale featuremaps, our PVT uses a progressive shrinking strategy to con-trol the scale of feature maps by patch embedding layers.Here, we denote the patch size of the i-th stage as Pi. Atthe beginning of stage i, we \ufb01rst evenly divide the input fea-ture map Fi\u22121 \u2208RHi\u22121\u00d7Wi\u22121\u00d7Ci\u22121 into Hi\u22121Wi\u221213.1. Overall ArchitectureOur goal is to introduce the pyramid structure into theTransformer framework, so that it can generate multi-scalefeature maps for dense prediction tasks (e.g., object detec-tion and semantic segmentation). An overview of PVT isdepicted in Figure 3. Similar to CNN backbones [22], ourmethod has four stages that generate feature maps of dif-ferent scales. All stages share a similar architecture, whichconsists of a patch embedding layer and Li Transformer en-coder layers.In the \ufb01rst stage, given an input image of size H\u00d7W\u00d73,we \ufb01rst divide it into HWP 2ipatches, andthen each patch is \ufb02atten and projected to a Ci-dimensionalembedding.",
+      "token_count": 271
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0016",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 16,
+      "section": "preamble",
+      "text": "After the linear projection, the shape of the em-bedded patches can be viewed as Hi\u22121Pi \u00d7Ci, wherethe height and width are Pi times smaller than the input.In this way, we can \ufb02exibly adjust the scale of the featuremap in each stage, making it possible to construct a featurepyramid for Transformer.Pi \u00d7 Wi\u2212142patches,2 each of size 4\u00d74\u00d73.Then, we feed the \ufb02attened patches to a linear projectionand obtain embedded patches of size HW42 \u00d7C1. After that,the embedded patches along with a position embedding arepassed through a Transformer encoder with L1 layers, andthe output is reshaped to a feature map F1 of size H3.3. Transformer Encoder4\u00d7WThe Transformer encoder in the stage i has Li encoderlayers, each of which is composed of an attention layerand a feed-forward layer [64]. Since PVT needs to processhigh-resolution (e.g., 4-stride) feature maps, we propose aspatial-reduction attention (SRA) layer to replace the tradi-tional multi-head attention (MHA) layer [64] in the encoder.Similar to MHA, our SRA receives a query Q, a key K,and a value V as input, and outputs a re\ufb01ned feature.",
+      "token_count": 275
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0017",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 17,
+      "section": "preamble",
+      "text": "Thedifference is that our SRA reduces the spatial scale of K4 \u00d7C1.In the same way, using the feature map from the previ-ous stage as input, we obtain the following feature maps:F2, F3, and F4, whose strides are 8, 16, and 32 pixelswith respect to the input image.",
+      "token_count": 73
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0018",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 18,
+      "section": "preamble",
+      "text": "With the feature pyramid{F1, F2, F3, F4}, our method can be easily applied to most2As done for ResNet, we keep the highest resolution of our output fea-ture map at 4-stride.\u2022 Ci: the channel number of the output of Stage i;\u2022 Li: the number of encoder layers in Stage i;\u2022 Ri: the reduction ratio of the SRA in Stage i;\u2022 Ni: the head number of the SRA in Stage i;\u2022 Ei: the expansion ratio of the feed-forward layer [64]in Stage i;Multi-HeadMulti-HeadAttentionAttention\ud835\udc3b!\ud835\udc4a!\" \u00d7\ud835\udc36!SpatialReductionQKVQKV (\ud835\udc3b! \ud835\udc4a!)\u00d7\ud835\udc36!Following the design rules of ResNet [22], we (1) use smalloutput channel numbers in shallow stages; and (2) concen-trate the major computation resource in intermediate stages.To provide instances for discussion, we describe a seriesof PVT models with different scales, namely PVT-Tiny, -Small, -Medium, and -Large, in Table 1, whose parameternumbers are comparable to ResNet18, 50, 101, and 152 re-spectively.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0019",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 19,
+      "section": "preamble",
+      "text": "More details of employing these models in spe-ci\ufb01c downstream tasks will be introduced in Section 4.Multi-Head AttentionSpatial-Reduction Attention (ours)and V before the attention operation (see Figure 4), whichlargely reduces the computational/memory overhead. De-tails of the SRA in the stage i can be formulated as follows:3.5. DiscussionThe most related work to our model is ViT [13]. Here,we discuss the relationship and differences between them.First, both PVT and ViT are pure Transformer models with-out convolutions.The primary difference between themis the pyramid structure. Similar to the traditional Trans-former [64], the length of ViT\u2019s output sequence is the sameas the input, which means that the output of ViT is single-scale (see Figure 1 (b)). Moreover, due to the limited re-source, the input of ViT is coarse-grained (e.g., the patchsize is 16 or 32 pixels), and thus its output resolution is rel-atively low (e.g., 16-stride or 32-stride).",
+      "token_count": 226
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0020",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 20,
+      "section": "preamble",
+      "text": "As a result, it isdif\ufb01cult to directly apply ViT to dense prediction tasks thatrequire high-resolution or multi-scale feature maps.Our PVT breaks the routine of Transformer by intro-ducing a progressive shrinking pyramid.It can gener-ate multi-scale feature maps like a traditional CNN back-bone.In addition, we also designed a simple but effec-tive attention layer\u2014SRA, to process high-resolution fea-ture maps and reduce computational/memory costs. Ben-e\ufb01ting from the above designs, our method has the fol-lowing advantages over ViT: 1) more \ufb02exible\u2014can gen-erate feature maps of different scales/channels in differ-ent stages; 2) more versatile\u2014can be easily plugged andplayed in most downstream task models; 3) more friendlyto computation/memory\u2014can handle higher resolution fea-ture maps or longer sequences.SRA(Q, K, V ) = Concat(head0, ..., headNi)W O,(1)headj = Attention(QW Qj , SR(K)W Kj , SR(V)W Vj ), (2)where Concat(\u00b7) is the concatenation operation as in [64].W Qj \u2208RCi\u00d7dhead, W Kj\u2208RCi\u00d7dhead, W Vj \u2208RCi\u00d7dhead, andW O \u2208RCi\u00d7Ci are linear projection parameters.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0021",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 21,
+      "section": "preamble",
+      "text": "Ni is thehead number of the attention layer in Stage i. Therefore, thedimension of each head (i.e., dhead) is equal to CiNi . SR(\u00b7) isthe operation for reducing the spatial dimension of the inputsequence (i.e., K or V ), which is written as:SR(x) = Norm(Reshape(x, Ri)W S).(3)Here, x \u2208R(HiWi)\u00d7Ci represents a input sequence, andRi denotes the reduction ratio of the attention layers inStage i. Reshape(x, Ri) is an operation of reshaping theinput sequence x to a sequence of size HiWiR2i\u00d7 (R2i Ci).WS \u2208R(R2i Ci)\u00d7Ci is a linear projection that reduces the di-mension of the input sequence to Ci. Norm(\u00b7) refers tolayer normalization [1]. As in the original Transformer [64],our attention operation Attention(\u00b7) is calculated as:Attention(q, k, v) = Softmax( qkT\u221adhead)v.(4)Through these formulas, we can \ufb01nd that the computa-tional/memory costs of our attention operation are R2i timeslower than those of MHA, so our SRA can handle largerinput feature maps/sequences with limited resources.4. Application to Downstream Tasks4.1. Image-Level Prediction3.4.",
+      "token_count": 289
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0022",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 22,
+      "section": "preamble",
+      "text": "Application to Downstream Tasks4.1. Image-Level Prediction3.4. Model DetailsImage classi\ufb01cation is the most classical task of image-level prediction.",
+      "token_count": 34
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0023",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 23,
+      "section": "preamble",
+      "text": "Application to Downstream Tasks4.1. Image-Level Prediction3.4. Model DetailsImage classi\ufb01cation is the most classical task of image-level prediction. To provide instances for discussion, wedesign a series of PVT models with different scales, namelyPVT-Tiny, -Small, -Medium, and -Large, whose parameternumbers are similar to ResNet18, 50, 101, and 152, respec-In summary, the hyper parameters of our method arelisted as follows:\u2022 Pi: the patch size of Stage i;Output SizeLayer NamePVT-TinyPVT-SmallPVT-MediumPVT-LargePatch EmbeddingP1 = 4; C1 = 64Stage 1H4 \u00d7 WTransformerEncoder\uf8f0R1 = 8N1 = 1E1 = 8\uf8f0R1 = 8N1 = 1E1 = 8\uf8f0R1 = 8N1 = 1E1 = 8\uf8f0R1 = 8N1 = 1E1 = 8\uf8fb\u00d7 2\uf8fb\u00d7 3\uf8fb\u00d7 3\uf8fb\u00d7 3Patch EmbeddingP2 = 2; C2 = 128Stage 2H8 \u00d7 WTransformerEncoder\uf8f0R2 = 4N2 = 2E2 = 8\uf8f0R2 = 4N2 = 2E2 = 8\uf8f0R2 = 4N2 = 2E2 = 8\uf8f0R2 = 4N2 = 2E2 = 8\uf8fb\u00d7 2\uf8fb\u00d7 3\uf8fb\u00d7 3\uf8fb\u00d7 8Patch EmbeddingP3 = 2; C3 = 320\uf8f0R3 = 2N3 = 5E3 = 4\uf8f0R3 = 2N3 = 5E3 = 4\uf8f0R3 = 2N3 = 5E3 = 4\uf8f0R3 = 2N3 = 5E3 = 4Stage 3H16 \u00d7 WTransformerEncoder\uf8fb\u00d7 2\uf8fb\u00d7 6\uf8fb\u00d7 18\uf8fb\u00d7 27Patch EmbeddingP4 = 2; C4 =512Stage 4H32 \u00d7 W\uf8f0R4 = 1N4 = 8E4 = 4\uf8f0R4 = 1N4 = 8E4 = 4\uf8f0R4 = 1N4 = 8E4 = 4\uf8f0R4 = 1N4 = 8E4 = 4TransformerEncoder\uf8fb\u00d7 2\uf8fb\u00d7 3\uf8fb\u00d7 3\uf8fb\u00d7 3tively.",
+      "token_count": 615
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0024",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 24,
+      "section": "preamble",
+      "text": "Detailed hyper-parameter settings of the PVT seriesare provided in the supplementary material (SM).For image classi\ufb01cation, we follow ViT [13] andDeiT [63] to append a learnable classi\ufb01cation token to theinput of the last stage, and then employ a fully connected(FC) layer to conduct classi\ufb01cation on top of the token.be an arbitrary shape, the position embeddings pre-trainedon ImageNet may no longer be meaningful. Therefore, weperform bilinear interpolation on the pre-trained positionembeddings according to the input resolution.5. Experiments4.2. Pixel-Level Dense PredictionWe compare PVT with the two most representative CNNbackbones, i.e., ResNet [22] and ResNeXt [73], which arewidely used in the benchmarks of many downstream tasks.In addition to image-level prediction, dense predictionthat requires pixel-level classi\ufb01cation or regression to beperformed on the feature map, is also often seen in down-stream tasks. Here, we discuss two typical tasks, namelyobject detection, and semantic segmentation.We apply our PVT models to three representative denseprediction methods, namely RetinaNet [39], Mask R-CNN [21], and Semantic FPN [32].",
+      "token_count": 259
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0025",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 25,
+      "section": "preamble",
+      "text": "Here, we discuss two typical tasks, namelyobject detection, and semantic segmentation.We apply our PVT models to three representative denseprediction methods, namely RetinaNet [39], Mask R-CNN [21], and Semantic FPN [32]. RetinaNet is a widelyused single-stage detector, Mask R-CNN is the most pop-ular two-stage instance segmentation framework, and Se-mantic FPN is a vanilla semantic segmentation methodwithout special operations (e.g., dilated convolution). Us-ing these methods as baselines enables us to adequately ex-amine the effectiveness of different backbones.The implementation details are as follows:(1) LikeResNet, we initialize the PVT backbone with the weightspre-trained on ImageNet; (2) We use the output featurepyramid {F1, F2, F3, F4} as the input of FPN [38], andthen the re\ufb01ned feature maps are fed to the follow-up de-tection/segmentation head; (3) When training the detec-tion/segmentation model, none of the layers in PVT arefrozen; (4) Since the input for detection/segmentation can5.1. Image Classi\ufb01cationSettings.",
+      "token_count": 252
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0026",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 26,
+      "section": "preamble",
+      "text": "Image Classi\ufb01cationSettings. Image classi\ufb01cation experiments are performedon the ImageNet 2012 dataset [51], which comprises 1.28million training images and 50K validation images from1,000 categories.For fair comparison, all models aretrained on the training set, and report the top-1 error on thevalidation set. We follow DeiT [63] and apply random crop-ping, random horizontal \ufb02ipping [59], label-smoothing reg-ularization [60], mixup [78], CutMix [76], and random eras-ing [82] as data augmentations. During training, we employAdamW [46] with a momentum of 0.9, a mini-batch size of128, and a weight decay of 5 \u00d7 10\u22122 to optimize models.The initial learning rate is set to 1\u00d710\u22123 and decreases fol-lowing the cosine schedule [45]. All models are trained for300 epochs from scratch on 8 V100 GPUs. To benchmark,we apply a center crop on the validation set, where a 224\u00d7224 patch is cropped to evaluate the classi\ufb01cation accuracy.Results. In Table 2, we see that our PVT models are supe-rior to conventional CNN backbones under similar parame-ter numbers and computational budgets.",
+      "token_count": 277
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0027",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 27,
+      "section": "preamble",
+      "text": "In Table 2, we see that our PVT models are supe-rior to conventional CNN backbones under similar parame-ter numbers and computational budgets. For example, whenMethod#Param (M)GFLOPsTop-1 Err (%)ResNet18* [22]11.71.830.2ResNet18 [22]11.71.831.5DeiT-Tiny/16 [63]5.71.327.8PVT-Tiny (ours)13.21.924.9ResNet50* [22]25.64.123.9ResNet50 [22]25.64.121.5ResNeXt50-32x4d* [73]25.04.322.4ResNeXt50-32x4d [73]25.04.320.5T2T-ViTt-14 [75]22.06.119.3TNT-S [19]23.85.218.7DeiT-Small/16 [63]22.14.620.1PVT-Small (ours)24.53.820.2ResNet101* [22]44.77.922.6ResNet101 [22]44.77.920.2ResNeXt101-32x4d* [73]44.28.021.2ResNeXt101-32x4d [73]44.28.019.4T2T-ViTt-19 [75]39.09.818.6ViT-Small/16 [13]48.89.919.2PVT-Medium (ours)44.26.718.8ResNeXt101-64x4d* [73]83.515.620.4ResNeXt101-64x4d [73]83.515.618.5ViT-Base/16 [13]86.617.618.2T2T-ViTt-24 [75]64.015.017.8TNT-B [19]66.014.117.2DeiT-Base/16 [63]86.617.618.2PVT-Large (ours)61.49.818.3ers.",
+      "token_count": 473
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0028",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 28,
+      "section": "preamble",
+      "text": "Our models are trained with a batch size of 16 on 8V100 GPUs and optimized by AdamW [46] with an ini-tial learning rate of 1 \u00d7 10\u22124. Following common prac-tices [39, 21, 7], we adopt 1\u00d7 or 3\u00d7 training schedule (i.e.,12 or 36 epochs) to train all detection models. The trainingimage is resized to have a shorter side of 800 pixels, whilethe longer side does not exceed 1,333 pixels. When usingthe 3\u00d7 training schedule, we randomly resize the shorterside of the input image within the range of [640, 800]. Inthe testing phase, the shorter side of the input image is \ufb01xedto 800 pixels.Results. As shown in Table 3, when using RetinaNet forobject detection, we \ufb01nd that under comparable number ofparameters, the PVT-based models signi\ufb01cantly surpassestheir counterparts. For example, with the 1\u00d7 training sched-ule, the AP of PVT-Tiny is 4.9 points better than that ofResNet18 (36.7 vs. 31.8).",
+      "token_count": 252
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0029",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 29,
+      "section": "preamble",
+      "text": "For example, with the 1\u00d7 training sched-ule, the AP of PVT-Tiny is 4.9 points better than that ofResNet18 (36.7 vs. 31.8). Moreover, with the 3\u00d7 trainingschedule and multi-scale training, PVT-Large archive thebest AP of 43.4, surpassing ResNeXt101-64x4d (43.4 vs.41.8), while our parameter number is 30% fewer. These re-sults indicate that our PVT can be a good alternative to theCNN backbone for object detection.Similar results are found in instance segmentation exper-iments based on Mask R-CNN, as shown in Table 4. Withthe 1\u00d7 training schedule, PVT-Tiny achieves 35.1 mask AP(APm), which is 3.9 points better than ResNet18 (35.1 vs.31.2) and even 0.7 points higher than ResNet50 (35.1 vs.34.4).",
+      "token_count": 218
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0030",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 30,
+      "section": "preamble",
+      "text": "The best APm obtained by PVT-Large is 40.7, whichis 1.0 points higher than ResNeXt101-64x4d (40.7 vs. 39.7),with 20% fewer parameters.the GFLOPs are roughly similar, the top-1 error of PVT-Small reaches 20.2, which is 1.3 points higher than that ofResNet50 [22] (20.2 vs. 21.5). Meanwhile, under similar orlower complexity, PVT models archive performances com-parable to the recently proposed Transformer-based mod-els, such as ViT [13] and DeiT [63] (PVT-Large: 18.3 vs.ViT(DeiT)-Base/16: 18.3). Here, we clarify that these re-sults are within our expectations, because the pyramid struc-ture is bene\ufb01cial to dense prediction tasks, but brings littleimprovements to image classi\ufb01cation.Note that ViT and DeiT have limitations as they arespeci\ufb01cally designed for classi\ufb01cation tasks, and thus arenot suitable for dense prediction tasks, which usually re-quire effective feature pyramids.5.3. Semantic SegmentationSettings. We choose ADE20K [83], a challenging sceneparsing dataset, to benchmark the performance of semanticsegmentation.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0031",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 31,
+      "section": "preamble",
+      "text": "Semantic SegmentationSettings. We choose ADE20K [83], a challenging sceneparsing dataset, to benchmark the performance of semanticsegmentation. ADE20K contains 150 \ufb01ne-grained semanticcategories, with 20,210, 2,000, and 3,352 images for train-ing, validation, and testing, respectively. We evaluate ourPVT backbones on the basis of Semantic FPN [32], a sim-ple segmentation method without dilated convolutions [74].In the training phase, the backbone is initialized with theweights pre-trained on ImageNet [12], and other newlyadded layers are initialized with Xavier [18]. We optimizeour models using AdamW [46] with an initial learning rateof 1e-4. Following common practices [32, 8], we train ourmodels for 80k iterations with a batch size of 16 on 4 V100GPUs. The learning rate is decayed following the polyno-mial decay schedule with a power of 0.9.",
+      "token_count": 215
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0032",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 32,
+      "section": "preamble",
+      "text": "The learning rate is decayed following the polyno-mial decay schedule with a power of 0.9. We randomlyresize and crop the image to 512 \u00d7 512 for training, andrescale to have a shorter side of 512 pixels during testing.Results.As shown in Table 5, when using Seman-tic FPN [32] for semantic segmentation,PVT-basedmodels consistently outperforms the models based onResNet [22] or ResNeXt [73].For example, with al-5.2. Object DetectionSettings. Object detection experiments are conducted onthe challenging COCO benchmark [40].All models aretrained on COCO train2017 (118k images) and evalu-ated on val2017 (5k images). We verify the effectivenessof PVT backbones on top of two standard detectors, namelyRetinaNet [39] and Mask R-CNN [21].",
+      "token_count": 188
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0033",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 33,
+      "section": "preamble",
+      "text": "We verify the effectivenessof PVT backbones on top of two standard detectors, namelyRetinaNet [39] and Mask R-CNN [21]. Before training, weuse the weights pre-trained on ImageNet to initialize thebackbone and Xavier [18] to initialize the newly added lay-RetinaNet 1xRetinaNet 3x + MSAPAP50AP75APSAPMAPLAPAP50AP75APSAPMAPLResNet18 [22]21.331.849.633.616.334.343.235.453.937.619.538.246.8PVT-Tiny (ours)23.036.7(+4.9)56.938.922.638.850.039.4(+4.0)59.842.025.542.052.1ResNet50 [22]37.736.355.338.619.340.048.839.058.441.822.442.851.6PVT-Small (ours)34.240.4(+4.1)61.343.025.042.955.742.2(+3.2)62.745.026.245.257.2ResNet101 [22]56.738.557.841.221.442.651.140.960.144.023.745.053.8ResNeXt101-32x4d [73]56.439.9(+1.4)59.642.722.344.252.541.4(+0.5)61.044.323.945.553.7PVT-Medium (ours)53.941.9(+3.4)63.144.325.044.957.643.2(+2.3)63.846.127.346.358.9ResNeXt101-64x4d [73]95.541.060.944.023.945.254.041.861.544.425.245.454.6PVT-Large (ours)71.142.6(+1.6)63.745.425.846.058.443.4(+1.6)63.646.126.146.059.5Backbone#Param(M)Mask R-CNN 1xMask R-CNN 3x + MSAPbAPb50APb75APmAPm50APm75APbAPb50APb75APmAPm50APm75ResNet18 [22]31.234.054.036.731.251.032.736.957.140.033.653.935.7PVT-Tiny (ours)32.936.7(+2.7)59.239.335.1(+3.9)56.737.339.8(+2.9)62.243.037.4(+3.8)59.339.9ResNet50 [22]44.238.058.641.434.455.136.741.061.744.937.158.440.1PVT-Small (ours)44.140.4(+2.4)62.943.837.8(+3.4)60.140.343.0(+2.0)65.346.939.9(+2.8)62.542.8ResNet101 [22]63.240.461.144.236.457.738.842.863.247.138.560.141.3ResNeXt101-32x4d [73]62.841.9(+1.5)62.545.937.5(+1.1)59.440.244.0(+1.2)64.448.039.2(+0.7)61.441.9PVT-Medium (ours)63.942.0(+1.6)64.445.639.0(+2.6",
+      "token_count": 828
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0034",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 34,
+      "section": "preamble",
+      "text": "Pure Transformer Detection & SegmentationPVT+DETR. To reach the limit of no convolution, we builda pure Transformer pipeline for object detection by sim-ply combining our PVT with a Transformer-based detectionhead\u2014DETR [6]. We train models on COCO train2017for 50 epochs with an initial learning rate of 1 \u00d7 10\u22124.The learning rate is divided by 10 at the 33rd epoch. Weuse random \ufb02ipping and multi-scale training as data aug-mentation. All other experimental settings is the same asthose in Sec. 5.2. As reported in Table 6, PVT-based DETRarchieves 34.7 AP on COCO val2017, outperformingthe original ResNet50-based DETR by 2.4 points (34.7 vs.32.3).",
+      "token_count": 178
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0035",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 35,
+      "section": "preamble",
+      "text": "These results prove that a pure Transformer detectorcan also works well in the object detection task.PVT+Trans2Seg.We build a pure Transformer modelfor semantic segmentation by combining our PVT withmost the same number of parameters and GFLOPs, ourPVT-Tiny/Small/Medium are at least 2.8 points higher thanResNet-18/50/101.In addition, although the parameternumber and GFLOPs of our PVT-Large are 20% lower thanthose of ResNeXt101-64x4d, the mIoU is still 1.9 pointshigher (42.1 vs. 40.2). With a longer training schedule andmulti-scale testing, PVT-Large+Semantic FPN archives thebest mIoU of 44.8, which is very close to the state-of-the-artperformance of the ADE20K benchmark. Note that Seman-tic FPN is just a simple segmentation head.",
+      "token_count": 204
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0036",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 36,
+      "section": "preamble",
+      "text": "Note that Seman-tic FPN is just a simple segmentation head. These resultsdemonstrate that our PVT backbones can extract better fea-tures for semantic segmentation than the CNN backbone,Method#Param (M)GFLOPsmIoU (%)ResNet50-d8+DeeplabV3+ [9]26.8120.541.5ResNet50-d16+DeeplabV3+ [9]26.845.540.6ResNet50-d16+Trans2Seg [72]56.179.339.7PVT-Small+Trans2Seg32.131.642.6(+2.9)COCO BBox AP (%)40.442.233.826.6PVT-Small w pre-train 1xPVT-Small w/ pre-train 3xPVT-Small w/o pre-train 1xPVT-Small w/o pre-train 3x05101520253035COCO BBox AP (%)42.240.439.0RetinaNet 1xAPAP50AP75APSAPMAPLViT-Small/4 [13]60.9Out of MemoryViT-Small/32 [13]60.831.751.332.314.833.747.9PVT-Small (ours)34.240.461.343.025.042.955.7Method#Param(M)36.3PVT-Small 1xPVT-Small 3xResNet50 1xResNet50 3x05101520253035EpochTrans2Seg [72], a Transformer-based segmentation head.According to the experimental settings in Sec. 5.3, weperform experiments on ADE20K [83] with 40k iter-ations training,single scale testing,and compare itwith ResNet50+Trans2Seg [72] and DeeplabV3+ [9] withResNet50-d8 (dilation 8) and -d16(dilation 8) in Table7.",
+      "token_count": 435
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0037",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 37,
+      "section": "preamble",
+      "text": "We \ufb01nd that our PVT-Small+Trans2Seg achieves 42.6mIoU, outperforming ResNet50-d8+DeeplabV3+ (41.5).Note that, ResNet50-d8+DeeplabV3+ has 120.5 GFLOPsdue to the high computation cost of dilated convolution, andour method has only 31.6 GFLOPs, which is 4 times fewer.In addition, our PVT-Small+Trans2Seg performs better thanResNet50-d16+Trans2Seg (mIoU: 42.6 vs. 39.7, GFlops:31.6 vs. 79.3). These results prove that a pure Transformersegmentation network is workable.Method#Param(M)Top-1RetinaNet 1xAPAP50AP75Wider PVT-Small46.819.340.861.843.3Deeper PVT-Small44.218.841.963.144.3mance (31.7 AP on COCO val2017),3 as shown in Table8. When using \ufb01ne-grained image patches (e.g., 4\u00d74 pixelsper patch) as input like our PVT, ViT will exhaust the GPUmemory (32G). Our method avoids this problem through aprogressive shrinking pyramid.",
+      "token_count": 290
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0038",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 38,
+      "section": "preamble",
+      "text": "Our method avoids this problem through aprogressive shrinking pyramid. Speci\ufb01cally, our model canprocess high-resolution feature maps in shallow stages andlow-resolution feature maps in deep stages. Thus, it obtainsa promising AP of 40.4 on COCO val2017, 8.7 pointshigher than ViT-Small/32 (40.4 vs. 31.7).Deeper vs. Wider. The problem of whether the CNN back-bone should go deeper or wider has been extensively dis-cussed in previous work [22, 77]. Here, we explore this5.5. Ablation StudySettings. We conduct ablation studies on ImageNet [12]and COCO [40] datasets. The experimental settings on Im-ageNet are the same as the settings in Sec. 5.1. For COCO,all models are trained with a 1\u00d7 training schedule (i.e., 12epochs) and without multi-scale training, and other settingsfollow those in Sec. 5.2.Pyramid Structure. A Pyramid structure is crucial whenapplying Transformer to dense prediction tasks. ViT (seeFigure 1 (b)) is a columnar framework, whose output issingle-scale.",
+      "token_count": 257
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0039",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 39,
+      "section": "preamble",
+      "text": "A Pyramid structure is crucial whenapplying Transformer to dense prediction tasks. ViT (seeFigure 1 (b)) is a columnar framework, whose output issingle-scale. This results in a low-resolution output fea-ture map when using coarse image patches (e.g., 32\u00d732pixels per patch) as input, leading to poor detection perfor-3For adapting ViT to RetinaNet, we extract the features from the layer2, 4, 6, and 8 of ViT-Small/32, and interpolate them to different scales.Method#Param(M)GFLOPsMask R-CNN 1xAPmAPm50APm75ResNet50+GC r4 [5]54.2279.636.258.738.3PVT-Small (ours)44.1304.437.860.140.3RetinaNet 1xAPAP50AP75ResNet50 [22]800239.355.936.355.338.6MethodScaleGFLOPsTime(ms)PVT-Small (ours)640157.251.738.759.340.8800285.876.940.461.343.0problem in our PVT.",
+      "token_count": 254
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0040",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 40,
+      "section": "preamble",
+      "text": "For fair comparisons, we multiplythe hidden dimensions {C1, C2, C3, C4} of PVT-Small bya scale factor 1.4 to make it have an equivalent parameternumber to the deep model (i.e., PVT-Medium). As shownin Table 9, the deep model (i.e., PVT-Medium) consistentlyworks better than the wide model (i.e., PVT-Small-Wide) onboth ImageNet and COCO. Therefore, going deeper is moreeffective than going wider in the design of PVT. Based onthis observation, in Table 1, we develop PVT models withdifferent scales by increasing the model depth.Pre-trained Weights. Most dense prediction models (e.g.,RetinaNet [39]) rely on the backbone whose weights arepre-trained on ImageNet. We also discuss this problem inour PVT. In the top of Figure 5, we plot the validation APcurves of RetinaNet-PVT-Small w/ (red curves) and w/o(blue curves) pre-trained weights. We \ufb01nd that the modelw/ pre-trained weights converges better than the one w/opre-trained weights, and the gap between their \ufb01nal APreaches 13.8 under the 1\u00d7 training schedule and 8.4 underthe 3\u00d7 training schedule and multi-scale training.",
+      "token_count": 288
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0041",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 41,
+      "section": "preamble",
+      "text": "There-fore, like CNN-based models, pre-training weights can alsohelp PVT-based models converge faster and better. More-over, in the bottom of Figure 5, we also see that the con-vergence speed of PVT-based models (red curves) is fasterthan that of ResNet-based models (green curves).PVT vs. \u201cCNN w/ Non-Local\u201d To obtain a global recep-tive \ufb01eld, some well-engineered CNN backbones, such asGCNet [5], integrate the non-local block in the CNN frame-work. Here, we compare the performance of our PVT (pureTransformer) and GCNet (CNN w/ non-local), using MaskR-CNN for instance segmentation. As reported in Table10, we \ufb01nd that our PVT-Small outperforms ResNet50+GCr4 [5] by 1.6 points in APm (37.8 vs. 36.2), and 2.0 points inAPm75 (38.3 vs. 40.3), under comparable parameter numberand GFLOPs. There are two possible reasons for this result:(1) Although a single global attention layer (e.g., non-local [70] or multi-head attention (MHA) [64]) can ac-quire global-receptive-\ufb01eld features, the model perfor-mance keeps improving as the model deepens.",
+      "token_count": 291
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0042",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 42,
+      "section": "preamble",
+      "text": "This indi-cates that stacking multiple MHAs can further enhance therepresentation capabilities of features. Therefore, as a pureTransformer backbone with more global attention layers,our PVT tends to perform better than the CNN backboneequipped with non-local blocks (e.g., GCNet).(2) Regular convolutions can be deemed as special in-stantiations of spatial attention mechanisms [84]. In otherwords, the format of MHA is more \ufb02exible than the regularconvolution. For example, for different inputs, the weightsof the convolution are \ufb01xed, but the attention weights ofMHA change dynamically with the input. Thus, the featureslearned by the pure Transformer backbone full of MHA lay-ers, could be more \ufb02exible and expressive.Computation Overhead. With increasing input scale, thegrowth rate of the GFLOPs of our PVT is greater thanResNet [22], but lower than ViT [13], as shown in Figure6. However, when the input scale does not exceed 640\u00d7640pixels, the GFLOPs of PVT-Small and ResNet50 are simi-lar. This means that our PVT is more suitable for tasks withmedium-resolution input.On COCO, the shorter side of the input image is 800pixels.",
+      "token_count": 268
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0043",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 43,
+      "section": "preamble",
+      "text": "This means that our PVT is more suitable for tasks withmedium-resolution input.On COCO, the shorter side of the input image is 800pixels. Under this condition, the inference speed of Reti-naNet based on PVT-Small is slower than the ResNet50-based model, as reported in Table 11. (1) A direct solutionfor this problem is to reduce the input scale. When reduc-ing the shorter side of the input image to 640 pixels, themodel based on PVT-Small runs faster than the ResNet50-based model (51.7ms vs., 55.9ms), with 2.4 higher AP(38.7 vs. 36.3). 2) Another solution is to develop a self-attention layer with lower computational complexity. Thisis a worth exploring direction, we recently propose a solu-tion PVTv2 [67].Detection & Segmentation Results. In Figure 7, we alsopresent some qualitative object detection and instance seg-mentation results on COCO val2017 [40], and semanticsegmentation results on ADE20K [83]. These results indi-cate that a pure Transformer backbone (i.e., PVT) withoutconvolutions can also be easily plugged in dense predictionmodels (e.g., RetinaNet [39], Mask R-CNN [21], and Se-mantic FPN [32]), and obtain high-quality results.6.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0044",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 44,
+      "section": "preamble",
+      "text": "Conclusions and Future WorkWe introduce PVT, a pure Transformer backbone fordense prediction tasks, such as object detection and seman-ReferencesViT-Small/16[1] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hin-ton. Layer normalization. arXiv preprint arXiv:1607.06450,2016. 5[2] Irwan Bello. Lambdanetworks: Modeling long-range inter-actions without attention. In Proc. Int. Conf. Learn. Repre-sentations, 2021. 3[3] Irwan Bello, Barret Zoph, Ashish Vaswani, Jonathon Shlens,and Quoc V Le.Attention augmented convolutional net-works. In Proc. IEEE Int. Conf. Comp. Vis., 2019. 3[4] Zhaowei Cai and Nuno Vasconcelos. Cascade r-cnn: Delv-ing into high quality object detection. In Proc. IEEE Conf.Comp. Vis. Patt. Recogn., 2018. 3[5] Yue Cao, Jiarui Xu, Stephen Lin, Fangyun Wei, and HanHu. Gcnet: Non-local networks meet squeeze-excitation net-works and beyond.In Proc. IEEE Int. Conf. Comp.",
+      "token_count": 272
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0045",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 45,
+      "section": "preamble",
+      "text": "Gcnet: Non-local networks meet squeeze-excitation net-works and beyond.In Proc. IEEE Int. Conf. Comp. Vis.,2019. 10[6] Nicolas Carion, Francisco Massa, Gabriel Synnaeve, NicolasUsunier, Alexander Kirillov, and Sergey Zagoruyko. End-to-end object detection with transformers. In Proc. Eur. Conf.Comp. Vis., 2020. 1, 2, 3, 8[7] Kai Chen, Jiaqi Wang, Jiangmiao Pang, Yuhang Cao, YuXiong, Xiaoxiao Li, Shuyang Sun, Wansen Feng, Ziwei Liu,Jiarui Xu, et al. Mmdetection: Open mmlab detection tool-box and benchmark. arXiv preprint arXiv:1906.07155, 2019.7[8] Liang-Chieh Chen, George Papandreou, Iasonas Kokkinos,Kevin Murphy, and Alan L Yuille. Deeplab: Semantic imagesegmentation with deep convolutional nets, atrous convolu-tion, and fully connected crfs. IEEE Trans. Pattern Anal.Mach. Intell., 2017. 3, 7[9] Liang-Chieh Chen, Yukun Zhu, George Papandreou, FlorianSchroff, and Hartwig Adam.",
+      "token_count": 292
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0046",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 46,
+      "section": "preamble",
+      "text": "IEEE Trans. Pattern Anal.Mach. Intell., 2017. 3, 7[9] Liang-Chieh Chen, Yukun Zhu, George Papandreou, FlorianSchroff, and Hartwig Adam. Encoder-decoder with atrousseparable convolution for semantic image segmentation. InProc. Eur. Conf. Comp. Vis., 2018. 1, 9[10] Yunpeng Chen, Jianan Li, Huaxin Xiao, Xiaojie Jin,Shuicheng Yan, and Jiashi Feng. Dual path networks. Proc.Advances in Neural Inf. Process. Syst., 2017. 3[11] Mingmei Cheng, Le Hui, Jin Xie, and Jian Yang. SSPC-Net: Semi-supervised semantic 3D point cloud segmentationnetwork. In Proc. AAAI Conf. Arti\ufb01cial Intell., 2021. 11[12] Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li,and Li Fei-Fei.Imagenet: A large-scale hierarchical im-age database. In Proc. IEEE Conf. Comp. Vis. Patt.",
+      "token_count": 247
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0047",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 47,
+      "section": "preamble",
+      "text": "In Proc. IEEE Conf. Comp. Vis. Patt. Recogn.,2009. 2, 7, 9[13] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov,Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner,Mostafa Dehghani, Matthias Minderer, Georg Heigold, Syl-vain Gelly, et al. An image is worth 16x16 words: Trans-formers for image recognition at scale.Proc. Int. Conf.Learn. Representations, 2021. 1, 2, 3, 5, 6, 7, 9, 10, 11[14] Mark Everingham, Luc Van Gool, Christopher KI Williams,John Winn, and Andrew Zisserman. The pascal visual objectclasses (voc) challenge. Int. J. Comput. Vision, 88(2):303\u2013338, 2010. 2ViT-Small/32PVT-Small (ours)GFLOPsResNet5001603204806408009601120 1280Input Scaletic segmentation. We develop a progressive shrinking pyra-mid and a spatial-reduction attention layer to obtain high-resolution and multi-scale feature maps under limited com-putation/memory resources.",
+      "token_count": 280
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0048",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 48,
+      "section": "preamble",
+      "text": "We develop a progressive shrinking pyra-mid and a spatial-reduction attention layer to obtain high-resolution and multi-scale feature maps under limited com-putation/memory resources. Extensive experiments on ob-ject detection and semantic segmentation benchmarks ver-ify that our PVT is stronger than well-designed CNN back-bones under comparable numbers of parameters.Although PVT can serve as an alternative to CNN back-bones (e.g., ResNet, ResNeXt), there are still some speci\ufb01cmodules and operations designed for CNNs and not consid-ered in this work, such as SE [23], SK [36], dilated convo-lution [74], model pruning [20], and NAS [61].",
+      "token_count": 145
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0049",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 49,
+      "section": "preamble",
+      "text": "Moreover,with years of rapid developments, there have been manywell-engineered CNN backbones such as Res2Net [17],Ef\ufb01cientNet [61], and ResNeSt [79].In contrast, theTransformer-based model in computer vision is still inits early stage of development.Therefore, we believethere are many potential technologies and applications (e.g.,OCR [68, 66, 69], 3D [28, 11, 27] and medical [15, 16, 29]image analysis) to be explored in the future, and hope thatPVT could serve as a good starting point.AcknowledgmentsThis work was supported by the Natural Science Founda-tion of China under Grant 61672273 and Grant 61832008,the Science Foundation for Distinguished Young Schol-ars of Jiangsu under Grant BK20160021, Postdoctoral In-novative Talent Support Program of China under GrantBX20200168, 2020M681608, the General Research Fundof Hong Kong No. 27208720.person:0.88person:0.97zebra:1.00zebra:1.00zebra:1.00person:0.99person:1.00person:1.00person:0.85skateboard:0.83cake:0.99person:0.99person:0.94person:1.00truck:0.84person:0.94car:1.00person:0.99bench:1.00car:0.89person:0.99Object Detection on COCOInstance Segmentation on COCOSemantic Segmentation on ADE20K[15] Deng-Ping Fan, Ge-Peng Ji, Ming-Ming Cheng, and LingShao.",
+      "token_count": 376
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0050",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 50,
+      "section": "preamble",
+      "text": "Concealed object detection. IEEE Trans. Pattern Anal.Mach. Intell., 2021. 11[16] Deng-Ping Fan, Ge-Peng Ji, Tao Zhou, Geng Chen, HuazhuFu, Jianbing Shen, and Ling Shao. Pranet: Parallel reverseattention network for polyp segmentation. In InternationalConference on Medical Image Computing and Computer-Assisted Intervention, 2020. 11[17] Shanghua Gao, Ming-Ming Cheng, Kai Zhao, Xin-YuZhang, Ming-Hsuan Yang, and Philip HS Torr. Res2net: Anew multi-scale backbone architecture. IEEE Trans. PatternAnal. Mach. Intell., 2019. 11[18] Xavier Glorot and Yoshua Bengio. Understanding the dif\ufb01-culty of training deep feedforward neural networks. In Proc.Int. Conf. Arti\ufb01cial Intell. & Stat., 2010. 7[19] Kai Han, An Xiao, Enhua Wu, Jianyuan Guo, Chunjing Xu,and Yunhe Wang. Transformer in transformer. arXiv preprintformer. arXiv preprint arXiv:2102.10772, 2211. 2[25] Gao Huang, Zhuang Liu, Laurens Van Der Maaten, and Kil-ian Q Weinberger.Densely connected convolutional net-works.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0051",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 51,
+      "section": "preamble",
+      "text": "In Proc. IEEE Conf. Comp. Vis. Patt. Recogn., 2017.3[26] Zilong Huang, Xinggang Wang, Lichao Huang, ChangHuang, Yunchao Wei, and Wenyu Liu. Ccnet: Criss-cross at-tention for semantic segmentation. In Proc. IEEE Int. Conf.Comp. Vis., 2019. 3[27] Le Hui, Mingmei Cheng, Jin Xie, and Jian Yang. Ef\ufb01cient3D point cloud feature learning for large-scale place recog-nition. arXiv preprint arXiv:2101.02374, 2021. 11[28] Le Hui, Rui Xu, Jin Xie, Jianjun Qian, and Jian Yang. Pro-gressive point cloud deconvolution generation network. InProc. Eur. Conf. Comp. Vis., 2020. 11[29] Ge-Peng Ji, Yu-Cheng Chou, Deng-Ping Fan, Geng Chen,Huazhu Fu, Debesh Jha, and Ling Shao. Progressively nor-malized self-attention network for video polyp segmentation.In International Conference on Medical Image Computingand Computer-Assisted Intervention, 2021. 11[30] Xu Jia, Bert De Brabandere, Tinne Tuytelaars, and Luc VGool.",
+      "token_count": 294
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0052",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 52,
+      "section": "preamble",
+      "text": "Dynamic \ufb01lter networks. In Proc. Advances in NeuralInf. Process. Syst., 2016. 3[31] Asifullah Khan,Anabia Sohail,Umme Zahoora,andAqsa Saeed Qureshi. A survey of the recent architectures ofdeep convolutional neural networks. Arti\ufb01cial IntelligenceReview, 53(8):5455\u20135516, 2020. 3[32] Alexander Kirillov, Ross Girshick, Kaiming He, and PiotrDoll\u00b4ar. Panoptic feature pyramid networks. In Proc. IEEEConf. Comp. Vis. Patt. Recogn., 2019. 1, 3, 6, 7, 10, 12[33] Alex Krizhevsky, Ilya Sutskever, and Geoffrey E Hinton.Imagenet classi\ufb01cation with deep convolutional neural net-works. Proc. Advances in Neural Inf. Process. Syst., 2012.3[34] Yann LeCun, L\u00b4eon Bottou, Yoshua Bengio, and PatrickHaffner. Gradient-based learning applied to document recog-nition. 1998. 3[35] Xiang Li, Wenhai Wang, Xiaolin Hu, Jun Li, Jinhui Tang,and Jian Yang.",
+      "token_count": 287
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0053",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 53,
+      "section": "preamble",
+      "text": "Gradient-based learning applied to document recog-nition. 1998. 3[35] Xiang Li, Wenhai Wang, Xiaolin Hu, Jun Li, Jinhui Tang,and Jian Yang. Generalized focal loss v2: Learning reliablelocalization quality estimation for dense object detection. InProc. IEEE Conf. Comp. Vis. Patt. Recogn., 2021. 3[36] Xiang Li, Wenhai Wang, Xiaolin Hu, and Jian Yang. Selec-tive kernel networks. In Proc. IEEE Conf. Comp. Vis. Patt.Recogn., 2019. 3, 11[37] Xiang Li, Wenhai Wang, Lijun Wu, Shuo Chen, Xiaolin Hu,Jun Li, Jinhui Tang, and Jian Yang. Generalized focal loss:Learning quali\ufb01ed and distributed bounding boxes for denseobject detection. In Proc. Advances in Neural Inf. Process.Syst., 2020. 3[38] Tsung-Yi Lin, Piotr Doll\u00b4ar, Ross Girshick, Kaiming He,Bharath Hariharan, and Serge Belongie.Feature pyramidnetworks for object detection. In Proc. IEEE Conf. Comp.Vis. Patt.",
+      "token_count": 260
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0054",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 54,
+      "section": "preamble",
+      "text": "In Proc. IEEE Conf. Comp.Vis. Patt. Recogn., 2017. 3, 6[39] Tsung-Yi Lin, Priya Goyal, Ross Girshick, Kaiming He, andPiotr Doll\u00b4ar. Focal loss for dense object detection. In Proc.IEEE Int. Conf. Comp. Vis., 2017. 1, 2, 3, 6, 7, 8, 10, 12[40] Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays,Pietro Perona, Deva Ramanan, Piotr Doll\u00b4ar, and C LawrenceZitnick. Microsoft coco: Common objects in context. InProc. Eur. Conf. Comp. Vis., 2014. 2, 7, 9, 10, 12[41] Chenxi Liu, Liang-Chieh Chen, Florian Schroff, HartwigAdam, Wei Hua, Alan L Yuille, and Li Fei-Fei.Auto-deeplab: Hierarchical neural architecture search for semanticimage segmentation. In Proc. IEEE Conf. Comp. Vis. Patt.Recogn., 2019. 3[42] Nian Liu, Ni Zhang, Kaiyuan Wan, Ling Shao, and JunweiHan. Visual saliency transformer. In Proc. IEEE Int.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0055",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 55,
+      "section": "preamble",
+      "text": "Vis. Patt.Recogn., 2019. 3[42] Nian Liu, Ni Zhang, Kaiyuan Wan, Ling Shao, and JunweiHan. Visual saliency transformer. In Proc. IEEE Int. Conf.Comp. Vis., 2021. 2[43] Wei Liu, Dragomir Anguelov, Dumitru Erhan, ChristianSzegedy, Scott Reed, Cheng-Yang Fu, and Alexander CBerg. Ssd: Single shot multibox detector. In Proc. Eur. Conf.Comp. Vis., 2016. 3[44] Jonathan Long, Evan Shelhamer, and Trevor Darrell. Fullyconvolutional networks for semantic segmentation. In Proc.IEEE Conf. Comp. Vis. Patt. Recogn., 2015. 3[45] Ilya Loshchilov and Frank Hutter. SGDR: stochastic gradi-ent descent with warm restarts. In Proc. Int. Conf. Learn.Representations, 2017. 6[46] Ilya Loshchilov and Frank Hutter. Decoupled weight decayregularization. In Proc. Int. Conf. Learn. Representations,2019. 6, 7[47] Hyeonwoo Noh, Seunghoon Hong, and Bohyung Han.Learning deconvolution network for semantic segmentation.In Proc. IEEE Int. Conf. Comp.",
+      "token_count": 296
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0056",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 56,
+      "section": "preamble",
+      "text": "IEEE Int. Conf. Comp. Vis., 2015. 3[48] Niki Parmar, Prajit Ramachandran, Ashish Vaswani, IrwanBello, Anselm Levskaya, and Jon Shlens.Stand-aloneself-attention in vision models.In Hanna M. Wallach,Hugo Larochelle, Alina Beygelzimer, Florence d\u2019Alch\u00b4e-Buc, Emily B. Fox, and Roman Garnett, editors, Proc. Ad-vances in Neural Inf. Process. Syst., 2019. 2, 3[49] Shaoqing Ren, Kaiming He, Ross Girshick, and Jian Sun.Faster r-cnn: Towards real-time object detection with regionproposal networks. In Proc. Advances in Neural Inf. Process.Syst., 2015. 1, 3[50] Olaf Ronneberger, Philipp Fischer, and Thomas Brox. U-net: Convolutional networks for biomedical image segmen-tation.",
+      "token_count": 217
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0057",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 57,
+      "section": "preamble",
+      "text": "Process.Syst., 2015. 1, 3[50] Olaf Ronneberger, Philipp Fischer, and Thomas Brox. U-net: Convolutional networks for biomedical image segmen-tation. In International Conference on Medical image com-puting and computer-assisted intervention, 2015. 3[51] Olga Russakovsky, Jia Deng, Hao Su, Jonathan Krause, San-jeev Satheesh, Sean Ma, Zhiheng Huang, Andrej Karpathy,Aditya Khosla, Michael Bernstein, et al.Imagenet largescale visual recognition challenge. Int. J. Comput. Vision,2015. 3, 6[52] Suyash Shetty.Application of convolutional neural net-work for image classi\ufb01cation on pascal voc challenge 2012dataset. arXiv preprint arXiv:1607.03785, 2016. 3[53] Connor Shorten and Taghi M Khoshgoftaar. A survey onimage data augmentation for deep learning. Journal of BigData, 6(1):1\u201348, 2019. 3[54] Karen Simonyan and Andrew Zisserman. Very deep con-volutional networks for large-scale image recognition.InYoshua Bengio and Yann LeCun, editors, Proc. Int. Conf.Learn.",
+      "token_count": 295
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0058",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 58,
+      "section": "preamble",
+      "text": "Very deep con-volutional networks for large-scale image recognition.InYoshua Bengio and Yann LeCun, editors, Proc. Int. Conf.Learn. Representations, 2015. 1, 3, 4[55] Peize Sun, Yi Jiang, Enze Xie, Zehuan Yuan, ChanghuWang, and Ping Luo. Onenet: Towards end-to-end one-stageobject detection. arXiv preprint arXiv:2012.05780, 2020. 3[56] Peize Sun, Yi Jiang, Rufeng Zhang, Enze Xie, Jinkun Cao,Xinting Hu, Tao Kong, Zehuan Yuan, Changhu Wang, andPing Luo. Transtrack: Multiple-object tracking with trans-former. arXiv preprint arXiv:2012.15460, 2020. 2[57] Peize Sun, Rufeng Zhang, Yi Jiang, Tao Kong, ChenfengXu, Wei Zhan, Masayoshi Tomizuka, Lei Li, Zehuan Yuan,Changhu Wang, et al. Sparse r-cnn: End-to-end object de-tection with learnable proposals. In Proc. IEEE Conf. Comp.Vis. Patt.",
+      "token_count": 269
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0059",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 59,
+      "section": "preamble",
+      "text": "Sparse r-cnn: End-to-end object de-tection with learnable proposals. In Proc. IEEE Conf. Comp.Vis. Patt. Recogn., 2021. 3[58] Christian Szegedy, Sergey Ioffe, Vincent Vanhoucke, andAlexander Alemi. Inception-v4, inception-resnet and the im-pact of residual connections on learning. In Proc. AAAI Conf.Arti\ufb01cial Intell., 2017. 3[59] Christian Szegedy, Wei Liu, Yangqing Jia, Pierre Sermanet,Scott Reed, Dragomir Anguelov, Dumitru Erhan, VincentVanhoucke, and Andrew Rabinovich.Going deeper withconvolutions. In Proc. IEEE Conf. Comp. Vis. Patt. Recogn.,2015. 3, 6[60] Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, JonShlens, and Zbigniew Wojna. Rethinking the inception ar-chitecture for computer vision. In Proc. IEEE Conf. Comp.Vis. Patt. Recogn., 2016. 3, 6[61] Mingxing Tan and Quoc Le. Ef\ufb01cientnet: Rethinking modelscaling for convolutional neural networks. In Proc. Int. Conf.Mach.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0060",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 60,
+      "section": "preamble",
+      "text": "Recogn., 2016. 3, 6[61] Mingxing Tan and Quoc Le. Ef\ufb01cientnet: Rethinking modelscaling for convolutional neural networks. In Proc. Int. Conf.Mach. Learn., 2019. 11[62] Zhi Tian, Chunhua Shen, Hao Chen, and Tong He. Fcos:Fully convolutional one-stage object detection.In Proc.IEEE Int. Conf. Comp. Vis., 2019. 3[63] Hugo Touvron, Matthieu Cord, Matthijs Douze, FranciscoMassa, Alexandre Sablayrolles, and Herv\u00b4e J\u00b4egou. Trainingdata-ef\ufb01cient image transformers & distillation through at-tention. In Proc. Int. Conf. Mach. Learn., 2021. 3, 6, 7[64] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszko-reit, Llion Jones, Aidan N Gomez, \u0141ukasz Kaiser, and IlliaPolosukhin. Attention is all you need. In Proc. Advances inNeural Inf. Process. Syst., 2017. 2, 3, 4, 5, 10[65] Wenhai Wang, Xiang Li, Jian Yang, and Tong Lu. Mixedlink networks. Proc. Int. Joint Conf.",
+      "token_count": 297
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0061",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 61,
+      "section": "preamble",
+      "text": "Syst., 2017. 2, 3, 4, 5, 10[65] Wenhai Wang, Xiang Li, Jian Yang, and Tong Lu. Mixedlink networks. Proc. Int. Joint Conf. Arti\ufb01cial Intell., 2018.3[66] Wenhai Wang, Xuebo Liu, Xiaozhong Ji, Enze Xie, DingLiang, ZhiBo Yang, Tong Lu, Chunhua Shen, and Ping Luo.Ae textspotter: Learning visual and linguistic representationfor ambiguous text spotting. In Proc. Eur. Conf. Comp. Vis.,2020. 11[67] Wenhai Wang, Enze Xie, Xiang Li, Deng-Ping Fan, KaitaoSong, Ding Liang, Tong Lu, Ping Luo, and Ling Shao.Pvtv2: Improved baselines with pyramid vision transformer.arXiv preprint arXiv:2106.13797, 2021. 10[68] Wenhai Wang, Enze Xie, Xiang Li, Wenbo Hou, Tong Lu,Gang Yu, and Shuai Shao. Shape robust text detection withprogressive scale expansion network. In Proc. IEEE Conf.Comp. Vis. Patt.",
+      "token_count": 264
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0062",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 62,
+      "section": "preamble",
+      "text": "Shape robust text detection withprogressive scale expansion network. In Proc. IEEE Conf.Comp. Vis. Patt. Recogn., 2019. 11[69] Wenhai Wang, Enze Xie, Xiang Li, Xuebo Liu, Ding Liang,Yang Zhibo, Tong Lu, and Chunhua Shen. Pan++: Towardsef\ufb01cient and accurate end-to-end spotting of arbitrarily-shaped text. IEEE Trans. Pattern Anal. Mach. Intell., 2021.11[70] Xiaolong Wang, Ross Girshick, Abhinav Gupta, and Kaim-ing He. Non-local neural networks. In Proc. IEEE Conf.Comp. Vis. Patt. Recogn., 2018. 2, 3, 10[71] Enze Xie, Peize Sun, Xiaoge Song, Wenhai Wang, XueboLiu, Ding Liang, Chunhua Shen, and Ping Luo. Polarmask:Single shot instance segmentation with polar representation.In Proc. IEEE Conf. Comp. Vis. Patt. Recogn., 2020. 3[72] Enze Xie, Wenjia Wang, Wenhai Wang, Peize Sun, Hang Xu,Ding Liang, and Ping Luo. Segmenting transparent object inthe wild with transformer. In Proc. Int. Joint Conf.",
+      "token_count": 278
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0063",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 63,
+      "section": "preamble",
+      "text": "Segmenting transparent object inthe wild with transformer. In Proc. Int. Joint Conf. Arti\ufb01cialIntell., 2021. 2, 9[73] Saining Xie, Ross Girshick, Piotr Doll\u00b4ar, Zhuowen Tu, andKaiming He. Aggregated residual transformations for deepneural networks.In Proc. IEEE Conf. Comp. Vis. Patt.Recogn., 2017. 1, 2, 3, 6, 7, 8[74] Fisher Yu and Vladlen Koltun. Multi-scale context aggrega-tion by dilated convolutions. In Yoshua Bengio and Yann Le-Cun, editors, Proc. Int. Conf. Learn. Representations, 2016.7, 11[75] Li Yuan, Yunpeng Chen, Tao Wang, Weihao Yu, Yujun Shi,Zihang Jiang, Francis EH Tay, Jiashi Feng, and ShuichengYan.Tokens-to-token vit:Training vision transformersfrom scratch on imagenet. arXiv preprint arXiv:2101.11986,2021. 7[76] Sangdoo Yun, Dongyoon Han, Seong Joon Oh, SanghyukChun, Junsuk Choe, and Youngjoon Yoo.",
+      "token_count": 283
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0064",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 64,
+      "section": "preamble",
+      "text": "Cutmix: Regular-ization strategy to train strong classi\ufb01ers with localizable fea-tures. In Proc. IEEE Conf. Comp. Vis. Patt. Recogn., pages6023\u20136032, 2019. 6[77] Erwan Zerhouni, D\u00b4avid L\u00b4anyi, Matheus Viana, and MariaGabrani.Wide residual networks for mitosis detection.In IEEE International Symposium on Biomedical Imaging,2017. 9[78] Hongyi Zhang, Moustapha Ciss\u00b4e, Yann N. Dauphin, andDavid Lopez-Paz. mixup: Beyond empirical risk minimiza-tion. In Proc. Int. Conf. Learn. Representations, 2018. 6[79] Hang Zhang, Chongruo Wu, Zhongyue Zhang, Yi Zhu, ZhiZhang, Haibin Lin, Yue Sun, Tong He, Jonas Mueller, RManmatha, et al. Resnest: Split-attention networks. arXivpreprint arXiv:2004.08955, 2020. 11[80] Hengshuang Zhao, Jiaya Jia, and Vladlen Koltun. Exploringself-attention for image recognition. In Proc. IEEE Conf.Comp. Vis. Patt.",
+      "token_count": 279
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0065",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 65,
+      "section": "preamble",
+      "text": "Exploringself-attention for image recognition. In Proc. IEEE Conf.Comp. Vis. Patt. Recogn., 2020. 2[81] Hengshuang Zhao, Jianping Shi, Xiaojuan Qi, XiaogangWang, and Jiaya Jia. Pyramid scene parsing network. InProc. IEEE Conf. Comp. Vis. Patt. Recogn., 2017. 3[82] Zhun Zhong, Liang Zheng, Guoliang Kang, Shaozi Li, andYi Yang. Random erasing data augmentation. In Proc. AAAIConf. Arti\ufb01cial Intell., 2020. 6[83] Bolei Zhou, Hang Zhao, Xavier Puig, Sanja Fidler, AdelaBarriuso, and Antonio Torralba.Scene parsing throughade20k dataset.In Proc. IEEE Conf. Comp. Vis. Patt.Recogn., 2017. 2, 7, 9, 10, 12[84] Xizhou Zhu, Dazhi Cheng, Zheng Zhang, Stephen Lin, andJifeng Dai. An empirical study of spatial attention mech-anisms in deep networks. In Proc. IEEE Int. Conf. Comp.Vis., 2019. 10[85] Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang,and Jifeng Dai.",
+      "token_count": 293
+    },
+    {
+      "chunk_id": "2102.12122_chunk_0066",
+      "arxiv_id": "2102.12122",
+      "chunk_index": 66,
+      "section": "preamble",
+      "text": "In Proc. IEEE Int. Conf. Comp.Vis., 2019. 10[85] Xizhou Zhu, Weijie Su, Lewei Lu, Bin Li, Xiaogang Wang,and Jifeng Dai. Deformable DETR: deformable transformersfor end-to-end object detection. In Proc. Int. Conf. Learn.Representations, 2021. 2, 3",
+      "token_count": 85
+    }
+  ]
+}

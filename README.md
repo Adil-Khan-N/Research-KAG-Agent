@@ -107,18 +107,6 @@ MobileViT, PVT, T2T-ViT, LeViT, CvT, CoAtNet, Attention Is All You Need
 
 ---
 
-## Evaluation Results
-
-*Metrics computed using Gemini 1.5 Flash as judge
-(faithfulness, answer relevancy, context precision, context recall)*
-
-| Configuration | Faithfulness | Answer Relevancy | Context Precision | Context Recall | Average |
-|---|---|---|---|---|---|
-| Naive Vector RAG | — | — | — | — | — |
-| Vector + Reranker | — | — | — | — | — |
-| **Hybrid KAG (Ours)** | — | — | — | — | — |
-
-
 ### Adaptive Chunking Ablation
 
 Evaluated section-aware chunk sizes vs fixed 300-token chunks.

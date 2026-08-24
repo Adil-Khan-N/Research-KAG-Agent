@@ -3,7 +3,7 @@
 > A production-grade **Hybrid Knowledge-Augmented Generation** system
 > over scientific papers — combining pgvector dense retrieval, Neo4j
 > knowledge graph traversal, cross-encoder reranking, and multi-agent
-> orchestration. Built as a CV-defining project over 20 days.
+> orchestration. 
 
 [![Python](https://img.shields.io/badge/Python-3.11-blue)]()
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.138-green)]()

@@ -71,6 +71,11 @@ class QueryResponse(BaseModel):
     graph_boosted_count: int
     total_latency_ms: int
     pipeline_variant: str
+    calibrated_confidence: Optional[float] = None
+    confidence_band: Optional[str] = None
+    abstention_triggered: Optional[bool] = None
+    uncertainty_breakdown: Optional[dict] = None
+    symbolic_constraints: Optional[dict] = None
 
 # ── /ingest endpoint ──────────────────────────────────────────
 class IngestResponse(BaseModel):

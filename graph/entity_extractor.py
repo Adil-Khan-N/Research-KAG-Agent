@@ -10,15 +10,14 @@ import time
 import logging
 import re
 from pathlib import Path
-import google.generativeai as genai
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-load_dotenv()
+from retrieval.llm_client import get_gemini_model
 logger = logging.getLogger(__name__)
-
-# Configure Gemini
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-2.5-flash")  # fast + free tier
 
 PROCESSED_DIR = Path("data/processed")
 
@@ -86,6 +85,7 @@ def extract_entities_from_paper(paper: dict) -> dict:
     )
 
     try:
+        model = get_gemini_model()
         response = model.generate_content(prompt)
         raw = response.text.strip()
 

@@ -7,9 +7,11 @@ Tables: papers, chunks (with vector embedding), query_logs
 import os
 import logging
 from sqlalchemy import text
-from dotenv import load_dotenv
-
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 logger = logging.getLogger(__name__)
 
 SCHEMA_SQL = """
@@ -34,6 +36,19 @@ CREATE TABLE IF NOT EXISTS papers (
 
 -- Chunks table: one row per chunk, with embedding
 CREATE TABLE IF NOT EXISTS chunks (
+    id              SERIAL PRIMARY KEY,
+    chunk_id        VARCHAR(50) UNIQUE NOT NULL,
+    arxiv_id        VARCHAR(20) NOT NULL REFERENCES papers(arxiv_id) ON DELETE CASCADE,
+    chunk_index     INTEGER NOT NULL,
+    section         TEXT,
+    text            TEXT NOT NULL,
+    token_count     INTEGER,
+    embedding       VECTOR(384),
+    embedded_at     TIMESTAMP DEFAULT NOW()
+);
+
+-- Adaptive Chunks table: section-aware chunk sizes
+CREATE TABLE IF NOT EXISTS chunks_adaptive (
     id              SERIAL PRIMARY KEY,
     chunk_id        VARCHAR(50) UNIQUE NOT NULL,
     arxiv_id        VARCHAR(20) NOT NULL REFERENCES papers(arxiv_id) ON DELETE CASCADE,
@@ -87,8 +102,15 @@ def create_schema(engine):
         connection.execute(text(SCHEMA_SQL))
         connection.commit()
 
+    # Ensure query_cache table is created
+    try:
+        from retrieval.semantic_cache import _ensure_cache_table
+        _ensure_cache_table(engine)
+    except Exception as e:
+        logger.warning(f"Could not initialize cache table: {e}")
+
     logger.info("Schema created successfully.")
-    print("Tables created: papers, chunks, query_logs. Extensions: pgvector.")
+    print("Tables created: papers, chunks, chunks_adaptive, query_cache, query_logs. Extensions: pgvector.")
     print("Basic Indexes created")
 
 def create_vector_index(engine):
@@ -118,10 +140,13 @@ def drop_all(engine):
 def get_table_stats(engine):
     """Print row counts for each table."""
     with engine.connect() as connection:
-        for table in ["papers", "chunks", "query_logs"]:
-            result = connection.execute(text(f"SELECT COUNT(*) FROM {table}"))
-            count = result.fetchone()[0]
-            print(f"  {table}: {count} rows")
+        for table in ["papers", "chunks", "query_cache", "query_logs"]:
+            try:
+                result = connection.execute(text(f"SELECT COUNT(*) FROM {table}"))
+                count = result.fetchone()[0]
+                print(f"  {table}: {count} rows")
+            except Exception:
+                pass
 
 if __name__ == "__main__":
     from ingestion.db import engine

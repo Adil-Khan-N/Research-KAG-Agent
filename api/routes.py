@@ -148,6 +148,18 @@ async def query_endpoint(request: QueryRequest):
             for r in result.ranked_chunks
         ]
 
+        cal = result.calibration
+        uncertainty = None
+        if cal:
+            uncertainty = {
+                "dense_support": cal.dense_support,
+                "symbolic_grounding": cal.symbolic_grounding,
+                "margin_score": cal.margin_score,
+                "contradiction_risk": cal.contradiction_risk,
+                "verified_entities": cal.verified_entities,
+                "unidentified_entities": cal.unidentified_entities,
+            }
+
         return QueryResponse(
             query=result.query,
             answer=result.answer.answer,
@@ -160,6 +172,11 @@ async def query_endpoint(request: QueryRequest):
             graph_boosted_count=result.trace.graph_boosted_count,
             total_latency_ms=result.total_latency_ms,
             pipeline_variant=result.pipeline_variant,
+            calibrated_confidence=getattr(cal, "confidence_score", None),
+            confidence_band=getattr(cal, "confidence_band", None),
+            abstention_triggered=getattr(cal, "should_abstain", False),
+            uncertainty_breakdown=uncertainty,
+            symbolic_constraints=result.symbolic_constraints,
         )
 
     except Exception as e:
@@ -240,18 +257,23 @@ async def query_enhanced_endpoint(request: QueryRequest):
         if contradiction_text:
             full_answer += contradiction_text
 
+        elapsed = int((time.time() - start) * 1000)
+
         # Log
         try:
+            from retrieval.pipeline import PipelineResult
             log_pipeline_result(
-                run_pipeline(
-                    request.query,
-                    use_graph=request.use_graph,
+                PipelineResult(
+                    query=request.query,
+                    answer=answer_obj,
+                    ranked_chunks=ranked_chunks,
+                    trace=trace,
+                    total_latency_ms=elapsed,
+                    pipeline_variant="enhanced",
                 )
             )
-        except Exception:
-            pass
-
-        elapsed = int((time.time() - start) * 1000)
+        except Exception as e:
+            logger.warning(f"Failed to log enhanced query: {e}")
 
         # Build citation models
         citations = [
@@ -307,8 +329,8 @@ async def query_enhanced_endpoint(request: QueryRequest):
             "answer":              full_answer,
             "confidence":          answer_obj.confidence,
             "not_found":           answer_obj.not_found,
-            "citations":           [c.dict() for c in citations],
-            "chunks_used":         [c.dict() for c in chunks_used],
+            "citations":           [c.model_dump() if hasattr(c, "model_dump") else c.dict() for c in citations],
+            "chunks_used":         [c.model_dump() if hasattr(c, "model_dump") else c.dict() for c in chunks_used],
             "explanations":        explanation_models,
             "contradictions":      contradiction_models,
             "contradiction_count": len(contradiction_models),
@@ -669,8 +691,15 @@ async def get_stats():
                 text("SELECT COUNT(*) FROM query_logs")
             ).fetchone()[0]
 
-        neo4j = get_neo4j_client()
-        graph_stats = neo4j.get_stats()
+        graph_nodes = {}
+        graph_rels = {}
+        try:
+            neo4j = get_neo4j_client()
+            graph_stats = neo4j.get_stats()
+            graph_nodes = {r["label"]: r["count"] for r in graph_stats.get("nodes", [])}
+            graph_rels = {r["type"]: r["count"] for r in graph_stats.get("relationships", [])}
+        except Exception as e:
+            logger.warning(f"Neo4j stats unavailable: {e}")
 
         return {
             "postgres": {
@@ -679,11 +708,8 @@ async def get_stats():
                 "queries_logged": query_count,
             },
             "neo4j": {
-                "nodes": {r["label"]: r["count"] for r in graph_stats["nodes"]},
-                "relationships": {
-                    r["type"]: r["count"]
-                    for r in graph_stats["relationships"]
-                },
+                "nodes": graph_nodes,
+                "relationships": graph_rels,
             }
         }
     except Exception as e:
@@ -1047,11 +1073,19 @@ async def query_checked_endpoint(request: QueryRequest):
 
         # Log to query_logs
         try:
+            from retrieval.pipeline import PipelineResult
             log_pipeline_result(
-                run_pipeline(request.query, use_graph=request.use_graph)
+                PipelineResult(
+                    query=request.query,
+                    answer=answer_obj,
+                    ranked_chunks=ranked,
+                    trace=trace,
+                    total_latency_ms=elapsed,
+                    pipeline_variant="checked",
+                )
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to log checked query: {e}")
 
         import re
         clean_answer = re.sub(
@@ -1394,3 +1428,26 @@ async def analytics_endpoint(limit: int = 10):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/benchmark")
+async def benchmark_endpoint():
+    """
+    Returns empirical benchmark results and ablation metrics across:
+    1. Plain Vector RAG
+    2. Vector + Cross-Encoder Reranker
+    3. Hybrid KAG (Heuristic Boost)
+    4. Full Symbolic KAG (Path-Weighted + Graph-Constrained + Calibrated)
+    """
+    import os
+    import json
+    bench_file = os.path.join(os.path.dirname(__file__), "..", "eval", "benchmark_results.json")
+    if os.path.exists(bench_file):
+        try:
+            with open(bench_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+
+    from eval.benchmark import run_full_benchmark
+    return run_full_benchmark()

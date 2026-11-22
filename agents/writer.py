@@ -8,14 +8,14 @@ Output: literature_review (markdown document), citations
 import os
 import time
 import logging
-import google.generativeai as genai
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-load_dotenv()
+from retrieval.llm_client import get_gemini_model
 logger = logging.getLogger(__name__)
-
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-_model = genai.GenerativeModel("gemini-2.5-flash")
 
 WRITER_PROMPT = """You are writing a structured literature review.
 
@@ -104,7 +104,8 @@ def writer_agent(state: dict) -> dict:
             relationships_text=relationships_text[:1000],
         )
 
-        response = _model.generate_content(prompt)
+        model = get_gemini_model()
+        response = model.generate_content(prompt)
         review = response.text.strip()
 
         # Build citations list

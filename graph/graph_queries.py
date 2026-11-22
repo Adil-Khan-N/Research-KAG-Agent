@@ -94,17 +94,17 @@ def expand_neighbors(
                 results[arxiv_id]["matched_entities"].append(name)
                 results[arxiv_id]["graph_score"] += 0.5
 
-        sorted_results = sorted(
-            results.values(),
-            key=lambda x: x["graph_score"],
-            reverse=True
-        )
+    sorted_results = sorted(
+        results.values(),
+        key=lambda x: x["graph_score"],
+        reverse=True
+    )
 
-        logger.info(
-            f"expand_neighbors({entity_names}, hops={hops}): "
-            f"{len(sorted_results)} papers found"
-        )
-        return sorted_results
+    logger.info(
+        f"expand_neighbors({entity_names}, hops={hops}): "
+        f"{len(sorted_results)} papers found"
+    )
+    return sorted_results
     
 # ─────────────────────────────────────────────────────────────
 # Query 2: Get papers by method name

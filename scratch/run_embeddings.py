@@ -1,4 +1,8 @@
 """Run this to embed all processed papers into Postgres."""
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import logging
 logging.basicConfig(level=logging.INFO)
 

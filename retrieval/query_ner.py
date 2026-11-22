@@ -11,17 +11,19 @@ Strategy:
 import re
 import logging
 from functools import lru_cache
-import spacy
-from graph.graph_queries import get_all_entity_names
-from graph.neo4j_client import get_neo4j_client
 
 logger = logging.getLogger(__name__)
 
-# Load spaCy once at module level
+# Load spaCy once at module level (optional)
 try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    logger.warning("spaCy model not found. Run: python -m spacy download en_core_web_sm")
+    import spacy
+    try:
+        nlp = spacy.load("en_core_web_sm")
+    except OSError:
+        logger.warning("spaCy model not found. Run: python -m spacy download en_core_web_sm")
+        nlp = None
+except ImportError:
+    logger.warning("spaCy package not installed. Running in vocab-only NER mode.")
     nlp = None
 
 @lru_cache(maxsize=1)
@@ -29,22 +31,57 @@ def _get_graph_vocab()->dict:
     """
     Load all entity names from Neo4j into memory.
     Cached — only hits the DB once per process.
+    Falls back to data/entities.json if Neo4j is unreachable.
     Returns dict with methods, datasets, concepts, tasks, papers.
     """
-
     try:
+        from graph.neo4j_client import get_neo4j_client
+        from graph.graph_queries import get_all_entity_names
         client = get_neo4j_client()
         vocab = get_all_entity_names(client)
-        logger.info(
-            f"Graph vocab loaded: "
-            f"{len(vocab['methods'])} methods, "
-            f"{len(vocab['datasets'])} datasets, "
-            f"{len(vocab['concepts'])} concepts"
-        )
-        return vocab
+        if any(vocab.values()):
+            logger.info(
+                f"Graph vocab loaded from Neo4j: "
+                f"{len(vocab.get('methods', []))} methods, "
+                f"{len(vocab.get('datasets', []))} datasets, "
+                f"{len(vocab.get('concepts', []))} concepts"
+            )
+            return vocab
     except Exception as e:
-        logger.error(f"Failed to load graph vocab: {e}")
-        return {"methods": [], "datasets": [], "concepts": [], "tasks": [], "papers": []}
+        logger.debug(f"Neo4j vocab query failed ({e}); falling back to data/entities.json")
+
+    # Fallback to local entities.json
+    try:
+        import os
+        import json
+        entities_path = os.path.join(os.path.dirname(__file__), "..", "data", "entities.json")
+        if os.path.exists(entities_path):
+            with open(entities_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            vocab = {"methods": set(), "datasets": set(), "concepts": set(), "tasks": set(), "papers": set()}
+            for item in data:
+                if item.get("title"):
+                    vocab["papers"].add(item["title"])
+                for m in item.get("methods", []):
+                    vocab["methods"].add(m)
+                for d in item.get("datasets", []):
+                    vocab["datasets"].add(d)
+                for c in item.get("concepts", []):
+                    vocab["concepts"].add(c)
+                for t in item.get("tasks", []):
+                    vocab["tasks"].add(t)
+            res = {k: list(v) for k, v in vocab.items()}
+            logger.info(
+                f"Graph vocab loaded from entities.json: "
+                f"{len(res['methods'])} methods, "
+                f"{len(res['datasets'])} datasets, "
+                f"{len(res['concepts'])} concepts"
+            )
+            return res
+    except Exception as ex:
+        logger.error(f"Failed to load fallback vocab from entities.json: {ex}")
+
+    return {"methods": [], "datasets": [], "concepts": [], "tasks": [], "papers": []}
 
 
 def extract_entities_from_query(query: str) -> dict:
@@ -135,7 +172,7 @@ def extract_entities_from_query(query: str) -> dict:
         "masked autoencoder": "Masked Autoencoders Are Scalable Vision Learners",
     }
     for keyword, title in paper_keywords.items():
-        if keyword in query_lower:
+        if re.search(rf"\b{re.escape(keyword)}\b", query_lower):
             found["paper_titles"].append(title)
             if title not in found["all"]:
                 found["all"].append(title)

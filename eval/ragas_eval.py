@@ -16,8 +16,11 @@ import logging
 from pathlib import Path
 from datetime import datetime
 
-from dotenv import load_dotenv
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)

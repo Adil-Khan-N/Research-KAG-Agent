@@ -13,6 +13,8 @@ from retrieval.hybrid_retriever import HybridKAGRetriever, RetrievalTrace
 from retrieval.reranker import rerank, RankedResult
 from retrieval.generator import generate_answer, GeneratedAnswer
 from retrieval.vector_only import vector_only_retrieve
+from retrieval.calibration import compute_calibration, CalibrationResult
+from retrieval.symbolic_verifier import get_symbolic_verifier
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +27,8 @@ class PipelineResult:
     trace: RetrievalTrace
     total_latency_ms: int
     pipeline_variant: str   # "hybrid" or "vector_only"
+    calibration: Optional[CalibrationResult] = None
+    symbolic_constraints: Optional[dict] = None
 
 
 # Singleton retriever — loaded once
@@ -89,11 +93,31 @@ def run_pipeline(
         top_k=top_k_rerank,
     )
 
-    # Stage 4: Generate
+    # Stage 3.5: Symbolic Constraint & Uncertainty Calibration
+    constraints = None
+    calibration = None
+    if use_graph:
+        verifier = get_symbolic_verifier()
+        paper_ids = [getattr(r, "arxiv_id", "") for r in ranked_chunks]
+        constraints = verifier.extract_symbolic_constraints(
+            query=query,
+            extracted_entities=trace.extracted_entities,
+            relevant_papers=paper_ids,
+        )
+        calibration = compute_calibration(
+            query=query,
+            retrieved_chunks=ranked_chunks,
+            extracted_entities=trace.extracted_entities,
+            graph_papers=trace.graph_papers_found,
+        )
+
+    # Stage 4: Generate (with symbolic constraints and calibrated refusal)
     answer = generate_answer(
         query=query,
         ranked_chunks=ranked_chunks,
         max_chunks=top_k_rerank,
+        calibration=calibration,
+        symbolic_constraints=constraints,
     )
 
     total_ms = int((time.time() - start) * 1000)
@@ -101,8 +125,8 @@ def run_pipeline(
     logger.info(
         f"Pipeline complete: {total_ms}ms total | "
         f"retrieve={trace.latency_ms}ms | "
-        f"rerank=~200ms | "
-        f"generate={answer.latency_ms}ms"
+        f"generate={answer.latency_ms}ms | "
+        f"calibrated_conf={getattr(calibration, 'confidence_score', 'N/A')}"
     )
 
     return PipelineResult(
@@ -112,6 +136,8 @@ def run_pipeline(
         trace=trace,
         total_latency_ms=total_ms,
         pipeline_variant=pipeline_variant,
+        calibration=calibration,
+        symbolic_constraints=constraints,
     )
 
 def log_pipeline_result(result: PipelineResult, engine=None):

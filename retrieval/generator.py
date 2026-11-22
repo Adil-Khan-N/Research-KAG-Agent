@@ -14,16 +14,53 @@ import time
 import json
 import re
 from dataclasses import dataclass, field
+from typing import Any, Tuple, Dict, Optional
 
-# With this:
-from google import genai
-from dotenv import load_dotenv
-from typing import Any, Tuple, Dict
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-load_dotenv()
 logger = logging.getLogger(__name__)
 
-_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+_client = None
+_backend = None
+
+def _get_gemini_client():
+    """Lazily load Gemini client, supporting both google.genai and google.generativeai."""
+    global _client, _backend
+    if _client is not None:
+        return _client, _backend
+
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY is not set. Please set GEMINI_API_KEY in your .env file.")
+
+    # Try modern google-genai SDK first
+    try:
+        from google import genai
+        _client = genai.Client(api_key=api_key)
+        _backend = "genai"
+        logger.info("Initialized Gemini via google-genai SDK.")
+        return _client, _backend
+    except ImportError:
+        pass
+
+    # Try legacy google-generativeai SDK
+    try:
+        import google.generativeai as legacy_genai
+        legacy_genai.configure(api_key=api_key)
+        model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        _client = legacy_genai.GenerativeModel(model_name)
+        _backend = "google.generativeai"
+        logger.info("Initialized Gemini via google-generativeai SDK.")
+        return _client, _backend
+    except ImportError:
+        raise ImportError(
+            "Neither google-genai nor google-generativeai is installed. "
+            "Please run: pip install google-genai"
+        )
 
 @dataclass
 class GeneratedAnswer:
@@ -163,19 +200,46 @@ def generate_answer(
     query: str,
     ranked_chunks: list,
     max_chunks: int = 8,
+    calibration=None,
+    symbolic_constraints: Optional[dict] = None,
 ) -> GeneratedAnswer:
     """
-    Generate a cited answer from reranked evidence chunks.
+    Generate a cited answer from reranked evidence chunks,
+    constrained by symbolic knowledge graph rules and calibrated uncertainty.
 
     Args:
         query: the user's question
         ranked_chunks: list of RankedResult objects (from reranker)
         max_chunks: max evidence chunks to include in prompt
+        calibration: optional CalibrationResult for calibrated uncertainty & abstention
+        symbolic_constraints: optional graph constraints dict
 
     Returns:
         GeneratedAnswer with answer text, citations, confidence
     """
     start = time.time()
+
+    # Check for calibrated abstention ("Not Identified" / Refusal)
+    if calibration is not None and getattr(calibration, "should_abstain", False):
+        abstention_msg = getattr(calibration, "abstention_message", "Evidence insufficient to identify answer.")
+        answer_text = (
+            f"**[CALIBRATED REFUSAL — NOT IDENTIFIED]**\n\n"
+            f"{abstention_msg}\n\n"
+            f"*Uncertainty Breakdown:*\n"
+            f"- Calibrated Confidence: {int(calibration.confidence_score * 100)}%\n"
+            f"- Dense Vector Support: {int(calibration.dense_support * 100)}%\n"
+            f"- Symbolic Graph Grounding: {int(calibration.symbolic_grounding * 100)}%\n"
+            f"- Margin Separation: {int(calibration.margin_score * 100)}%"
+        )
+        return GeneratedAnswer(
+            query=query,
+            answer=answer_text,
+            citations=[],
+            evidence_used=[],
+            confidence="low",
+            not_found=True,
+            latency_ms=int((time.time() - start) * 1000),
+        )
 
     # Use top max_chunks
     evidence_chunks = ranked_chunks[:max_chunks]
@@ -183,7 +247,7 @@ def generate_answer(
     if not evidence_chunks:
         return GeneratedAnswer(
             query=query,
-            answer="No evidence chunks available to answer this question.",
+            answer="No evidence chunks available to answer this question in the verified corpus.",
             citations=[],
             evidence_used=[],
             confidence="low",
@@ -194,19 +258,36 @@ def generate_answer(
     # Format evidence for prompt
     evidence_text, chunk_lookup = format_evidence(evidence_chunks)
 
-    # Build prompt
+    # Build prompt with optional symbolic knowledge graph constraints
+    constraint_text = ""
+    if symbolic_constraints:
+        from retrieval.symbolic_verifier import get_symbolic_verifier
+        constraint_text = get_symbolic_verifier().format_constraints_for_prompt(symbolic_constraints)
+
     prompt = GENERATION_PROMPT.format(
         evidence_text=evidence_text,
         query=query,
     )
+    if constraint_text:
+        prompt = prompt + "\n\n" + constraint_text
 
     try:
-        time.sleep(12)  # stay under 5 req/min free tier
-        response = _client.models.generate_content(
-        model="gemini-2.5-flash",
-            contents=prompt,
-        )
-        answer_text = response.text.strip()
+        delay = float(os.getenv("GEMINI_RATE_LIMIT_DELAY", "0"))
+        if delay > 0:
+            time.sleep(delay)
+
+        client, backend = _get_gemini_client()
+        model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+
+        if backend == "genai":
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+            )
+            answer_text = response.text.strip()
+        else:
+            response = client.generate_content(prompt)
+            answer_text = response.text.strip()
 
         # Parse citations
         answer_text, citations, evidence_used = parse_citations_from_answer(

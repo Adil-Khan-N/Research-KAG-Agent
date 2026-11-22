@@ -21,14 +21,14 @@ import os
 import re
 import time
 import logging
-import google.generativeai as genai
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-load_dotenv()
+from retrieval.llm_client import get_gemini_model
 logger = logging.getLogger(__name__)
-
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-_model = genai.GenerativeModel("gemini-2.5-flash")
 
 # Patterns that signal a multi-part query
 COMPARISON_PATTERNS = [
@@ -138,7 +138,8 @@ def decompose_query(query: str) -> dict:
     # LLM decomposition
     try:
         prompt = DECOMPOSE_PROMPT.format(query=query)
-        response = _model.generate_content(prompt)
+        model = get_gemini_model()
+        response = model.generate_content(prompt)
         raw = response.text.strip()
 
         # Strip markdown fences
@@ -236,7 +237,8 @@ def synthesize_sub_answers(
             sub_answers=sub_answers_text,
             synthesis_instruction=synthesis_instruction,
         )
-        response = _model.generate_content(prompt)
+        model = get_gemini_model()
+        response = model.generate_content(prompt)
         return response.text.strip()
 
     except Exception as e:
@@ -332,9 +334,10 @@ def run_decomposed_pipeline(
             sub_answers.append(clean.strip())
             all_citations.extend(result.answer.citations)
 
-            # Rate limit between sub-queries
-            if i < len(sub_queries) - 1:
-                time.sleep(5)
+            # Rate limit between sub-queries if configured
+            delay = float(os.getenv("GEMINI_RATE_LIMIT_DELAY", "0"))
+            if delay > 0 and i < len(sub_queries) - 1:
+                time.sleep(delay)
 
         except Exception as e:
             logger.error(f"Sub-query {i+1} failed: {e}")

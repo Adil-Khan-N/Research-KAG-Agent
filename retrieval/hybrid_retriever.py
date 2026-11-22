@@ -276,12 +276,17 @@ class HybridKAGRetriever:
             g_score = graph_paper_scores.get(sr.arxiv_id, 0.0)
 
             if in_graph:
-                boost = GRAPH_BOOST
+                from retrieval.symbolic_verifier import get_symbolic_verifier
+                verifier = get_symbolic_verifier()
+                computed_boost = verifier.compute_symbolic_path_score(
+                    sr.arxiv_id, entity_names, graph_papers
+                )
+                boost = computed_boost if computed_boost > 0 else GRAPH_BOOST
                 source = "graph_boosted"
                 matched = graph_entity_matches.get(sr.arxiv_id, [])
                 path = (
                     f"Vector sim={sr.similarity:.3f} + "
-                    f"Graph boost={boost:.1f} "
+                    f"Symbolic path boost={boost:.3f} "
                     f"(entities: {matched[:2]})"
                 )
             else:

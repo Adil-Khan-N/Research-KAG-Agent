@@ -7,7 +7,9 @@ Run FIRST (without server):  python scratch/test_api.py --no-server
 Run AFTER starting server:   python scratch/test_api.py
 """
 
+import os
 import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import json
 import time
 import requests

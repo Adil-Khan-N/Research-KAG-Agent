@@ -28,15 +28,15 @@ import re
 import json
 import time
 import logging
-import google.generativeai as genai
 from dataclasses import dataclass, field
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-load_dotenv()
+from retrieval.llm_client import get_gemini_model
 logger = logging.getLogger(__name__)
-
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-_model = genai.GenerativeModel("gemini-2.5-flash")
 
 
 SELF_CHECK_PROMPT = """You are a faithfulness checker for a RAG system.
@@ -202,7 +202,8 @@ def check_faithfulness(
     )
 
     try:
-        response = _model.generate_content(prompt)
+        model = get_gemini_model()
+        response = model.generate_content(prompt)
         raw = response.text.strip()
 
         # Strip markdown

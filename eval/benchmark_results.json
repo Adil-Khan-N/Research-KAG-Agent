@@ -1,0 +1,42 @@
+{
+  "vector_only": {
+    "name": "1. Plain Vector RAG (Baseline)",
+    "recall_at_5": 0.8,
+    "recall_at_10": 0.85,
+    "mrr": 0.4954,
+    "map": 0.377,
+    "faithfulness": 0.8538,
+    "multi_hop_mrr": 0.41,
+    "avg_latency_ms": 54
+  },
+  "vector_rerank": {
+    "name": "2. Vector + Cross-Encoder Reranker",
+    "recall_at_5": 0.8,
+    "recall_at_10": 0.85,
+    "mrr": 0.4954,
+    "map": 0.377,
+    "faithfulness": 0.8538,
+    "multi_hop_mrr": 0.41,
+    "avg_latency_ms": 87
+  },
+  "hybrid_heuristic": {
+    "name": "3. Hybrid KAG (Heuristic Boost)",
+    "recall_at_5": 0.725,
+    "recall_at_10": 0.85,
+    "mrr": 0.5682,
+    "map": 0.417,
+    "faithfulness": 0.8646,
+    "multi_hop_mrr": 0.4595,
+    "avg_latency_ms": 66
+  },
+  "symbolic_kag": {
+    "name": "4. Full Symbolic KAG (Proposed)",
+    "recall_at_5": 0.675,
+    "recall_at_10": 0.85,
+    "mrr": 0.4535,
+    "map": 0.3239,
+    "faithfulness": 0.8659,
+    "multi_hop_mrr": 0.4297,
+    "avg_latency_ms": 98
+  }
+}

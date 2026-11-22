@@ -128,5 +128,13 @@ local_settings.py
 secrets.yml
 .env.local
 
+# Private reference manuals & interview textbooks (do not push to git)
+REFERENCE_MANUAL.md
+docs/REFERENCE_MANUAL.md
+INTERVIEW_TEXTBOOK.md
+docs/INTERVIEW_TEXTBOOK.md
+docs/private/
+test_enc.txt
+
 # Keep gitignore itself tracked
 !.gitignore

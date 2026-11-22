@@ -6,9 +6,11 @@ Single place to get a Neo4j driver — import this everywhere.
 import os
 import logging
 from neo4j import GraphDatabase
-from dotenv import load_dotenv
-
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 logger = logging.getLogger(__name__)
 
 NEO4J_URI = os.getenv("NEO4J_URI", "bolt://localhost:7687")

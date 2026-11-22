@@ -8,14 +8,14 @@ Output: paper_summaries
 import os
 import time
 import logging
-import google.generativeai as genai
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-load_dotenv()
+from retrieval.llm_client import get_gemini_model
 logger = logging.getLogger(__name__)
-
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-_model = genai.GenerativeModel("gemini-2.5-flash")
 
 SUMMARY_PROMPT = """You are summarizing a research paper for a literature review.
 
@@ -90,7 +90,8 @@ def summary_agent(state: dict) -> dict:
                 year=year,
                 chunks_text=chunks_text,
             )
-            response = _model.generate_content(prompt)
+            model = get_gemini_model()
+            response = model.generate_content(prompt)
             summary = response.text.strip()
 
             paper_summaries.append({
@@ -113,9 +114,10 @@ def summary_agent(state: dict) -> dict:
                 "contribution": "",
             })
 
-        # Rate limiting
-        if i < len(retrieved_papers) - 1:
-            time.sleep(3)
+        # Optional rate limiting
+        delay = float(os.getenv("GEMINI_RATE_LIMIT_DELAY", "0"))
+        if delay > 0 and i < len(retrieved_papers) - 1:
+            time.sleep(delay)
 
     print(f"\n[SummaryAgent] Generated {len(paper_summaries)} summaries")
 

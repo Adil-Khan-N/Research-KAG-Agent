@@ -20,15 +20,15 @@ import os
 import re
 import time
 import logging
-import google.generativeai as genai
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 from dataclasses import dataclass
-
-load_dotenv()
+from retrieval.llm_client import get_gemini_model
 logger = logging.getLogger(__name__)
-
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-_model = genai.GenerativeModel("gemini-2.5-flash")
 
 
 # Keywords that signal opposing claims
@@ -140,7 +140,8 @@ def check_contradiction_llm(
     )
 
     try:
-        response = _model.generate_content(prompt)
+        model = get_gemini_model()
+        response = model.generate_content(prompt)
         raw = response.text.strip()
         raw = re.sub(r'^```json\s*', '', raw)
         raw = re.sub(r'\s*```$', '', raw)

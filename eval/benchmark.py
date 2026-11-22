@@ -102,9 +102,12 @@ def evaluate_query(
         latency_penalty = 12
 
     elif variant == "vector_rerank":
-        # Simulate cross-encoder fine-grained scoring
+        # Fine-grained cross-scoring (bi-gram and lexical interaction)
+        words = q_text.lower().split()
         for c in top_candidates:
-            c["score"] = c["score"] * 1.15 + (0.1 if any(w in c["text"].lower() for w in q_words) else 0.0)
+            t_lower = c["text"].lower()
+            bigram_matches = sum(1 for k in range(len(words)-1) if f"{words[k]} {words[k+1]}" in t_lower)
+            c["score"] = c["score"] * 0.70 + (bigram_matches * 0.12)
         top_candidates.sort(key=lambda x: x["score"], reverse=True)
         ranked = top_candidates
         latency_penalty = 48

@@ -330,7 +330,7 @@ if nav_page == "💬 Research Query":
             if response_data:
                 st.divider()
 
-                # Confidence and Calibration Banner
+                # Confidence and Selective Refusal Banner
                 conf_band = response_data.get("confidence_band", "HIGH")
                 cal_conf = response_data.get("calibrated_confidence", 0.85)
                 abstain = response_data.get("abstention_triggered", False)
@@ -338,13 +338,13 @@ if nav_page == "💬 Research Query":
                 col_b1, col_b2, col_b3, col_b4 = st.columns([2, 1, 1, 1])
                 with col_b1:
                     if abstain or conf_band == "REFUSAL":
-                        st.markdown('<span class="badge-refusal">🛡️ CALIBRATED REFUSAL / UNVERIFIED</span>', unsafe_allow_html=True)
+                        st.markdown('<span class="badge-refusal">🛡️ SELECTIVE REFUSAL / NOT IDENTIFIED</span>', unsafe_allow_html=True)
                     elif conf_band == "HIGH":
-                        st.markdown(f'<span class="badge-high">🟢 HIGH CONFIDENCE ({int(cal_conf*100)}% Calibrated)</span>', unsafe_allow_html=True)
+                        st.markdown(f'<span class="badge-high">🟢 HIGH CONFIDENCE ({int(cal_conf*100)}% Score)</span>', unsafe_allow_html=True)
                     elif conf_band == "MEDIUM":
-                        st.markdown(f'<span class="badge-medium">🟡 MEDIUM CONFIDENCE ({int(cal_conf*100)}% Calibrated)</span>', unsafe_allow_html=True)
+                        st.markdown(f'<span class="badge-medium">🟡 MEDIUM CONFIDENCE ({int(cal_conf*100)}% Score)</span>', unsafe_allow_html=True)
                     else:
-                        st.markdown(f'<span class="badge-low">🔴 LOW CONFIDENCE ({int(cal_conf*100)}% Calibrated)</span>', unsafe_allow_html=True)
+                        st.markdown(f'<span class="badge-low">🔴 LOW CONFIDENCE ({int(cal_conf*100)}% Score)</span>', unsafe_allow_html=True)
 
                 with col_b2:
                     st.metric("Total Latency", f"{response_data.get('total_latency_ms', 0)} ms")

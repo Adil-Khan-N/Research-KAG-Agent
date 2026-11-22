@@ -8,9 +8,9 @@
 [![Gemini 2.5](https://img.shields.io/badge/LLM-Gemini%202.5%20Flash-4285F4.svg)](https://aistudio.google.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> A production-grade **Knowledge-Augmented Generation (KAG)** research assistant over 24 foundational Vision Transformer papers (2017–2022). 
+> A **Knowledge-Augmented Generation (KAG)** research assistant over 24 foundational Vision Transformer papers (2017–2022). 
 > 
-> Unlike naive dense vector RAG (which suffers from semantic drift, hallucinated relations, and no concept of multi-hop paper ancestry), this architecture combines **pgvector dense retrieval**, **symbolic Neo4j knowledge graph constraints**, **cross-encoder reranking**, and **multi-factor calibrated uncertainty with selective refusal ("Not Identified")**.
+> Unlike naive dense vector RAG (which struggles with multi-hop paper ancestry and ungrounded relations), this architecture integrates **pgvector dense retrieval**, **symbolic Neo4j knowledge graph traversal**, **cross-encoder reranking**, and **composite confidence scoring with selective refusal ("Not Identified")**.
 
 ---
 
@@ -18,7 +18,7 @@
 - [Why KAG? (Solving Plain Vector RAG Deficiencies)](#why-kag-solving-plain-vector-rag-deficiencies)
 - [Empirical Benchmark & Measured Ablation Study](#empirical-benchmark--measured-ablation-study)
 - [Deep Symbolic Reasoning & Graph Constraints](#deep-symbolic-reasoning--graph-constraints)
-- [Calibrated Uncertainty & Epistemic Refusal ("Not Identified")](#calibrated-uncertainty--epistemic-refusal-not-identified)
+- [Confidence Scoring & Selective Refusal ("Not Identified")](#confidence-scoring--selective-refusal-not-identified)
 - [System Architecture](#system-architecture)
 - [Corpus Scope & Graph Schema](#corpus-scope--graph-schema)
 - [Quick Start Guide](#quick-start-guide)
@@ -32,11 +32,11 @@
 
 ## Why KAG? (Solving Plain Vector RAG Deficiencies)
 
-Standard RAG architectures rely purely on cosine similarity over dense text chunks. In scientific literature, this approach breaks down:
+Standard RAG architectures rely purely on cosine similarity over dense text chunks. In scientific literature, this approach faces real limits:
 
-1. **Failure on Multi-Hop Lineage:** Vector search cannot reliably answer queries like *"Which models extended the architecture that DeiT improved upon?"* because the answer requires graph path traversal (`DeiT` ➔ `ViT` ➔ `Transformer`).
-2. **Shallow Heuristics vs. Real Symbolic Constraints:** Naive hybrid systems often apply flat boosts (e.g. `+0.3`) without verifying whether an actual relational predicate exists in the graph. In this system, edge types (`EXTENDS`, `USES`, `EVALUATES_ON`) and hop distances dynamically govern path weights, while verified graph triples strictly bound allowable claims.
-3. **No Epistemic Uncertainty or Abstention:** Standard RAG always attempts an answer—hallucinating plausible connections when corpus evidence is absent. This system implements **calibrated uncertainty scoring** and **selective refusal ("Not Identified")**, ensuring researchers are never fed fabricated claims.
+1. **Failure on Multi-Hop Lineage:** Vector search alone cannot reliably answer queries like *"Which models extended the architecture that DeiT improved upon?"* because the answer requires graph path traversal (`DeiT` ➔ `ViT` ➔ `Transformer`).
+2. **Heuristics vs. Relational Path Structure:** Naive hybrid systems often apply a flat boost (e.g. `+0.3`) without distinguishing direct ancestry from casual mentions.
+3. **Absence of Epistemic Refusal:** Standard RAG always attempts an answer—often synthesizing plausible-sounding connections when corpus evidence is absent. This system implements **composite confidence scoring** and **selective refusal ("Not Identified")** when evidence is missing.
 
 ---
 
@@ -51,21 +51,22 @@ Evaluated over the **40-question Golden Dataset** (`eval/golden_dataset.py`) spa
 
 | Architecture Variant | Recall@5 | Recall@10 | MRR | MAP | Faithfulness | Multi-Hop MRR | Latency |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **1. Plain Vector RAG (Baseline)** | 80.0% | 85.0% | 0.495 | 0.377 | 85.4% | **0.410** | 79ms |
-| **2. Vector + Cross-Encoder Reranker** | 80.0% | 85.0% | 0.495 | 0.377 | 85.4% | **0.410** | 117ms |
-| **3. Hybrid KAG (Heuristic Boost)** | 72.5% | 85.0% | **0.568** | **0.417** | 86.5% | **0.460** | 91ms |
-| **4. Full Symbolic KAG (Proposed)** | 67.5% | 85.0% | 0.454 | 0.324 | **86.6%** | **0.430** | 116ms |
+| **1. Plain Vector RAG (Baseline)** | 80.0% | 85.0% | 0.495 | 0.377 | 85.4% | **0.410** | 46ms |
+| **2. Vector + Cross-Encoder Reranker** | 80.0% | 85.0% | 0.535 | 0.398 | 86.4% | **0.433** | 86ms |
+| **3. Hybrid KAG (Heuristic Boost)** | 72.5% | 85.0% | **0.568** | **0.417** | 86.5% | **0.460** | 67ms |
+| **4. Strict Path-Scoring ($\gamma = 0.65$)** | 67.5% | 85.0% | 0.454 | 0.324 | **86.6%** | **0.430** | 96ms |
 
-### Key Findings
-- **Multi-Hop MRR Improvement:** Graph-augmented retrieval elevates Multi-Hop MRR from **0.410 (Vector)** to **0.460 (Hybrid KAG)**—a direct consequence of traversing `EXTENDS` and `EVALUATES_ON` relationships in Neo4j.
-- **Faithfulness Gains:** Adding symbolic graph constraints and claim verification raises factual faithfulness to **86.6%**, eliminating hallucinated citations.
-- **Precision Tradeoff:** By strictly enforcing graph constraints, Full Symbolic KAG intentionally filters out tangentially related chunks that lack verifiable relational paths, prioritizing high-precision evidence over noisy recall.
+### Key Findings & Honest Negative Result
+- **Multi-Hop MRR Gain via Graph Boosting:** Adding graph connectivity (Variant 3) raises Multi-Hop MRR from **0.410 to 0.460** ($n = 15$) and overall MRR from **0.495 to 0.568**, as traversing `EXTENDS` edges surfaces ancestral papers that lack direct lexical overlap with the query.
+- **The Tradeoff:** The graph boost reduced Recall@5 from **80.0% to 72.5%**, because boosting graph-connected papers displaced some non-graph chunks from the top-5 cut.
+- **The Negative Result (Variant 4 vs. Variant 3):** The strict path-scoring variant with hop decay ($\gamma = 0.65$) scored **0.430 Multi-Hop MRR**, failing to beat the simple heuristic boost (0.460). Post-mortem analysis showed this was caused by entity linking sparsity: when query phrasing did not match exact graph node strings, strict path scoring failed to fire, whereas the broader heuristic caught them.
+- **Cross-Encoder Impact:** Reranking (Variant 2) lifted overall MRR from **0.495 to 0.535** while preserving 80.0% Recall@5.
 
 ---
 
 ## Deep Symbolic Reasoning & Graph Constraints
 
-Rather than treating the Knowledge Graph as a flat filter, the symbolic layer enforces mathematical and logical boundaries:
+Rather than treating the Knowledge Graph as a flat filter, the symbolic layer explores relational boundaries:
 
 ### 1. Relational Path Scoring & Hop Decay
 Symbolic path scores $S_{\text{path}}$ are calculated using semantic edge weights and exponential hop decay:
@@ -78,13 +79,13 @@ Where:
 - $\gamma = 0.65$ (Hop decay factor)
 
 ### 2. Graph-Constrained Decoding
-Verified subject-predicate-object triples from Neo4j (e.g. `(Swin Transformer)-[:EXTENDS]->(ViT)`) are injected as strict generation constraints into the LLM context. If a user asks whether a method evaluated on a benchmark that has zero graph paths in the corpus, the system is constrained from making ungrounded claims.
+Verified subject-predicate-object triples from Neo4j (e.g. `(Swin Transformer)-[:EXTENDS]->(ViT)`) are injected as generation constraints into the LLM context to instruct the model not to extrapolate unverified relations.
 
 ---
 
-## Calibrated Uncertainty & Epistemic Refusal ("Not Identified")
+## Confidence Scoring & Selective Refusal ("Not Identified")
 
-The system computes a multi-factor **Calibrated Confidence Score ($C$)**:
+The system computes a multi-factor **Composite Confidence Score ($C$)**:
 $$C = \text{clip}\left(0.38 \cdot S_{\text{dense}} + 0.35 \cdot S_{\text{symbolic}} + 0.27 \cdot S_{\text{margin}} - P_{\text{contra}}, 0.05, 0.98\right)$$
 
 - **$S_{\text{dense}}$ (Dense Support):** Cosine similarity strength of top-retrieved passages.
@@ -92,18 +93,20 @@ $$C = \text{clip}\left(0.38 \cdot S_{\text{dense}} + 0.35 \cdot S_{\text{symboli
 - **$S_{\text{margin}}$ (Separation Margin):** Score delta between top-ranked passage and baseline distractors.
 - **$P_{\text{contra}}$ (Contradiction Risk):** Penalty triggered when retrieved papers report conflicting claims.
 
+*(Note: $C$ is an engineered composite score for selective refusal, not a formally calibrated probability via Platt scaling or ECE).*
+
 ### Selective Refusal Protocol
-When $C < 0.32$ or when a query targets specific entities that have **0% grounding in the verified knowledge graph**, the system triggers an explicit **Calibrated Refusal**:
+When $C < 0.32$ or when a query targets specific entities that have **0% grounding in the verified knowledge graph**, the system triggers an explicit **Selective Refusal**:
 ```markdown
-[CALIBRATED REFUSAL — NOT IDENTIFIED]
+[SELECTIVE REFUSAL — NOT IDENTIFIED]
 The verified research corpus (24 Vision Transformer papers) does not contain sufficient
 empirical evidence or knowledge graph relations to reliably answer this query without hallucination.
 
 Uncertainty Breakdown:
-- Calibrated Confidence: 18%
-- Dense Vector Support: 22%
-- Symbolic Graph Grounding: 0%
-- Margin Separation: 15%
+- Confidence Score: 0.18
+- Dense Vector Support: 0.22
+- Symbolic Graph Grounding: 0.00
+- Margin Separation: 0.15
 ```
 
 ---
@@ -171,7 +174,7 @@ Uncertainty Breakdown:
 - *BEiT, MLP-Mixer, Swin V2, CrossViT, MobileViT, CaiT, ConViT, LeViT, PVT...*
 
 ### Graph Statistics
-- **398 Nodes:** `Paper` (24), `Method` (109), `Dataset` (15), `Concept` (124), `Task` (32)
+- **398 Nodes:** `Paper` (24), `Method` (109), `Dataset` (15), `Concept` (124), `Task` (32), `Author` (94)
 - **466 Relationships:** `EXTENDS`, `USES`, `EVALUATES_ON`, `DISCUSSES`, `ADDRESSES`, `AUTHORED_BY`, `CONTRADICTS`
 
 ---
